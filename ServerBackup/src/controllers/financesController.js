@@ -92,7 +92,12 @@ module.exports = {
           data: new Date(data),
           tipo,
           propriedade: {
-            connect: { id: property.id }, // Conectar pelo ID da propriedade validada
+            // =======================================================
+            // ALTERAÇÃO REALIZADA AQUI
+            // Conectando pelo `nomepropriedade` que é a chave primária
+            // da sua tabela de Propriedades.
+            // =======================================================
+            connect: { nomepropriedade: nomepropriedade },
           },
         },
         include: {

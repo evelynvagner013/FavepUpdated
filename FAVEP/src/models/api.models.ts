@@ -35,7 +35,7 @@ export interface Movimentacao {
   tipo: 'receita' | 'despesa';
   descricao: string;
   valor: number;
-  data: Date;
+  data: Date | string;
   nomepropriedade?: string; // CHAVE ESTRANGEIRA
   categoria?: string;
 }
