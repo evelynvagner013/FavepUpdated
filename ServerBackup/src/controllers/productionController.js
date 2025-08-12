@@ -1,6 +1,6 @@
 const prisma = require('../lib/prisma');
 const { PrismaClient } = require('@prisma/client');
-
+//modifiquei
 module.exports = {
   // # getAllProductions
   async getAllProductions(req, res) {
