@@ -1,6 +1,6 @@
 <div class="dashboard-container">
   <header class="dashboard-header">
-    <button class="menu-toggle" aria-label="Abrir menu">
+    <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
       <i class="fas fa-bars"></i>
     </button>
     <h1>
@@ -16,49 +16,45 @@
     <a routerLink="/home" routerLinkActive="active">
       <span class="material-symbols-outlined">home</span> Home
     </a>
-
     <a routerLink="/gerenciamento" routerLinkActive="active">
       <span class="material-symbols-outlined">dashboard</span> Gerenciamento
     </a>
-
     <a routerLink="/estatistica" routerLinkActive="active">
       <span class="material-symbols-outlined">monitoring</span> Estatística
     </a>
-
     <a routerLink="/relatorio" routerLinkActive="active">
       <span class="material-symbols-outlined">overview</span> Relatório geral
     </a>
-
     <a routerLink="/usuario" routerLinkActive="active">
       <span class="material-symbols-outlined">account_circle</span> Configuração
     </a>
   </nav>
 
   <main class="main-content">
-
     <nav class="main-nav">
       <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
         <i class="fas fa-map-marked"></i> Propriedades
       </button>
       <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
-        <i class="fas fa-wheat-awn"></i> Produção </button>
+        <i class="fas fa-wheat-awn"></i> Produção
+      </button>
       <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
         <i class="fas fa-money-bill-wave"></i> Financeiro
       </button>
-    
-      </nav>
+    </nav>
 
     <div class="toolbar">
       <div class="filtros">
-        <div class="filtro-group" *ngIf="abaAtiva !== 'financeiro' "> <label>Filtrar:</label>
-          <select [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
-            <option value="todos">Todos</option>
+        <div class="filtro-group" *ngIf="abaAtiva === 'propriedades' || abaAtiva === 'producao'">
+          <label for="filtro-tipo">Filtrar por Cultura:</label>
+          <select id="filtro-tipo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
             <option *ngFor="let opcao of opcoesFiltro" [value]="opcao.valor">{{opcao.texto}}</option>
           </select>
         </div>
 
-        <div class="filtro-group" *ngIf="abaAtiva === 'financeiro' "> <label>Período:</label>
-          <select [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
+        <div class="filtro-group" *ngIf="abaAtiva === 'financeiro'">
+          <label for="filtro-periodo">Período:</label>
+          <select id="filtro-periodo" [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
             <option value="30">Últimos 30 dias</option>
             <option value="90">Últimos 90 dias</option>
             <option value="180">Últimos 6 meses</option>
@@ -69,7 +65,7 @@
 
         <div class="search-group">
           <input type="text" placeholder="Pesquisar..." [(ngModel)]="termoBusca" (input)="aplicarFiltros()" name="termoBusca">
-          <button class="btn-search"><i class="fas fa-search"></i></button>
+          <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
         </div>
       </div>
 
@@ -82,15 +78,17 @@
       <div class="summary-cards">
         <div class="summary-card">
           <h3>Total Propriedades</h3>
-          <p class="value">{{propriedades.length}}</p> </div>
+          <p class="value">{{propriedades.length}}</p>
+        </div>
         <div class="summary-card">
           <h3>Área Total</h3>
-          <p class="value">{{calcularAreaTotal() | number:'1.0-0':'pt-BR'}} ha</p> </div>
+          <p class="value">{{calcularAreaTotal() | number:'1.0-0':'pt-BR'}} ha</p>
+        </div>
         <div class="summary-card">
           <h3>Culturas Ativas</h3>
-          <p class="value">{{contarCulturasAtivas()}}</p> </div>
+          <p class="value">{{contarCulturasAtivas()}}</p>
+        </div>
       </div>
-
       <div class="table-container">
         <table>
           <thead>
@@ -107,8 +105,8 @@
               <td>{{prop.area_ha | number:'1.0-0':'pt-BR'}}</td>
               <td>{{prop.localizacao}}</td>
               <td class="actions">
-                <button class="btn-edit" (click)="editarPropriedade(prop)"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(prop, 'propriedades')"><i class="fas fa-trash"></i></button>
+                <button class="btn-edit" (click)="editarPropriedade(prop)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete" (click)="confirmarExclusao(prop, 'propriedades')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
             <tr *ngIf="propriedadesFiltradas.length === 0">
@@ -122,22 +120,27 @@
     <section *ngIf="abaAtiva === 'producao'" class="content-section">
       <div class="summary-cards">
         <div class="summary-card">
-          <h3>Produção Total (Culturas)</h3>
-          <p class="value">{{calcularProducaoTotal() | number:'1.0-0':'pt-BR'}} kg</p> </div>
+          <h3>Produção Total</h3>
+          <p class="value">{{calcularProducaoTotal() | number:'1.0-0':'pt-BR'}} kg</p>
+        </div>
         <div class="summary-card">
-          <h3>Área Plantada (Culturas)</h3>
-          <p class="value">{{calcularAreaPlantada() | number:'1.0-0':'pt-BR'}} ha</p> </div>
+          <h3>Área Plantada</h3>
+          <p class="value">{{calcularAreaPlantada() | number:'1.0-0':'pt-BR'}} ha</p>
+        </div>
         <div class="summary-card">
-          <h3>Produtividade Média (Culturas)</h3>
-          <p class="value">{{calcularProdutividadeMedia() | number:'1.2-2':'pt-BR'}} kg/ha</p> </div>
+          <h3>Produtividade Média</h3>
+          <p class="value">{{calcularProdutividadeMedia() | number:'1.2-2':'pt-BR'}} kg/ha</p>
+        </div>
       </div>
-
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th>Cultura</th>
-              <th>Safra</th> <th>Data</th> <th>Área (ha)</th> <th>Propriedade</th>
+              <th>Safra</th>
+              <th>Data</th>
+              <th>Área (ha)</th>
+              <th>Propriedade</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -145,22 +148,21 @@
             <tr *ngFor="let prod of producoesFiltradas; trackBy: trackById">
               <td>{{prod.cultura}}</td>
               <td>{{prod.safra}}</td>
-              <td>{{prod.data | date:'dd/MM/yyyy':'pt-BR'}}</td>
+              <td>{{prod.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
               <td>{{prod.areaproducao | number:'1.0-0':'pt-BR'}}</td>
-              <td>{{getNomePropriedade(prod.nomepropriedade)}}</td>
+              <td>{{getNomePropriedade(prod.propriedadeId)}}</td>
               <td class="actions">
-                <button class="btn-edit" (click)="editarProducao(prod)"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')"><i class="fas fa-trash"></i></button>
+                <button class="btn-edit" (click)="editarProducao(prod)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
             <tr *ngIf="producoesFiltradas.length === 0">
-              <td colspan="7" class="no-data">Nenhuma produção encontrada.</td> </tr>
+              <td colspan="6" class="no-data">Nenhuma produção encontrada.</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </section>
-
-  
 
     <section *ngIf="abaAtiva === 'financeiro'" class="content-section">
       <div class="summary-cards">
@@ -179,7 +181,6 @@
           </p>
         </div>
       </div>
-
       <div class="table-container">
         <table>
           <thead>
@@ -193,109 +194,113 @@
             </tr>
           </thead>
           <tbody>
-             <tr *ngFor="let mov of movimentacoesFiltradas; trackBy: trackById">
-              <td>{{mov.data | date:'dd/MM/yyyy':'pt-BR'}}</td>
+            <tr *ngFor="let fin of financeirosFiltrados; trackBy: trackById">
+              <td>{{fin.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
               <td>
-                <span class="badge" [class.receita]="mov.tipo === 'receita'" [class.despesa]="mov.tipo === 'despesa'">
-                  {{mov.tipo === 'receita' ? 'Receita' : 'Despesa'}}
+                <span class="badge" [class.receita]="fin.tipo === 'receita'" [class.despesa]="fin.tipo === 'despesa'">
+                  {{fin.tipo | titlecase}}
                 </span>
               </td>
-              <td>{{mov.descricao || '-'}}</td>
-              <td>{{mov.nomepropriedade ? getNomePropriedade(mov.nomepropriedade) : '-'}}</td>
-              <td [class.positivo]="mov.tipo === 'receita'" [class.negativo]="mov.tipo === 'despesa'">
-                {{mov.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+              <td>{{fin.descricao || '-'}}</td>
+              <td>{{getNomePropriedade(fin.propriedadeId)}}</td>
+              <td [class.positivo]="fin.tipo === 'receita'" [class.negativo]="fin.tipo === 'despesa'">
+                {{fin.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
               </td>
               <td class="actions">
-                <button class="btn-edit" (click)="editarMovimentacao(mov)"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(mov, 'financeiro')"><i class="fas fa-trash"></i></button>
+                <button class="btn-edit" (click)="editarMovimentacao(fin)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn-delete" (click)="confirmarExclusao(fin, 'financeiro')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
-            <tr *ngIf="movimentacoesFiltradas.length === 0">
+            <tr *ngIf="financeirosFiltrados.length === 0">
               <td colspan="6" class="no-data">Nenhum registro financeiro encontrado.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
-
-    </main>
+  </main>
 
   <div class="modal" *ngIf="modalAberto">
     <div class="modal-content">
-      <span class="close" (click)="fecharModal()">&times;</span>
+      <span class="close" (click)="fecharModal()" aria-label="Fechar modal">&times;</span>
       <h3>{{modalTitulo}}</h3>
 
-      <form (ngSubmit)="salvar()">
+      <form (ngSubmit)="salvar()" #form="ngForm">
         <div *ngIf="tipoEdicao === 'propriedades'">
           <div class="form-group">
-            <label>Nome da Propriedade</label>
-            <input type="text" [(ngModel)]="propriedadeEditada.nomepropriedade" name="propertyName" required>
+            <label for="propertyName">Nome da Propriedade</label>
+            <input type="text" id="propertyName" [(ngModel)]="propriedadeEditada.nomepropriedade" name="propertyName" required>
           </div>
           <div class="form-group">
-            <label>Área Total (ha)</label>
-            <input type="number" step="0.01" [(ngModel)]="propriedadeEditada.area_ha" name="propertyArea" required>
+            <label for="propertyArea">Área Total (ha)</label>
+            <input type="number" id="propertyArea" min="0" step="0.01" [(ngModel)]="propriedadeEditada.area_ha" name="propertyArea" required>
           </div>
           <div class="form-group">
-            <label>Localização</label>
-            <input type="text" [(ngModel)]="propriedadeEditada.localizacao" name="propertyLocation" required>
+            <label for="propertyLocation">Localização</label>
+            <input type="text" id="propertyLocation" [(ngModel)]="propriedadeEditada.localizacao" name="propertyLocation" required>
           </div>
         </div>
         
         <div *ngIf="tipoEdicao === 'producao'">
           <div class="form-group">
-            <label>Cultura</label> <input type="text" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
+            <label for="cropName">Cultura</label>
+            <input type="text" id="cropName" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
           </div>
           <div class="form-group">
-            <label>Safra</label> <input type="text" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
+            <label for="cropType">Safra</label>
+            <input type="text" id="cropType" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
           </div>
           <div class="form-group">
-            <label>Área de Produção (ha)</label>
-            <input type="number" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
-          </div>
-           <div class="form-group">
-            <label>Produtividade (kg/ha)</label>
-            <input type="number" step="0.01" [(ngModel)]="producaoEditada.produtividade" name="producaoProdutividade" required>
+            <label for="producaoArea">Área de Produção (ha)</label>
+            <input type="number" id="producaoArea" min="0" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
           </div>
           <div class="form-group">
-            <label>Data</label> <input type="date" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
+            <label for="producaoProdutividade">Produtividade (kg/ha)</label>
+            <input type="number" id="producaoProdutividade" min="0" step="0.01" [(ngModel)]="producaoEditada.produtividade" name="producaoProdutividade" required>
           </div>
           <div class="form-group">
-            <label>Propriedade</label>
-            <select [(ngModel)]="producaoEditada.nomepropriedade" name="cropProperty" required>
-              <option [ngValue]="null" disabled>Selecione uma propriedade</option> 
-              <option *ngFor="let prop of propriedades" [value]="prop.nomepropriedade">{{prop.nomepropriedade}}</option>
+            <label for="plantingDate">Data</label>
+            <input type="date" id="plantingDate" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
+          </div>
+          <div class="form-group">
+            <label for="cropProperty">Propriedade</label>
+            <select id="cropProperty" [(ngModel)]="producaoEditada.propriedadeId" name="cropProperty" required>
+              <option [ngValue]="''" disabled>Selecione uma propriedade</option>
+              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
             </select>
           </div>
         </div>
 
         <div *ngIf="tipoEdicao === 'financeiro'">
           <div class="form-group">
-            <label>Tipo</label>
-            <select [(ngModel)]="movimentacaoEditada.tipo" name="financialType" required>
-              <option value="receita">Receita</option> <option value="despesa">Despesa</option>
+            <label for="financialType">Tipo</label>
+            <select id="financialType" [(ngModel)]="financeiroEditado.tipo" name="financialType" required>
+              <option value="receita">Receita</option>
+              <option value="despesa">Despesa</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Descrição</label>
-            <input type="text" [(ngModel)]="movimentacaoEditada.descricao" name="financialDescription" required>
+            <label for="financialDescription">Descrição</label>
+            <input type="text" id="financialDescription" [(ngModel)]="financeiroEditado.descricao" name="financialDescription" required>
           </div>
           <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" step="0.01" [(ngModel)]="movimentacaoEditada.valor" name="financialAmount" required>
+            <label for="financialAmount">Valor (R$)</label>
+            <input type="number" id="financialAmount" min="0" step="0.01" [(ngModel)]="financeiroEditado.valor" name="financialAmount" required>
           </div>
           <div class="form-group">
-            <label>Data</label>
-            <input type="date" [(ngModel)]="movimentacaoEditada.data" name="financialDate" required>
+            <label for="financialDate">Data</label>
+            <input type="date" id="financialDate" [(ngModel)]="financeiroEditado.data" name="financialDate" required>
           </div>
           <div class="form-group">
-            <label>Propriedade</label>
-             <select [(ngModel)]="movimentacaoEditada.nomepropriedade" name="financialProperty" required>
-              <option [ngValue]="null" disabled>Selecione uma propriedade</option> 
-              <option *ngFor="let prop of propriedades" [value]="prop.nomepropriedade">{{prop.nomepropriedade}}</option>
+            <label for="financialProperty">Propriedade</label>
+            <select id="financialProperty" [(ngModel)]="financeiroEditado.propriedadeId" name="financialProperty" required>
+              <option [ngValue]="''" disabled>Selecione uma propriedade</option>
+              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
             </select>
           </div>
-          <div class="form-group" *ngIf="movimentacaoEditada.tipo === 'despesa'"> <label>Categoria (Opcional)</label>
-            <select [(ngModel)]="movimentacaoEditada.categoria" name="financialCategory">
+          <div class="form-group" *ngIf="financeiroEditado.tipo === 'despesa'">
+            <label for="financialCategory">Categoria (Opcional)</label>
+            <select id="financialCategory" [(ngModel)]="financeiroEditado.categoria" name="financialCategory">
               <option value="">Nenhuma</option>
               <option value="Insumos">Insumos</option>
               <option value="Mão de Obra">Mão de Obra</option>
@@ -307,7 +312,7 @@
 
         <div class="form-actions">
           <button type="button" class="btn-cancel" (click)="fecharModal()">Cancelar</button>
-          <button type="submit" class="btn-save">Salvar</button>
+          <button type="submit" class="btn-save" [disabled]="!form.valid">Salvar</button>
         </div>
       </form>
     </div>

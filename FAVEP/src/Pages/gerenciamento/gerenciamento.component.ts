@@ -12,11 +12,13 @@ import { PropriedadeService } from '../../services/propriedade.service';
 import { ProducaoService } from '../../services/producao.service';
 import { MovimentacaoService } from '../../services/movimentacao.service';
 import { AuthService } from '../../services/auth.service';
+
+// --- MODELOS CORRIGIDOS ---
 import {
   Usuario,
   Propriedade,
   Producao,
-  Movimentacao,
+  Financeiro, // CORREÇÃO: Importando o modelo 'Financeiro' correto
 } from '../../models/api.models';
 
 registerLocaleData(localePt);
@@ -48,18 +50,20 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   termoBusca: string = '';
   opcoesFiltro: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todos' }];
 
+  // --- Listas de Dados ---
   propriedades: Propriedade[] = [];
   producoes: Producao[] = [];
-  movimentacoes: Movimentacao[] = [];
+  financeiros: Financeiro[] = []; // CORREÇÃO: Renomeado de 'movimentacoes' para 'financeiros'
 
+  // --- Listas Filtradas para Exibição ---
   propriedadesFiltradas: Propriedade[] = [];
   producoesFiltradas: Producao[] = [];
-  movimentacoesFiltradas: Movimentacao[] = [];
+  financeirosFiltrados: Financeiro[] = []; // CORREÇÃO: Renomeado de 'movimentacoesFiltradas'
 
+  // --- Objetos para Edição/Criação no Modal ---
   propriedadeEditada: Partial<Propriedade> = {};
-  // CORREÇÃO: Incluído 'produtividade' no objeto.
   producaoEditada: Partial<Producao> = {};
-  movimentacaoEditada: Partial<Movimentacao> = { tipo: 'receita' };
+  financeiroEditado: Partial<Financeiro> = { tipo: 'receita' }; // CORREÇÃO: Renomeado de 'movimentacaoEditada'
 
   todasCulturas: string[] = [];
   safras: string[] = [];
@@ -70,7 +74,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     private dashboardDataService: DashboardDataService,
     private propriedadeService: PropriedadeService,
     private producaoService: ProducaoService,
-    private movimentacaoService: MovimentacaoService,
+    private movimentacaoService: MovimentacaoService, // O serviço pode manter o nome antigo se preferir
     private authService: AuthService,
     private datePipe: DatePipe
   ) {}
@@ -94,11 +98,11 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   carregarTodosDados(): void {
     this.dashboardDataService.carregarDadosDashboard().subscribe({
       next: (data) => {
-        // As interfaces já estão corretas, então os dados serão mapeados corretamente.
+        // O dashboardDataService foi corrigido para retornar 'movimentacoes' que é um array de 'Financeiro'
         const { propriedades, producoes, movimentacoes } = data;
         this.propriedades = propriedades;
         this.producoes = producoes;
-        this.movimentacoes = movimentacoes.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+        this.financeiros = movimentacoes.sort((a, b) => new Date(b.data as string).getTime() - new Date(a.data as string).getTime());
 
         const uniqueCrops = new Set<string>(this.producoes.map(p => p.cultura));
         this.opcoesFiltro = [{ valor: 'todos', texto: 'Todos' }, ...Array.from(uniqueCrops).sort().map(c => ({ valor: c, texto: c }))];
@@ -118,10 +122,9 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   aplicarFiltros(): void {
     this.filtrarPropriedades();
     this.filtrarProducoes();
-    this.filtrarMovimentacoes();
+    this.filtrarFinanceiros(); // CORREÇÃO: Renomeado
   }
 
-  // CORREÇÃO: Filtrar por 'nomepropriedade'.
   filtrarPropriedades(): void {
     this.propriedadesFiltradas = this.propriedades.filter(prop =>
       !this.termoBusca || prop.nomepropriedade.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
@@ -129,36 +132,36 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     );
   }
 
-  // CORREÇÃO: Usar 'nomepropriedade' para buscar o nome da propriedade.
   filtrarProducoes(): void {
     this.producoesFiltradas = this.producoes.filter(prod => {
       const filtroCultura = this.filtroAtivo === 'todos' || prod.cultura === this.filtroAtivo;
       const busca = !this.termoBusca ||
-        this.getNomePropriedade(prod.nomepropriedade).toLowerCase().includes(this.termoBusca.toLowerCase()) ||
+        // CORREÇÃO: Usa o 'propriedadeId' para buscar o nome correto
+        this.getNomePropriedade(prod.propriedadeId).toLowerCase().includes(this.termoBusca.toLowerCase()) ||
         prod.cultura.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
         prod.safra.toLowerCase().includes(this.termoBusca.toLowerCase());
       return filtroCultura && busca;
     });
   }
 
-  // CORREÇÃO: Usar 'nomepropriedade' para buscar o nome da propriedade.
-  filtrarMovimentacoes(): void {
+  // CORREÇÃO: Renomeado e lógica ajustada para usar 'propriedadeId'
+  filtrarFinanceiros(): void {
     const dias = parseInt(this.filtroPeriodo, 10);
     const dataLimite = new Date();
     if (!isNaN(dias)) {
       dataLimite.setDate(dataLimite.getDate() - dias);
     }
 
-    this.movimentacoesFiltradas = this.movimentacoes.filter(mov => {
-      const periodo = this.filtroPeriodo === 'todos' || new Date(mov.data) >= dataLimite;
+    this.financeirosFiltrados = this.financeiros.filter(fin => {
+      const periodo = this.filtroPeriodo === 'todos' || new Date(fin.data as string) >= dataLimite;
       const busca = !this.termoBusca ||
-        (mov.descricao && mov.descricao.toLowerCase().includes(this.termoBusca.toLowerCase())) ||
-        (mov.nomepropriedade && this.getNomePropriedade(mov.nomepropriedade).toLowerCase().includes(this.termoBusca.toLowerCase()));
+        (fin.descricao && fin.descricao.toLowerCase().includes(this.termoBusca.toLowerCase())) ||
+        (fin.propriedadeId && this.getNomePropriedade(fin.propriedadeId).toLowerCase().includes(this.termoBusca.toLowerCase()));
       return periodo && busca;
     });
   }
 
-  // CORREÇÃO: Usar 'area_ha'.
+  // --- Métodos de Cálculo (sem alterações na lógica, mas agora usam os dados corretos) ---
   calcularAreaTotal(): number {
     return this.propriedades.reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
@@ -167,16 +170,15 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return new Set(this.producoes.map(p => p.cultura)).size;
   }
 
-  // CORREÇÃO: Usar 'produtividade'.
   calcularProducaoTotal(): number {
     return this.producoes.reduce((total, prod) => total + (prod.produtividade || 0), 0);
   }
-
-  // CORREÇÃO: Usar 'nomepropriedade' e 'area_ha'.
+  
+  // CORREÇÃO: Usa 'propriedadeId' para garantir a contagem correta
   calcularAreaPlantada(): number {
-    const propertyNames = new Set(this.producoes.map(p => p.nomepropriedade));
+    const propertyIds = new Set(this.producoes.map(p => p.propriedadeId));
     return this.propriedades
-      .filter(p => propertyNames.has(p.nomepropriedade))
+      .filter(p => propertyIds.has(p.id))
       .reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
@@ -187,13 +189,13 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   }
 
   calcularTotalReceitas(): number {
-    return this.movimentacoes
+    return this.financeiros
       .filter(m => m.tipo === 'receita')
       .reduce((total, m) => total + m.valor, 0);
   }
 
   calcularTotalDespesas(): number {
-    return this.movimentacoes
+    return this.financeiros
       .filter(m => m.tipo === 'despesa')
       .reduce((total, m) => total + m.valor, 0);
   }
@@ -202,23 +204,20 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return this.calcularTotalReceitas() - this.calcularTotalDespesas();
   }
 
+  // CORREÇÃO: Lógica de exclusão agora usa o ID correto para cada entidade
   executarExclusao(): void {
-    if (!this.itemParaExcluir) return;
+    if (!this.itemParaExcluir || !this.itemParaExcluir.id) return;
     let exclusaoObservable;
 
     switch (this.tipoExclusao) {
       case 'propriedades':
-        // CORREÇÃO: Usar 'nomepropriedade' para exclusão.
-        if (!this.itemParaExcluir.nomepropriedade) return;
-        exclusaoObservable = this.propriedadeService.excluirPropriedade(this.itemParaExcluir.nomepropriedade);
+        exclusaoObservable = this.propriedadeService.excluirPropriedade(this.itemParaExcluir.id);
         break;
       case 'producao':
-        if (!this.itemParaExcluir.id) return;
-        exclusaoObservable = this.producaoService.excluirProducao(String(this.itemParaExcluir.id));
+        exclusaoObservable = this.producaoService.excluirProducao(this.itemParaExcluir.id);
         break;
       case 'financeiro':
-        if (!this.itemParaExcluir.id) return;
-        exclusaoObservable = this.movimentacaoService.excluirMovimentacao(String(this.itemParaExcluir.id));
+        exclusaoObservable = this.movimentacaoService.excluirMovimentacao(this.itemParaExcluir.id);
         break;
       default:
         this.cancelarExclusao();
@@ -238,17 +237,17 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     switch (this.tipoEdicao) {
       case 'propriedades': this.salvarPropriedade(); break;
       case 'producao': this.salvarProducao(); break;
-      case 'financeiro': this.salvarMovimentacao(); break;
+      case 'financeiro': this.salvarFinanceiro(); break; // CORREÇÃO: Renomeado
     }
   }
 
-  // CORREÇÃO: Lógica para tratar criação vs atualização com 'nomepropriedade'.
+  // CORREÇÃO: Lógica de salvar baseada na existência do 'id'
   salvarPropriedade(): void {
-    const { nomepropriedade, ...dados } = this.propriedadeEditada;
+    const { id, ...dados } = this.propriedadeEditada;
     
-    const observable = this.propriedades.some(p => p.nomepropriedade === nomepropriedade)
-      ? this.propriedadeService.atualizarPropriedade(nomepropriedade!, dados)
-      : this.propriedadeService.adicionarPropriedade({ ...dados, nomepropriedade: nomepropriedade! } as Omit<Propriedade, 'usuarioId'>);
+    const observable = id
+      ? this.propriedadeService.atualizarPropriedade(id, dados)
+      : this.propriedadeService.adicionarPropriedade(dados as Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>);
 
     observable.subscribe({
       next: () => { this.carregarTodosDados(); this.fecharModal(); },
@@ -256,12 +255,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     });
   }
 
-  // CORREÇÃO: Lógica de salvar produção com modelo atualizado.
   salvarProducao(): void {
     const { id, ...dados } = this.producaoEditada;
+    // Garante que o ID da propriedade foi selecionado
+    if (!dados.propriedadeId) {
+      console.error("ID da propriedade é obrigatório para salvar a produção.");
+      return;
+    }
     const observable = id
-      ? this.producaoService.atualizarProducao(String(id), dados)
-      : this.producaoService.adicionarProducao(dados as Omit<Producao, 'id'>);
+      ? this.producaoService.atualizarProducao(id, dados)
+      : this.producaoService.adicionarProducao(dados as Omit<Producao, 'id' | 'propriedade'>);
 
     observable.subscribe({
       next: () => { this.carregarTodosDados(); this.fecharModal(); },
@@ -269,16 +272,20 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     });
   }
 
-  // CORREÇÃO: Lógica de salvar movimentação com modelo atualizado.
-  salvarMovimentacao(): void {
-    const { id, ...dados } = this.movimentacaoEditada;
+  // CORREÇÃO: Renomeado e lógica ajustada
+  salvarFinanceiro(): void {
+    const { id, ...dados } = this.financeiroEditado;
+    if (!dados.propriedadeId) {
+      console.error("ID da propriedade é obrigatório para salvar o registro financeiro.");
+      return;
+    }
     const observable = id
-      ? this.movimentacaoService.atualizarMovimentacao(String(id), dados)
-      : this.movimentacaoService.adicionarMovimentacao(dados as Omit<Movimentacao, 'id'>);
+      ? this.movimentacaoService.atualizarMovimentacao(id, dados)
+      : this.movimentacaoService.adicionarMovimentacao(dados as Omit<Financeiro, 'id' | 'propriedade'>);
 
     observable.subscribe({
       next: () => { this.carregarTodosDados(); this.fecharModal(); },
-      error: (err) => console.error('Erro ao salvar movimentação:', err),
+      error: (err) => console.error('Erro ao salvar registro financeiro:', err),
     });
   }
 
@@ -296,10 +303,17 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.modalTitulo = `Adicionar ${this.getTituloModal()}`;
 
     switch (this.tipoEdicao) {
-      case 'propriedades': this.propriedadeEditada = {}; break;
-      // CORREÇÃO: Inicializa o objeto de produção com os campos necessários.
-      case 'producao': this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, produtividade: 0, data: new Date(), nomepropriedade: '' }; break;
-      case 'financeiro': this.movimentacaoEditada = { tipo: 'receita', data: new Date(), descricao: '', valor: 0 }; break;
+      case 'propriedades': 
+        this.propriedadeEditada = {}; 
+        break;
+      case 'producao': 
+        // CORREÇÃO: Inicializa com 'propriedadeId'
+        this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, produtividade: 0, data: new Date(), propriedadeId: '' }; 
+        break;
+      case 'financeiro': 
+        // CORREÇÃO: Inicializa com 'propriedadeId'
+        this.financeiroEditado = { tipo: 'receita', data: new Date(), descricao: '', valor: 0, propriedadeId: '' }; 
+        break;
     }
   }
 
@@ -307,7 +321,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.modalAberto = false;
     this.propriedadeEditada = {};
     this.producaoEditada = {};
-    this.movimentacaoEditada = { tipo: 'receita' };
+    this.financeiroEditado = { tipo: 'receita' };
   }
 
   editarPropriedade(prop: Propriedade): void {
@@ -318,24 +332,30 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   }
 
   editarProducao(prod: Producao): void {
-    this.producaoEditada = { ...prod, data: this.datePipe.transform(prod.data, 'yyyy-MM-dd') as any };
+    // Formata a data para o input type="date"
+    const dataFormatada = this.datePipe.transform(prod.data, 'yyyy-MM-dd');
+    // CORREÇÃO: Adiciona um fallback ('') para o caso de o transform retornar null
+    this.producaoEditada = { ...prod, data: dataFormatada || '' };
     this.modalTitulo = 'Editar Produção';
     this.tipoEdicao = 'producao';
     this.modalAberto = true;
   }
 
-  editarMovimentacao(mov: Movimentacao): void {
-    this.movimentacaoEditada = { ...mov, data: this.datePipe.transform(mov.data, 'yyyy-MM-dd') as any };
+  editarMovimentacao(fin: Financeiro): void {
+    const dataFormatada = this.datePipe.transform(fin.data, 'yyyy-MM-dd');
+    // CORREÇÃO: Adiciona um fallback ('') para o caso de o transform retornar null
+    this.financeiroEditado = { ...fin, data: dataFormatada || '' };
     this.modalTitulo = 'Editar Movimentação Financeira';
     this.tipoEdicao = 'financeiro';
     this.modalAberto = true;
   }
 
-  // CORREÇÃO: Usar 'nomepropriedade' para a mensagem de confirmação.
+  // CORREÇÃO: Mensagem de confirmação usa o nome correto do item
   confirmarExclusao(item: any, tipo: string): void {
     this.itemParaExcluir = item;
     this.tipoExclusao = tipo;
-    this.mensagemConfirmacao = `Confirmar exclusão de "${item.nomepropriedade || item.descricao || item.cultura}"?`;
+    const nomeItem = item.nomepropriedade || item.descricao || item.cultura || `ID: ${item.id}`;
+    this.mensagemConfirmacao = `Tem certeza que deseja excluir "${nomeItem}"? Esta ação não pode ser desfeita.`;
     this.confirmacaoAberta = true;
   }
 
@@ -354,15 +374,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return titulos[this.abaAtiva] || 'Item';
   }
 
-  // CORREÇÃO: O ID da propriedade agora é uma string (nomepropriedade).
-  getNomePropriedade(nomepropriedade: string): string {
-    const prop = this.propriedades.find((p) => p.nomepropriedade === nomepropriedade);
-    return prop ? prop.nomepropriedade : 'N/A';
+  // CORREÇÃO: Função agora busca pelo ID da propriedade (string)
+  getNomePropriedade(id: string): string {
+    if (!id) return 'Geral'; // Retorna um valor padrão se não houver ID
+    const prop = this.propriedades.find((p) => p.id === id);
+    return prop ? prop.nomepropriedade : 'Propriedade não encontrada';
   }
 
-  trackById(index: number, item: any): string {
-    // CORREÇÃO: Usa 'nomepropriedade' como fallback para o ID.
-    return item.id || item.nomepropriedade;
+  // CORREÇÃO: trackBy agora usa apenas o ID, que é o identificador único
+  trackById(index: number, item: { id: string | number }): string | number {
+    return item.id;
   }
 
   alternarMenu(): void {

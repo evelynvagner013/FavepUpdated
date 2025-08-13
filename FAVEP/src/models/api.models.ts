@@ -1,6 +1,4 @@
-// ====================================================================
-// Interfaces com nomes e campos em português (DA SUA API)
-// ====================================================================
+// api.models.ts
 
 export interface Usuario {
   id: string;
@@ -8,34 +6,37 @@ export interface Usuario {
   email: string;
   telefone?: string;
   fotoPerfil?: string;
-  senha: string;
+  senha?: string; // Senha deve ser opcional no frontend
   plano?: string;
 }
 
 export interface Propriedade {
-  nomepropriedade: string; // CHAVE PRIMÁRIA
+  id: string; // Chave primária REAL
+  nomepropriedade: string;
   localizacao: string;
   area_ha: number;
   usuarioId: string;
+  culturas?: string[]; // Adicionado para comportar os dados que vêm do controller
 }
 
 export interface Producao {
   id: number;
-  nomepropriedade: string; // CHAVE ESTRANGEIRA
+  propriedadeId: string; // Chave estrangeira CORRETA
   cultura: string;
   safra: string;
-  produtividade: number; // Campo corrigido de 'quantidade'
-  areaproducao: number; // Campo corrigido de 'area'
-  data: Date;
+  produtividade: number;
+  areaproducao: number;
+  data: Date | string; // Permitir string para facilitar o binding de formulários
+  propriedade?: Propriedade; // Opcional para dados aninhados
 }
 
-
-export interface Movimentacao {
+export interface Financeiro { // Renomeado de Movimentacao
   id: number;
+  propriedadeId: string; // Chave estrangeira CORRETA
   tipo: 'receita' | 'despesa';
   descricao: string;
   valor: number;
-  data: Date | string;
-  nomepropriedade?: string; // CHAVE ESTRANGEIRA
+  data: Date | string; // Permitir string para facilitar o binding de formulários
   categoria?: string;
+  propriedade?: Propriedade; // Opcional para dados aninhados
 }

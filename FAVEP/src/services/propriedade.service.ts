@@ -1,3 +1,5 @@
+// propriedade.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -12,7 +14,6 @@ export class PropriedadeService {
 
   constructor(private http: HttpClient) { }
 
-  // Buscar todas as propriedades
   getPropriedades(): Observable<Propriedade[]> {
     return this.http.get<Propriedade[]>(`${this.baseUrl}/properties`).pipe(
       catchError(error => {
@@ -22,8 +23,7 @@ export class PropriedadeService {
     );
   }
 
-  // CORREÇÃO: A assinatura do método agora reflete o payload correto, que não inclui 'usuarioId'.
-  adicionarPropriedade(prop: Omit<Propriedade, 'usuarioId'>): Observable<Propriedade> {
+  adicionarPropriedade(prop: Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>): Observable<Propriedade> {
     return this.http.post<Propriedade>(`${this.baseUrl}/registerProp`, prop).pipe(
       catchError(error => {
         console.error('Erro ao adicionar propriedade:', error);
@@ -32,9 +32,9 @@ export class PropriedadeService {
     );
   }
 
-  // Atualizar propriedade
-  atualizarPropriedade(nomepropriedade: string, prop: Partial<Propriedade>): Observable<Propriedade> {
-    return this.http.put<Propriedade>(`${this.baseUrl}/updateProp/${nomepropriedade}`, prop).pipe(
+  // CORREÇÃO: Usar o ID (string) para atualizar, não o nome.
+  atualizarPropriedade(id: string, prop: Partial<Propriedade>): Observable<Propriedade> {
+    return this.http.put<Propriedade>(`${this.baseUrl}/updateProp/${id}`, prop).pipe(
       catchError(error => {
         console.error('Erro ao atualizar propriedade:', error);
         throw error;
@@ -42,9 +42,9 @@ export class PropriedadeService {
     );
   }
 
-  // Excluir propriedade
-  excluirPropriedade(nomepropriedade: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/propDelete/${nomepropriedade}`).pipe(
+  // CORREÇÃO: Usar o ID (string) para excluir, não o nome.
+  excluirPropriedade(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/propDelete/${id}`).pipe(
       catchError(error => {
         console.error('Erro ao excluir propriedade:', error);
         throw error;
@@ -52,11 +52,10 @@ export class PropriedadeService {
     );
   }
 
-  // (Opcional) Buscar propriedade pelo nome
-  getPropriedadeById(nomepropriedade: string): Observable<Propriedade> {
-    return this.http.get<Propriedade>(`${this.baseUrl}/propGetById/${nomepropriedade}`).pipe(
+  getPropriedadeById(id: string): Observable<Propriedade> {
+    return this.http.get<Propriedade>(`${this.baseUrl}/propGetById/${id}`).pipe(
       catchError(error => {
-        console.error('Erro ao buscar propriedade pelo nome:', error);
+        console.error('Erro ao buscar propriedade pelo ID:', error);
         throw error;
       })
     );

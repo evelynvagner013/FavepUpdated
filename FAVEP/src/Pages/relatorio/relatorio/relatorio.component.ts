@@ -10,7 +10,8 @@ import { Subscription } from 'rxjs';
 // --- SERVIÇOS ---
 import { DashboardDataService } from '../../../services/dashboard-data.service';
 import { AuthService } from '../../../services/auth.service';
-import { Usuario, Propriedade, Producao, Movimentacao } from '../../../models/api.models';
+// CORREÇÃO: Importa 'Financeiro' em vez de 'Movimentacao'
+import { Usuario, Propriedade, Producao, Financeiro } from '../../../models/api.models';
 
 registerLocaleData(localePt);
 
@@ -34,7 +35,8 @@ export class RelatorioComponent implements OnInit, OnDestroy {
 
   propriedades: Propriedade[] = [];
   producoes: Producao[] = [];
-  movimentacoes: Movimentacao[] = [];
+  // CORREÇÃO: Usa o tipo 'Financeiro'
+  movimentacoes: Financeiro[] = [];
 
   selectedPropertyId: string = 'todos';
   startDate: string = '';
@@ -79,6 +81,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
         const { propriedades, producoes, movimentacoes } = data;
         this.propriedades = propriedades;
         this.producoes = producoes;
+        // CORREÇÃO: Atribui os dados ao array de 'Financeiro' e garante que a data seja um objeto Date
         this.movimentacoes = movimentacoes.map(rec => ({ ...rec, data: new Date(rec.data) }));
 
         const uniqueCropTypes = new Set<string>(this.producoes.map(prod => prod.cultura));
@@ -113,8 +116,8 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     let chartType: 'bar' | 'line' | 'pie' = 'bar';
 
     const filteredProducoes = this.producoes.filter(prod => {
-      // CORREÇÃO: Comparando 'prod.nomepropriedade' com 'selectedPropertyId'
-      const isPropertyMatch = this.selectedPropertyId === 'todos' || prod.nomepropriedade === this.selectedPropertyId;
+      // CORREÇÃO: Comparando 'prod.propriedadeId' com 'selectedPropertyId'
+      const isPropertyMatch = this.selectedPropertyId === 'todos' || prod.propriedadeId === this.selectedPropertyId;
       const isCropTypeMatch = this.selectedCropType === 'todos' || prod.cultura === this.selectedCropType;
       const isDateRangeMatch = (!this.startDate || new Date(prod.data) >= new Date(this.startDate)) &&
                                  (!this.endDate || new Date(prod.data) <= new Date(this.endDate));
@@ -122,8 +125,8 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     });
 
     const filteredMovimentacoes = this.movimentacoes.filter(mov => {
-      // CORREÇÃO: Comparando 'mov.nomepropriedade' com 'selectedPropertyId'
-      const isPropertyMatch = this.selectedPropertyId === 'todos' || mov.nomepropriedade === this.selectedPropertyId;
+      // CORREÇÃO: Comparando 'mov.propriedadeId' com 'selectedPropertyId'
+      const isPropertyMatch = this.selectedPropertyId === 'todos' || mov.propriedadeId === this.selectedPropertyId;
       const isDateRangeMatch = (!this.startDate || mov.data >= new Date(this.startDate)) &&
                                  (!this.endDate || mov.data <= new Date(this.endDate));
       return isPropertyMatch && isDateRangeMatch;
@@ -138,10 +141,9 @@ export class RelatorioComponent implements OnInit, OnDestroy {
           if (!productivityData[prod.cultura]) {
             productivityData[prod.cultura] = { totalYield: 0, totalArea: 0 };
           }
-          // CORREÇÃO: Usando 'produtividade' em vez de 'quantidade'
           productivityData[prod.cultura].totalYield += (prod.produtividade || 0);
-          // CORREÇÃO: Buscando a área da propriedade pelo 'nomepropriedade' e usando 'area_ha'
-          const propArea = this.propriedades.find(p => p.nomepropriedade === prod.nomepropriedade)?.area_ha || 0;
+          // CORREÇÃO: Buscando a área da propriedade pelo 'propriedadeId' e usando 'area_ha'
+          const propArea = this.propriedades.find(p => p.id === prod.propriedadeId)?.area_ha || 0;
           productivityData[prod.cultura].totalArea += propArea;
         });
         labels = Object.keys(productivityData).sort();
@@ -185,7 +187,6 @@ export class RelatorioComponent implements OnInit, OnDestroy {
           if (!cropProductionData[prod.cultura]) {
             cropProductionData[prod.cultura] = 0;
           }
-          // CORREÇÃO: Usando 'produtividade' em vez de 'quantidade'
           cropProductionData[prod.cultura] += (prod.produtividade || 0);
         });
         labels = Object.keys(cropProductionData).sort();

@@ -1,5 +1,4 @@
 const prisma = require('../lib/prisma');
-const { PrismaClient } = require('@prisma/client');
 
 module.exports = {
   // # getAllProperties
@@ -8,9 +7,12 @@ module.exports = {
     console.log(`➡️ Requisição recebida para listar todas as propriedades do usuário: ${authenticatedUserId}`);
     try {
       const properties = await prisma.propriedade.findMany({
-        where: { usuarioId: authenticatedUserId }, // FILTRA Pelo usuário logado
+        where: { usuarioId: authenticatedUserId },
         include: {
-          usuario: true,
+          // CORREÇÃO: Seleciona apenas campos seguros do usuário para evitar expor a senha.
+          usuario: {
+            select: { nome: true, email: true }
+          },
           producoes: {
             select: {
               cultura: true,
@@ -24,9 +26,9 @@ module.exports = {
       });
 
       const propertiesWithAllCultures = properties.map(property => {
-        const culturas = property.producoes.map(prod => prod.cultura); 
-        const { producoes, ...rest } = property; 
-        return { ...rest, culturas }; 
+        const culturas = property.producoes.map(prod => prod.cultura);
+        const { producoes, ...rest } = property;
+        return { ...rest, culturas };
       });
 
       console.log('✅ Propriedades listadas com sucesso:', propertiesWithAllCultures.length);
@@ -37,19 +39,21 @@ module.exports = {
     }
   },
 
-  // # getPropertyById
+  // # getPropertyById - CORRIGIDO
   async getPropertyById(req, res) {
-    const { nomepropriedade } = req.params;
+    const { id } = req.params; // Usa o ID da URL
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para buscar propriedade: "${nomepropriedade}"`);
+    console.log(`➡️ Requisição recebida para buscar propriedade com ID: "${id}"`);
     try {
       const property = await prisma.propriedade.findFirst({
         where: {
-          nomepropriedade: nomepropriedade,
-          usuarioId: authenticatedUserId, // GARANTE que a propriedade é do usuário
+          id: id, // Busca pelo ID
+          usuarioId: authenticatedUserId,
         },
         include: {
-          usuario: true,
+          usuario: {
+            select: { nome: true, email: true }
+          },
           producoes: {
             select: { cultura: true, data: true },
             orderBy: { data: 'desc' }
@@ -58,39 +62,33 @@ module.exports = {
       });
 
       if (!property) {
-        console.warn(`⚠️ Propriedade "${nomepropriedade}" não encontrada ou não pertence ao usuário.`);
-        return res.status(404).json({ error: `Propriedade "${nomepropriedade}" não encontrada.` });
+        console.warn(`⚠️ Propriedade com ID "${id}" não encontrada ou não pertence ao usuário.`);
+        return res.status(404).json({ error: `Propriedade com ID "${id}" não encontrada.` });
       }
 
-      const culturas = property.producoes.map(prod => prod.cultura); 
-      const { producoes, ...rest } = property; 
+      const culturas = property.producoes.map(prod => prod.cultura);
+      const { producoes, ...rest } = property;
 
-      console.log('✅ Propriedade encontrada com sucesso:', property.nomepropriedade);
-      res.status(200).json({ ...rest, culturas }); 
+      console.log('✅ Propriedade encontrada com sucesso:', property.id);
+      res.status(200).json({ ...rest, culturas });
     } catch (error) {
       console.error('❌ Erro ao buscar propriedade:', error);
       res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar esta propriedade.' });
     }
   },
 
-  // # createProperty
+  // # createProperty - CORRIGIDO
   async createProperty(req, res) {
     const { nomepropriedade, area_ha, localizacao } = req.body;
-    const authenticatedUserId = req.userId; // PEGA O ID DO USUÁRIO LOGADO
+    const authenticatedUserId = req.userId;
     console.log('➡️ Requisição recebida para criar uma nova propriedade');
-    console.log('📦 Dados recebidos:', req.body);
 
     if (!nomepropriedade || area_ha === undefined || !localizacao) {
-      console.warn('⚠️ Campos obrigatórios para criar propriedade ausentes.');
       return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: nome da propriedade, área em hectares e localização.' });
     }
 
     try {
-      const existingProperty = await prisma.propriedade.findUnique({ where: { nomepropriedade } });
-      if (existingProperty) {
-        console.warn(`⚠️ Já existe uma propriedade com o nome "${nomepropriedade}".`);
-        return res.status(400).json({ error: `Já existe uma propriedade com o nome "${nomepropriedade}". Escolha outro nome.` });
-      }
+      // REMOVIDO: Verificação de nome de propriedade existente, pois agora nomes podem ser repetidos.
 
       const newProperty = await prisma.propriedade.create({
         data: {
@@ -98,68 +96,62 @@ module.exports = {
           area_ha,
           localizacao,
           usuario: {
-            connect: { id: authenticatedUserId }, // CONECTA COM O USUÁRIO LOGADO
+            connect: { id: authenticatedUserId },
           },
         },
         include: {
-          usuario: true,
-          producoes: {
-            select: { cultura: true, data: true },
-            orderBy: { data: 'desc' }
-          }
+          usuario: {
+            select: { nome: true, email: true }
+          },
         },
       });
 
-      const culturas = newProperty.producoes.map(prod => prod.cultura); 
-      const { producoes, ...rest } = newProperty;
-
-      console.log('✅ Propriedade criada com sucesso:', newProperty.nomepropriedade);
+      console.log('✅ Propriedade criada com sucesso:', newProperty.id);
       res.status(201).json({
         message: 'Propriedade cadastrada com sucesso!',
-        property: { ...rest, culturas } 
+        property: { ...newProperty, culturas: [] } // Retorna culturas vazio pois acabou de ser criada
       });
     } catch (error) {
       console.error('❌ Erro ao criar propriedade:', error);
-      if (error.code === 'P2025' && error.meta?.cause?.includes('No \'usuario\' record(s)')) {
-          console.warn(`⚠️ Usuário autenticado com ID "${authenticatedUserId}" não encontrado no banco.`);
+      if (error.code === 'P2025') {
           return res.status(400).json({ error: `O usuário autenticado não foi encontrado.` });
       }
-      res.status(500).json({ error: 'Ops! Não foi possível cadastrar a propriedade. Tente novamente mais tarde.' });
+      res.status(500).json({ error: 'Ops! Não foi possível cadastrar a propriedade.' });
     }
   },
 
-  // # updateProperty
+  // # updateProperty - CORRIGIDO
   async updateProperty(req, res) {
-    const { nomepropriedade } = req.params;
-    const { area_ha, localizacao } = req.body;
+    const { id } = req.params; // Usa o ID da URL
+    const { nomepropriedade, area_ha, localizacao } = req.body;
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para atualizar propriedade: "${nomepropriedade}"`);
-    console.log('📦 Dados de atualização:', req.body);
+    console.log(`➡️ Requisição recebida para atualizar propriedade com ID: "${id}"`);
 
     try {
-      // Verifica se a propriedade existe e pertence ao usuário antes de deletar produções e finanças associadas
       const property = await prisma.propriedade.findFirst({
         where: {
-          nomepropriedade,
+          id: id,
           usuarioId: authenticatedUserId
         }
       });
       
       if (!property) {
-        console.warn(`⚠️ Propriedade "${nomepropriedade}" não encontrada ou não pertence ao usuário para atualização.`);
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade "${nomepropriedade}" para atualizar.` });
+        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para atualizar.` });
       }
 
       const updatedProperty = await prisma.propriedade.update({
         where: {
-          nomepropriedade: nomepropriedade,
+          id: id,
         },
         data: {
+          nomepropriedade, // Permite atualizar o nome
           area_ha,
           localizacao,
         },
         include: {
-          usuario: true,
+          usuario: {
+            select: { nome: true, email: true }
+          },
           producoes: {
             select: { cultura: true, data: true },
             orderBy: { data: 'desc' }
@@ -167,62 +159,54 @@ module.exports = {
         },
       });
 
-      const culturas = updatedProperty.producoes.map(prod => prod.cultura); 
+      const culturas = updatedProperty.producoes.map(prod => prod.cultura);
       const { producoes, ...rest } = updatedProperty;
 
-      console.log('🔄 Propriedade atualizada com sucesso:', updatedProperty.nomepropriedade);
+      console.log('🔄 Propriedade atualizada com sucesso:', updatedProperty.id);
       res.status(200).json({
         message: 'Propriedade atualizada com sucesso!',
-        property: { ...rest, culturas } 
+        property: { ...rest, culturas }
       });
     } catch (error) {
       console.error('❌ Erro ao atualizar propriedade:', error);
-      if (error.code === 'P2025') {
-          console.warn(`⚠️ Propriedade "${nomepropriedade}" não encontrada para atualização.`);
-          return res.status(404).json({ error: `Não foi possível encontrar a propriedade "${nomepropriedade}" para atualizar.` });
-      }
-      res.status(500).json({ error: 'Ops! Ocorreu um erro ao atualizar a propriedade. Tente novamente.' });
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao atualizar a propriedade.' });
     }
   },
 
-  // # deleteProperty
+  // # deleteProperty - CORRIGIDO
   async deleteProperty(req, res) {
-    const { nomepropriedade } = req.params;
+    const { id } = req.params; // Usa o ID da URL
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para deletar propriedade: "${nomepropriedade}"`);
+    console.log(`➡️ Requisição recebida para deletar propriedade com ID: "${id}"`);
     try {
-      // VERIFICA se a propriedade existe e pertence ao usuário antes de deletar
       const property = await prisma.propriedade.findFirst({
         where: {
-          nomepropriedade,
+          id: id,
           usuarioId: authenticatedUserId
         }
       });
       
       if (!property) {
-        console.warn(`⚠️ Propriedade "${nomepropriedade}" não encontrada ou não pertence ao usuário para deleção.`);
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade "${nomepropriedade}" para deletar.` });
+        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para deletar.` });
       }
 
-      // Deleta em cascata (manualmente, pois o Prisma com SQLite não suporta bem)
+      // Deleta registros relacionados primeiro para evitar erros de chave estrangeira
       await prisma.financeiro.deleteMany({
-        where: { nomepropriedade: nomepropriedade },
+        where: { propriedadeId: id },
       });
       await prisma.producao.deleteMany({
-        where: { nomepropriedade: nomepropriedade },
+        where: { propriedadeId: id },
       });
+      
+      // Finalmente, deleta a propriedade
       await prisma.propriedade.delete({
-        where: { nomepropriedade: nomepropriedade },
+        where: { id: id },
       });
 
-      console.log('🗑️ Propriedade e dados associados deletados com sucesso:', nomepropriedade);
+      console.log('🗑️ Propriedade e dados associados deletados com sucesso:', id);
       res.status(204).send();
     } catch (error) {
       console.error('❌ Erro ao deletar propriedade:', error);
-      if (error.code === 'P2025') {
-        console.warn(`⚠️ Propriedade "${nomepropriedade}" não foi encontrada durante a operação.`);
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade "${nomepropriedade}" para deletar.` });
-      }
       res.status(500).json({ error: 'Ops! Ocorreu um erro ao deletar a propriedade.' });
     }
   },

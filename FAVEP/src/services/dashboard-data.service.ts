@@ -1,17 +1,13 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
-// Importa todos os serviços necessários
 import { UsuarioService } from './usuario.service';
 import { PropriedadeService } from './propriedade.service';
 import { ProducaoService } from './producao.service';
 import { MovimentacaoService } from './movimentacao.service';
-// CORREÇÃO: Importar o AuthService para obter os dados do usuário logado
 import { AuthService } from './auth.service';
-
-// Importa todas as interfaces necessárias
-import { Usuario, Propriedade, Producao, Movimentacao } from '../models/api.models';
+// CORREÇÃO: Importa 'Financeiro' em vez de 'Movimentacao'
+import { Usuario, Propriedade, Producao, Financeiro } from '../models/api.models';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +19,6 @@ export class DashboardDataService {
     private propriedadeService: PropriedadeService,
     private producaoService: ProducaoService,
     private movimentacaoService: MovimentacaoService,
-    // CORREÇÃO: Injetar o AuthService
     private authService: AuthService
   ) { }
 
@@ -31,11 +26,9 @@ export class DashboardDataService {
     perfil: Usuario | null;
     propriedades: Propriedade[];
     producoes: Producao[];
-    movimentacoes: Movimentacao[];
+    // CORREÇÃO: O tipo de retorno agora é 'Financeiro[]'
+    movimentacoes: Financeiro[];
   }> {
-    // CORREÇÃO: O perfil do usuário é obtido do AuthService, que já possui o estado do usuário
-    // logado, evitando uma chamada HTTP desnecessária e que resulta em erro 404.
-    // A função of() cria um Observable a partir do valor síncrono.
     const perfilObservable = of(this.authService.currentUserValue);
 
     return forkJoin({

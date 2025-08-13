@@ -1,16 +1,14 @@
 const prisma = require('../lib/prisma');
-const { PrismaClient } = require('@prisma/client');
 
 module.exports = {
-  // # getAllFinanceiros - CORRIGIDO
+  // # getAllFinanceiros
   async getAllFinanceiros(req, res) {
-    const authenticatedUserId = req.userId; // ID do usuário vindo do middleware
+    const authenticatedUserId = req.userId;
     console.log(`➡️  Requisição para listar todos os registros financeiros do usuário ${authenticatedUserId}`);
     try {
       const financeiros = await prisma.financeiro.findMany({
         where: {
           propriedade: {
-            // Adicionado filtro para garantir que os registros sejam do usuário logado
             usuarioId: authenticatedUserId,
           },
         },
@@ -26,7 +24,7 @@ module.exports = {
     }
   },
 
-  // # getFinanceiroById - CORRIGIDO
+  // # getFinanceiroById
   async getFinanceiroById(req, res) {
     const { id } = req.params;
     const authenticatedUserId = req.userId;
@@ -37,11 +35,10 @@ module.exports = {
     }
 
     try {
-      // Usar findFirst para adicionar o filtro de usuário
       const financeiro = await prisma.financeiro.findFirst({
         where: {
           id: financeiroId,
-          propriedade: { // Garante que o registro financeiro pertence ao usuário
+          propriedade: {
             usuarioId: authenticatedUserId,
           },
         },
@@ -65,24 +62,26 @@ module.exports = {
 
   // # createFinanceiro - CORRIGIDO
   async createFinanceiro(req, res) {
-    const { nomepropriedade, descricao, valor, data, tipo } = req.body;
+    // CORREÇÃO: Espera 'propriedadeId' no corpo da requisição em vez de 'nomepropriedade'
+    const { propriedadeId, descricao, valor, data, tipo } = req.body;
     const authenticatedUserId = req.userId;
 
-    if (!nomepropriedade || !descricao || valor === undefined || !data || !tipo) {
-      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios.' });
+    // CORREÇÃO: Validação atualizada para 'propriedadeId'
+    if (!propriedadeId || !descricao || valor === undefined || !data || !tipo) {
+      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: propriedadeId, descricao, valor, data e tipo.' });
     }
 
     try {
-      // VERIFICAÇÃO DE PERMISSÃO: Garante que a propriedade pertence ao usuário
+      // CORREÇÃO: Verifica se a propriedade (pelo ID) pertence ao usuário
       const property = await prisma.propriedade.findFirst({
         where: {
-          nomepropriedade: nomepropriedade,
+          id: propriedadeId,
           usuarioId: authenticatedUserId
         }
       });
 
       if (!property) {
-        return res.status(403).json({ error: `A propriedade "${nomepropriedade}" não existe ou você não tem permissão para acessá-la.` });
+        return res.status(403).json({ error: `A propriedade com ID "${propriedadeId}" não existe ou você não tem permissão para acessá-la.` });
       }
 
       const newFinanceiro = await prisma.financeiro.create({
@@ -92,12 +91,8 @@ module.exports = {
           data: new Date(data),
           tipo,
           propriedade: {
-            // =======================================================
-            // ALTERAÇÃO REALIZADA AQUI
-            // Conectando pelo `nomepropriedade` que é a chave primária
-            // da sua tabela de Propriedades.
-            // =======================================================
-            connect: { nomepropriedade: nomepropriedade },
+            // CORREÇÃO: Conecta usando o ID da propriedade
+            connect: { id: propriedadeId },
           },
         },
         include: {
@@ -114,7 +109,7 @@ module.exports = {
     }
   },
 
-  // # updateFinanceiro - CORRIGIDO
+  // # updateFinanceiro
   async updateFinanceiro(req, res) {
     const { id } = req.params;
     const { descricao, valor, data, tipo } = req.body;
@@ -126,7 +121,6 @@ module.exports = {
     }
 
     try {
-      // VERIFICAÇÃO DE PERMISSÃO
       const existingFinanceiro = await prisma.financeiro.findFirst({
         where: {
           id: financeiroId,
@@ -160,7 +154,7 @@ module.exports = {
     }
   },
 
-  // # deleteFinanceiro - CORRIGIDO
+  // # deleteFinanceiro
   async deleteFinanceiro(req, res) {
     const { id } = req.params;
     const authenticatedUserId = req.userId;
@@ -171,7 +165,6 @@ module.exports = {
     }
 
     try {
-      // VERIFICAÇÃO DE PERMISSÃO
       const existingFinanceiro = await prisma.financeiro.findFirst({
         where: {
           id: financeiroId,

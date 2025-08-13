@@ -1,3 +1,5 @@
+// producao.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -13,7 +15,6 @@ export class ProducaoService {
   constructor(private http: HttpClient) { }
 
   getProducoes(): Observable<Producao[]> {
-      // CORREÇÃO: O endpoint correto é /productions e não /production.
       return this.http.get<Producao[]>(`${this.baseUrl}/productions`).pipe(
         catchError(error => {
           console.error('Erro ao buscar produções:', error);
@@ -22,16 +23,18 @@ export class ProducaoService {
       );
     }
   
-    adicionarProducao(prod: Omit<Producao, 'id'>): Observable<Producao> {
+    // CORREÇÃO: O tipo Omit agora reflete o modelo correto.
+    adicionarProducao(prod: Omit<Producao, 'id' | 'propriedade'>): Observable<Producao> {
       return this.http.post<Producao>(`${this.baseUrl}/registerProduction`, prod);
     }
   
-    atualizarProducao(id: string, prod: Partial<Producao>): Observable<Producao> {
+    // CORREÇÃO: O ID é um número.
+    atualizarProducao(id: number, prod: Partial<Producao>): Observable<Producao> {
       return this.http.put<Producao>(`${this.baseUrl}/updateProduction/${id}`, prod);
     }
   
-    excluirProducao(id: string): Observable<any> {
+    // CORREÇÃO: O ID é um número.
+    excluirProducao(id: number): Observable<any> {
       return this.http.delete(`${this.baseUrl}/productionDelete/${id}`);
     }
-  
 }

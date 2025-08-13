@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,10 +18,11 @@ model usuario {
 }
 
 model propriedade {
-  nomepropriedade String      @id @unique
+  id              String       @id @default(uuid())
+  nomepropriedade String
   localizacao     String?
   usuarioId       String
-  area_ha         Int?          @map("area_ha")
+  area_ha         Int?         @map("area_ha")
   financeiros     financeiro[]
   producoes       producao[]
   usuario         usuario      @relation(fields: [usuarioId], references: [id])
@@ -30,26 +31,26 @@ model propriedade {
 }
 
 model producao {
-  safra           String
-  areaproducao    Float
-  data            DateTime
-  nomepropriedade String
-  cultura         String
-  id              Int         @id @default(autoincrement())
-  produtividade      Float
-  propriedade     propriedade @relation(fields: [nomepropriedade], references: [nomepropriedade])
+  id            Int         @id @default(autoincrement())
+  safra         String
+  areaproducao  Float
+  data          DateTime
+  cultura       String
+  produtividade Float
+  propriedadeId String
+  propriedade   propriedade @relation(fields: [propriedadeId], references: [id])
 
   @@map("producao")
 }
 
 model financeiro {
-  nomepropriedade String
-  descricao       String
-  valor           Float
-  data            DateTime
-  tipo            String
-  id              Int         @id @default(autoincrement())
-  propriedade     propriedade @relation(fields: [nomepropriedade], references: [nomepropriedade])
+  id            Int         @id @default(autoincrement())
+  descricao     String
+  valor         Float
+  data          DateTime
+  tipo          String
+  propriedadeId String
+  propriedade   propriedade @relation(fields: [propriedadeId], references: [id])
 
   @@map("financeiro")
 }
