@@ -2,12 +2,13 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs'; // Importar Subscription
+import { Subscription } from 'rxjs';
 
 // Imports dos seus serviços e modelos
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/api.models';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
 @Component({
   selector: 'app-usuario',
@@ -15,7 +16,8 @@ import { Usuario } from '../../../models/api.models';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
+    RouterLink,
+    NgxMaskPipe, 
   ],
   providers: [DatePipe],
   templateUrl: './usuario.component.html',
@@ -41,37 +43,24 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService
   ) { }
 
-  /**
-   * ---- MÉTODO ngOnInit CORRIGIDO ----
-   * Em vez de buscar os dados uma única vez, agora nos inscrevemos
-   * no Observable 'currentUser' do AuthService.
-   */
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe(user => {
       if (user) {
-        // Se um usuário for emitido (login, atualização de perfil), atualizamos o estado
-        this.usuario = { ...user, senha: '' }; // Garante que a senha nunca seja armazenada
+        this.usuario = { ...user, senha: '' };
         this.atualizarHeaderInfo();
       } else {
-        // Se o usuário for nulo (logout), limpamos o estado
         this.usuario = null;
         this.atualizarHeaderInfo();
       }
     });
   }
 
-  /**
-   * ---- NOVO MÉTODO ngOnDestroy ----
-   * É uma boa prática cancelar a inscrição em Observables quando
-   * o componente é destruído para evitar vazamentos de memória.
-   */
   ngOnDestroy(): void {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
     }
   }
 
-  // Atualiza as variáveis que são exibidas no HTML
   private atualizarHeaderInfo(): void {
     if (this.usuario) {
       this.usuarioNome = this.usuario.nome;
@@ -87,29 +76,28 @@ export class UsuarioComponent implements OnInit, OnDestroy {
         console.error('Usuário não está logado para atualização.');
         return;
     }
-    
-    // CORREÇÃO: O ID não é mais necessário na chamada do serviço.
+  
     const { id, ...payload } = this.usuarioEditavel;
-
+  
+    // A variável 'response' aqui será do tipo 'any' para evitar o erro de tipagem
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
-      next: (updatedUser) => {
-        console.log('Perfil atualizado com sucesso:', updatedUser);
-        
-        // Ao salvar, usamos o authService.setUser para atualizar o localStorage
-        // e notificar todos os outros componentes da mudança.
-        this.authService.setUser({ ...this.usuario, ...updatedUser });
-
+      next: (response: any) => { // <-- Adicione ': any' aqui
+        console.log('Perfil atualizado com sucesso:', response);
+  
+        // --- CORREÇÃO APLICADA AQUI ---
+        // Voltamos a usar 'response.user' para pegar o objeto de usuário correto
+        this.authService.setUser(response.user);
+  
         this.fecharModalEdicao();
         alert('Perfil atualizado com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao salvar alterações no perfil:', err);
-        alert('Erro ao atualizar perfil. Tente novamente.');
+        const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
+        alert(errorMessage);
       }
     });
   }
-
-  // --- Métodos de UI e Navegação (sem alterações) ---
 
   abrirModalEdicao(): void {
     if (this.usuario) {
@@ -125,8 +113,6 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   alternarMenu(): void {
     this.menuAberto = !this.menuAberto;
   }
-
- 
 
   navegarParaContato(): void {
     this.router.navigate(['/contato']);

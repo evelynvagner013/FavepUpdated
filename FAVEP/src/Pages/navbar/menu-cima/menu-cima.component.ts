@@ -3,12 +3,12 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { NgxMaskDirective } from 'ngx-mask'; // <-- CORREÇÃO 1: Importar a diretiva
 
 @Component({
   selector: 'app-menu-cima',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgxMaskDirective], // <-- CORREÇÃO 2: Adicionar a diretiva aos imports
   templateUrl: './menu-cima.component.html',
   styleUrl: './menu-cima.component.css'
 })
@@ -29,7 +29,7 @@ export class MenuCimaComponent implements OnInit {
   registerSuccessMessage: string = '';
   registerErrorMessage: string = '';
 
-   currentTheme: string = 'light-theme'; // Tema padrão
+  currentTheme: string = 'light-theme'; // Tema padrão
 
   constructor(private apiService: AuthService, private router: Router) { }
 
@@ -121,7 +121,7 @@ export class MenuCimaComponent implements OnInit {
       email: this.registerUser.email,
       telefone: this.registerUser.telefone,
       senha: this.registerUser.password,
-      confirmarSenha: this.registerUser.confirmarSenha // CORRIGIDO
+      confirmarSenha: this.registerUser.confirmarSenha
     };
 
     // --- FIM DA LÓGICA DE VALIDAÇÃO ---
@@ -142,6 +142,4 @@ export class MenuCimaComponent implements OnInit {
       }
     });
   }
-
-  
 }

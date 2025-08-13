@@ -26,7 +26,7 @@
     "@canvasjs/angular-charts": "^1.2.0",
     "chart.js": "^4.4.8",
     "express": "^4.18.2",
-    "ngx-mask": "^19.0.6",
+    "ngx-mask": "^19.0.7",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"

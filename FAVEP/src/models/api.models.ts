@@ -6,7 +6,7 @@ export interface Usuario {
   email: string;
   telefone?: string;
   fotoPerfil?: string;
-  senha?: string; // Senha deve ser opcional no frontend
+  senha?: string; 
   plano?: string;
 }
 

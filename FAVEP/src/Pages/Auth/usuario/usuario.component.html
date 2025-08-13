@@ -51,8 +51,12 @@
             <div class="info-list">
               <p><strong>Nome:</strong> <span>{{ usuario.nome }}</span></p>
               <p><strong>Email:</strong> <span>{{ usuario.email }}</span></p>
-              <p><strong>Telefone:</strong> <span>{{ usuario.telefone }}</span></p>
-            </div>
+
+              <p *ngIf="usuario.telefone">
+                <strong>Telefone:</strong>
+                <span>{{ usuario.telefone | mask: '(00) 00000-0000' }}</span>
+              </p>
+              </div>
           </div>
         </div>
 

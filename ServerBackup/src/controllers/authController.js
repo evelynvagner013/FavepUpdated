@@ -53,7 +53,7 @@ module.exports = {
         return res.status(400).json({ error: 'Usuário já existe com este email.' });
       }
     
-      const hashedPassword = await bcrypt.hash(senha, 10);
+      const hashedPassword = await bcrypt.hash(senha, 8);
       console.log('🔒 Senha criptografada com sucesso.');
 
       const user = await prisma.usuario.create({

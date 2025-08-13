@@ -407,3 +407,10 @@ input.ng-invalid.ng-touched {
   vertical-align: middle; /* Alinha o ícone verticalmente com o texto */
   color: #e0e0e0; /* Exemplo de cor para o ícone */
 }
+
+.password-requirements {
+  font-size: 0.75rem; /* Tamanho de fonte menor */
+  color: #ffffff;    /* Cor cinza para não chamar tanta atenção */
+  margin-top: 5px;    /* Espaçamento do campo de cima */
+  width: 80%;        /* Ocupa toda a largura da linha */
+}

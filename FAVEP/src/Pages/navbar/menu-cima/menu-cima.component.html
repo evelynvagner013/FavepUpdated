@@ -7,12 +7,12 @@
     <a href="/parceiros">Parceiros</a>
     <a href="/contato">Contato</a>
   </nav>
-  
+
   <div *ngIf="!user">
     <i class="fas fa-user-circle user-icon"></i>
   <a (click)="abrirLoginModal()"  class="sign-in">Acessar</a>
   </div>
- 
+
   <div *ngIf="user" class="user-info">
       <span class="welcome-user">Seja bem vindo, {{ user.nome }}!</span>
       <a (click)="logout()" class="sign-in">Sair</a>
@@ -73,11 +73,26 @@
         <input type="email" name="regEmail" placeholder="Digite seu e-mail" [(ngModel)]="registerUser.email" required>
       </div>
       <div class="form-line">
-        <input type="tel" name="regTelefone" placeholder="Digite seu telefone (Ex: 11999999999)" [(ngModel)]="registerUser.telefone" required>
+        <input
+          type="tel"
+          name="regTelefone"
+          placeholder="Digite seu telefone"
+          [(ngModel)]="registerUser.telefone"
+          mask="(00) 00000-0000"
+          required>
+      </div>
+      <div class="password-requirements">
+        Mín. 8 caracteres, 1 maiúscula, 1 número e 1 caractere especial (ex: !&#64;#$).
       </div>
       <div class="form-line">
-        <input type="password" name="regPassword" placeholder="Digite sua senha" [(ngModel)]="registerUser.password" required>
+        <input 
+          type="password" 
+          name="regPassword" 
+          placeholder="Crie sua senha" 
+          [(ngModel)]="registerUser.password" 
+          required>
       </div>
+      
 
       <div class="form-line">
         <input type="password" name="regConfirmPassword" placeholder="Confirme sua senha" [(ngModel)]="registerUser.confirmarSenha" required>
