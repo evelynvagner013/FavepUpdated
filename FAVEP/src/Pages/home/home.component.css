@@ -1,0 +1,424 @@
+/* PAINEL PRINCIPAL (HERO SECTION) */
+.painel {
+    background: url("/assets/img/fundo.jpg") no-repeat center center/cover;
+    height: 60vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.painel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Overlay */
+}
+
+.overlay {
+    text-align: center;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 40px;
+    border-radius: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.overlay h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin: 0 0 10px 0;
+    font-family: 'Merriweather', serif;
+    font-weight: 500;
+}
+
+.credit {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+}
+
+.btn {
+    text-decoration: none;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    padding: 12px 25px;
+    transition: background 0.3s, color 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    border-radius: 50px;
+}
+
+.btn:hover {
+    background: #ffffff;
+    color: #212121;
+}
+
+/* CARDS DE SERVIÇOS EXPLICATIVOS */
+.services {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 60px 20px;
+    gap: 25px;
+    background-color: #f5f5f5;
+}
+
+.card {
+    background-color: #ffffff;
+    padding: 30px;
+    width: 250px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card .icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.card h3 {
+    margin: 10px 0;
+    font-size: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: #212121;
+}
+
+.card p {
+    font-size: 0.9rem;
+    color: #616161;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+    flex-grow: 1;
+}
+
+.mais {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 8px 15px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #004d40;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.mais:hover {
+    background-color: #00332b;
+    text-decoration: none;
+}
+
+/* SEÇÕES DE SERVIÇOS DETALHADOS */
+.servico, .servico1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.servico {
+    background-color: #e0f2f1;
+}
+
+.servico1 {
+    background-color: #ffffff;
+}
+
+.texto, .texto1 {
+    max-width: 500px;
+    line-height: 1.7;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+}
+
+.texto {
+    color: #616161;
+}
+
+.texto h1 {
+    color: #212121;
+    margin-bottom: 30px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 3rem);
+    text-align: left;
+}
+
+.texto1 {
+    color: #212121;
+}
+
+.texto1 h1 {
+    color: #212121;
+    margin-bottom: 30px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 3rem);
+    text-align: left;
+}
+
+.texto ul, .texto1 ul {
+    list-style: none; /* Remove o marcador padrão */
+    padding: 0;
+    margin: 0;
+}
+
+
+
+
+.imagem img {
+    max-width: 100%;
+    width: 650px;
+    height: auto;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* SEÇÃO DE PARCEIROS NA HOME */
+.parceiros-section {
+    padding: 80px 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.parceiros-home-titulo {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.parceiros-home-titulo h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: #212121;
+    margin-bottom: 10px;
+}
+
+.parceiros-home-titulo p {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.1rem;
+    color: #616161;
+}
+
+/* GRID E CARDS DE PARCEIROS */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0 -15px;
+}
+
+.col-lg-6, .col-md-12 {
+    padding: 0 15px;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.d-flex {
+    display: flex !important;
+}
+
+.partner-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e0e0e0; /* Borda mínima nos cards */
+}
+
+.partner-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.partner-card-header {
+    padding: 20px;
+    background-color: #004d40;
+    text-align: center;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.partner-logo {
+    max-height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    /* Filtro para deixar o logo branco. Remova se não precisar. */
+    filter: brightness(0) invert(1);
+}
+
+.partner-card-body {
+    padding: 30px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.partner-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: #212121;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.partner-description {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.95rem;
+    color: #616161;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.partner-contact-info,
+.partner-social-media {
+    margin-top: auto;
+    margin-bottom: 15px;
+}
+
+.partner-contact-info h4,
+.partner-social-media h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: #004d40;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.list-unstyled, .list-inline {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+}
+
+.list-inline-item {
+    display: inline-block;
+}
+
+.list-inline-item:not(:last-child) {
+    margin-right: .5rem;
+}
+
+.partner-contact-info ul li,
+.partner-social-media ul li {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #616161;
+}
+
+.partner-contact-info ul li i,
+.partner-social-media ul li i {
+    margin-right: 10px;
+    color: #ffb300;
+    width: 20px;
+    text-align: center;
+}
+
+.partner-contact-info a,
+.partner-social-media a {
+    color: #616161;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.partner-contact-info a:hover,
+.partner-social-media a:hover {
+    color: #004d40;
+    text-decoration: underline;
+}
+
+.partner-social-media .list-inline-item i {
+    font-size: 1.5rem;
+    color: #616161;
+    transition: color 0.3s ease;
+}
+
+.partner-social-media .list-inline-item a:hover i.fa-facebook-f { color: #3b5998; }
+.partner-social-media .list-inline-item a:hover i.fa-instagram { color: #e4405f; }
+.partner-social-media .list-inline-item a:hover i.fa-linkedin-in { color: #0077b5; }
+
+.ver-todos-container {
+    text-align: center;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.btn-parceiros {
+    background-color: #004d40;
+    text-decoration: none;
+    color: #ffffff;
+    padding: 12px 25px;
+    transition: background 0.3s, transform 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    border: 1px solid #004d40;
+    border-radius: 50px;
+}
+
+.btn-parceiros:hover {
+    background-color: #00332b;
+    border-color: #00332b;
+    transform: translateY(-2px);
+}
+
+/* RESPONSIVIDADE */
+@media (min-width: 992px) {
+  .col-lg-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .servico, .servico1 {
+    flex-direction: column;
+    gap: 30px;
+  }
+}

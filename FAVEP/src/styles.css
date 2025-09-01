@@ -1,0 +1,86 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ancizar+Serif:ital,wght@0,300..900;1,300..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* src/styles.css */
+
+/* Definição de Variáveis de Tema Globais */
+:root {
+  /* Tema Claro (Padrão) */
+  --bg-main: #f2f2f2;
+  --bg-card: #ffffff;
+  --bg-section-accent: #012e5ec2;
+  --bg-section-partners: #f8f9fa;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+
+  --text-primary: #555;
+  --text-headings: #000000;
+  --text-on-dark-bg: #ffffff;
+  --text-on-accent-bg: #ffffff;
+
+  --action-color: #007bff;
+  --action-color-rgb: 0, 123, 255;
+  --link-hover-color: #0056b3;
+
+  --btn-primary-bg: #0077ff;
+  --btn-secondary-bg: #2b8dca;
+  --btn-secondary-hover-bg: #34d842;
+  --btn-text-color: #ffffff;
+
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --border-color: #e9ecef;
+  --border-color-img: #2c3e50;
+
+  /* Adicionando variáveis da página de contato */
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --input-text: #495057;
+}
+
+body.dark-theme, /* Ou :root.dark-theme */
+.dark-theme {
+  /* Tema Escuro (Sobrescreve as variáveis) */
+  --bg-main: #1a202c;
+  --bg-card: #2d3748;
+  --bg-section-accent: #1e2a3a;
+  --bg-section-partners: #2d3748;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+
+  --text-primary: #a0aec0;
+  --text-headings: #e2e8f0;
+  --text-on-dark-bg: #ffffff;
+  --text-on-accent-bg: #e2e8f0;
+
+  --action-color: #38b2ac;
+  --action-color-rgb: 56, 178, 172;
+  --link-hover-color: #90cdf4;
+
+  --btn-primary-bg: #2b8dca;
+  --btn-secondary-bg: #3498db;
+  --btn-secondary-hover-bg: #28a745;
+  --btn-text-color: #1a202c;
+
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --border-color: #4a5568;
+  --border-color-img: #4a5568;
+
+  --input-bg: #1a202c;
+  --input-border: #4a5568;
+  --input-text: #e2e8f0;
+}
+
+/* Uma transição suave para a mudança de tema */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}

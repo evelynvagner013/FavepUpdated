@@ -1,0 +1,146 @@
+<header>
+  <div class="logo"><img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img">FAVEP</div>
+  <nav>
+    <a href="/home">Início</a>
+    <a href="#services">Serviços</a>
+    <a href="#assinatura">Assinaturas</a>
+    <a href="/parceiros">Parceiros</a>
+    <a href="/contato">Contato</a>
+  </nav>
+
+  <div *ngIf="!currentUserValue">
+    <i class="fas fa-user-circle user-icon"></i>
+    <a (click)="abrirLoginModal()" class="sign-in">Acessar</a>
+  </div>
+
+  <div *ngIf="currentUserValue" class="user-info">
+    <span class="welcome-user">Seja bem vindo, {{ currentUserValue.nome }}!</span>
+
+    <div class="user-menu">
+    <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
+    <div class="dropdown-menu" *ngIf="mostrarDropdown">
+      <a routerLink="/usuario">Perfil</a>
+      <a (click)="logout()" class="logout-link">Sair</a>
+    </div>
+  </div>
+  </div>
+</header>
+
+<div class="auth-modal-overlay"
+     [style.display]="(mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal) ? 'flex' : 'none'"
+     [class.active]="mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal">
+
+  <div class="auth-modal-container login-form-container" *ngIf="mostrarLoginModal">
+    <h2 class="auth-modal-title">Logar</h2>
+    <button (click)="fecharModals()" class="auth-modal-close-button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+      </svg>
+    </button>
+    <form (ngSubmit)="onLoginSubmit()" #loginNgForm="ngForm">
+      <div class="inputs">
+        <div class="inputs-container">
+          <input type="email" id="loginEmail" name="loginEmail" [(ngModel)]="loginEmail" placeholder="Insira seu e-mail" required />
+        </div>
+        <div class="inputs-container password-container">
+        <input
+          [type]="loginPasswordVisible ? 'text' : 'password'"
+          id="loginPassword"
+          name="loginPassword"
+          [(ngModel)]="loginPassword"
+          placeholder="Insira sua senha"
+          required
+        />
+        <i
+          class="password-toggle-icon"
+          [ngClass]="loginPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
+          (click)="toggleLoginPasswordVisibility()"
+        ></i>
+      </div>
+      </div>
+      <div class="botões">
+        <div class="lembre-me">
+          <div class="checkbox">
+            <input  type="checkbox" name="loginCheck" id="loginCheck">
+            <label for="loginCheck">Lembre-me</label>
+          </div>
+        </div>
+        <a class="senha" (click)="abrirForgotPasswordModal()">Esqueceu a senha?</a>
+      </div>
+      <div class="auth-actions">
+        <a (click)="abrirRegisterModal()" class="auth-link">Não tem conta? Cadastrar-se</a>
+      </div>
+      <div class="confirmarBotao">
+        <input class="confirmar" type="submit" value="Confirmar" />
+      </div>
+      <div class="message error" *ngIf="loginErrorMessage">{{ loginErrorMessage }}</div>
+    </form>
+  </div>
+
+  <div class="auth-modal-container registration-form-container" *ngIf="mostrarRegisterModal">
+    <button (click)="fecharModals()" class="auth-modal-close-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+    <div class="registration-header">
+      <h2 class="auth-modal-title">Registre-se</h2>
+    </div>
+    <form (ngSubmit)="onRegisterSubmit()" #registerNgForm="ngForm" class="registration-actual-form">
+      <div class="form-line">
+        <input type="text" name="regUsername" placeholder="Digite seu nome" [(ngModel)]="registerUser.username" required>
+      </div>
+      <div class="form-line">
+        <input type="email" name="regEmail" placeholder="Digite seu e-mail" [(ngModel)]="registerUser.email" required>
+      </div>
+      <div class="form-line">
+        <input
+          type="tel"
+          name="regTelefone"
+          placeholder="Digite seu telefone"
+          [(ngModel)]="registerUser.telefone"
+          mask="(00) 00000-0000"
+          required>
+      </div>
+
+      <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px;">
+        <strong>Atenção:</strong> Confira seu e-mail para definir a senha e acesar nosso site.<br>
+        <strong>Atenção:</strong> Use um e-mail real ao qual você tenha acesso.
+      </div>
+
+      <div class="auth-actions">
+        <a (click)="abrirLoginModal()" class="auth-link">Já tem uma conta? Entrar</a>
+      </div>
+      <button type="submit" class="register-submit-button">Cadastrar</button>
+      <div class="message success" *ngIf="registerSuccessMessage">{{ registerSuccessMessage }}</div>
+      <div class="message error" *ngIf="registerErrorMessage">{{ registerErrorMessage }}</div>
+    </form>
+  </div>
+
+  <div class="auth-modal-container forgot-password-form-container" *ngIf="mostrarForgotPasswordModal">
+    <h2 class="auth-modal-title">Recuperar Senha</h2>
+    <button (click)="fecharModals()" class="auth-modal-close-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+    <form (ngSubmit)="onForgotPasswordSubmit()" #forgotPasswordNgForm="ngForm">
+        <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px;">
+          <strong>Atenção:</strong> Insira seu e-mail para enviarmos um link de redefinição de senha.<br>
+        </div>
+        <div class="inputs">
+            <div class="inputs-container">
+                <input type="email" id="forgotPasswordEmail" name="forgotPasswordEmail" [(ngModel)]="forgotPasswordEmail" placeholder="Insira seu e-mail de cadastro" required />
+            </div>
+        </div>
+        <div class="auth-actions">
+            <a (click)="abrirLoginModal()" class="auth-link">Lembrou a senha? Voltar para o Login</a>
+        </div>
+        <div class="confirmarBotao">
+            <input class="confirmar" type="submit" value="Enviar Link" />
+        </div>
+        <div class="message success" *ngIf="forgotPasswordSuccessMessage">{{ forgotPasswordSuccessMessage }}</div>
+        <div class="message error" *ngIf="forgotPasswordErrorMessage">{{ forgotPasswordErrorMessage }}</div>
+    </form>
+  </div>
+</div>

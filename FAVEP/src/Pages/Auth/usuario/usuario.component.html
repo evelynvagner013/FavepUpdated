@@ -1,0 +1,127 @@
+<div class="dashboard-container">
+        <header class="dashboard-header">
+            <button class="menu-toggle" (click)="alternarMenu()" aria-label="Abrir menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>
+                <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agronômica
+            </h1>
+            <div class="user-info">
+                <span>Olá, {{ usuarioNome }}</span>
+                <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
+            </div>
+        </header>
+
+        <nav class="main-menu" [class.open]="menuAberto">
+            <a routerLink="/home" routerLinkActive="active">
+                <span class="material-symbols-outlined">home</span> Home
+            </a>
+            <a routerLink="/gerenciamento" routerLinkActive="active">
+                <span class="material-symbols-outlined">dashboard</span> Gerenciamento
+            </a>
+            <a routerLink="/estatistica" routerLinkActive="active">
+                <span class="material-symbols-outlined">monitoring</span> Estatística
+            </a>
+            <a routerLink="/relatorio" routerLinkActive="active">
+                <span class="material-symbols-outlined">overview</span> Relatório geral
+            </a>
+            <a routerLink="/usuario" routerLinkActive="active">
+                <span class="material-symbols-outlined">account_circle</span> Configuração
+            </a>
+        </nav>
+
+        <main class="main-content-perfil" *ngIf="usuario">
+            <div class="container-perfil">
+                <div class="profile-section">
+                    <div class="general-info card-perfil">
+                        <div class="card-header">
+                            <h2>Geral</h2>
+                            <button class="edit-main-btn" (click)="abrirModalEdicao()" title="Editar Perfil">
+                                <i class="fas fa-pencil-alt"></i> Editar
+                            </button>
+                        </div>
+                        <div class="profile-details">
+                            <div class="profile-photo">
+                                <img [src]="usuario.fotoperfil || 'assets/img/usuario.jpg'" [alt]="'Foto de ' + usuario.nome">
+                            </div>
+                            <div class="info-list">
+                                <p><strong>Nome:</strong> <span>{{ usuario.nome }}</span></p>
+                                <p><strong>Email:</strong> <span>{{ usuario.email }}</span></p>
+                                <p *ngIf="usuario.telefone">
+                                    <strong>Telefone:</strong>
+                                    <span>{{ usuario.telefone | mask: '(00) 00000-0000' }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-box card-perfil">
+                        <h2>Ainda precisa de ajuda?<br>Nos procure!</h2>
+                        <p><strong>Telefone:</strong> (60) 305-240-9671</p>
+                        <div>
+                            <button type="button" class="chat-btn" (click)="navegarParaContato()">CONTATE-NOS</button>
+                        </div>
+                    </div>
+
+                    <div class="subscription-section card-perfil">
+                        <div class="card-header">
+                            <h2>Plano de Assinatura</h2>
+                        </div>
+                        <div class="subscription-details">
+                            <p>Seu plano atual é:</p>
+                            <button class="change-plan-btn" routerLink="/home"> <i class="fas fa-exchange-alt"></i> Trocar de Plano
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="modal-overlay" [class.active]="editModalAberto" *ngIf="editModalAberto">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Editar Perfil</h3>
+                    <button class="close-btn" (click)="fecharModalEdicao()" aria-label="Fechar modal">&times;</button>
+                </div>
+                <form (ngSubmit)="salvarAlteracoesPerfil()" #perfilForm="ngForm">
+                    <div class="modal-body">
+
+                        <div class="profile-photo-preview-container">
+                            <img [src]="usuarioEditavel.fotoperfil || 'assets/img/usuario.jpg'" alt="Pré-visualização da foto" class="profile-photo-preview">
+                        </div>
+
+                        <div class="form-group file-upload-group">
+                            <label for="file-upload" class="file-upload-label">
+                                <i class="fas fa-upload"></i> Escolher Nova Foto
+                            </label>
+                            <input id="file-upload" type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-nome">Nome:</label>
+                            <input type="text" id="edit-nome" name="nome" [(ngModel)]="usuarioEditavel.nome" required #nomeInput="ngModel">
+                            <div *ngIf="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)" class="validation-error">
+                                <small *ngIf="nomeInput.errors?.['required']">Nome é obrigatório.</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email:</label>
+                            <input type="email" id="edit-email" name="email" [(ngModel)]="usuarioEditavel.email" required email #emailInput="ngModel">
+                            <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="validation-error">
+                                <small *ngIf="emailInput.errors?.['required']">Email é obrigatório.</small>
+                                <small *ngIf="emailInput.errors?.['email']">Formato de email inválido.</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-telefone">Telefone:</label>
+                            <input type="tel" id="edit-telefone" name="telefone" [(ngModel)]="usuarioEditavel.telefone" mask="(00) 00000-0000">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" (click)="fecharModalEdicao()">Cancelar</button>
+                        <button type="submit" class="btn-save" [disabled]="!perfilForm.form.valid">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

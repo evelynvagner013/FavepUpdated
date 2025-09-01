@@ -1,0 +1,172 @@
+/* SEÇÃO HERO/BANNER */
+.parceiros-hero {
+  background: url("/assets/img/fundo.jpg") no-repeat center center/cover;
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
+
+.parceiros-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.parceiros-hero-content {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  padding: 30px 20px;
+}
+
+.parceiros-hero h1 {
+  font-family: 'Merriweather', serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 0.5em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.parceiros-hero p {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* SEÇÃO DE CARDS DE PARCEIROS */
+.parceiros-section {
+  padding: 60px 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 -15px;
+}
+
+.col-lg-4, .col-md-6, .col-sm-12 {
+  padding: 0 15px;
+  margin-bottom: 30px;
+}
+
+.partner-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.partner-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.partner-card-header {
+  padding: 20px;
+  text-align: center;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #004d40;
+}
+
+.partner-loading-icon {
+  font-size: 5rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.partner-card-body {
+  padding: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.partner-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #212121;
+  margin-bottom: 1rem;
+}
+
+.partner-description {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.95rem;
+  color: #616161;
+  line-height: 1.7;
+  margin-bottom: 25px;
+  flex-grow: 1;
+}
+
+.partner-contact-info h4 {
+  display: none;
+}
+
+.list-unstyled {
+  list-style: none;
+  padding-left: 0;
+  margin-top: auto;
+}
+
+.partner-contact-info li {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: #616161;
+}
+
+.partner-contact-info li i {
+  color: #ffb300;
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+.partner-contact-info a {
+  color: #616161;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.partner-contact-info a:hover {
+  color: #004d40;
+}
+
+/* RESPONSIVIDADE */
+@media (min-width: 992px) {
+  .col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .col-sm-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
