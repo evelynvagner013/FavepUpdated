@@ -1,1 +1,12 @@
+<div class="acessibilidade-container">
+  <button class="acessibilidade-icon-button" (click)="toggleAccessibilityOptions()">
+    A
+  </button>
+  
+  <div class="acessibilidade-buttons" *ngIf="showAccessibilityOptions">
+    <button (click)="aumentarFonte()">A+</button>
+    <button (click)="diminuirFonte()">A-</button>
+  </div>
+</div>
+
 <router-outlet></router-outlet>
