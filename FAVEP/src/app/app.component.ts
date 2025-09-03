@@ -1,23 +1,23 @@
 import { Component } from '@angular/core'; 
 import { RouterOutlet } from '@angular/router';
 import { VLibrasService } from '../services/vlibras.service';
+import { VoiceAssistantComponent } from '../Pages/voice-assistant/voice-assistant.component';
 import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-     CommonModule 
-  ],
+  imports: [CommonModule, RouterOutlet, VoiceAssistantComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent { 
    showAccessibilityOptions: boolean = false;
 
-  constructor(private vlibras: VLibrasService) {}
+    constructor(
+    private vlibras: VLibrasService
+  ) {}
 
   ngOnInit() {
     this.vlibras.initVLibras();

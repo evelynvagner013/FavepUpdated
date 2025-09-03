@@ -1,0 +1,15 @@
+<div *ngIf="statusMessage" class="status-text">
+  {{ statusMessage }}
+</div>
+
+<button
+  class="voice-assistant-fab"
+  [class.listening]="status === 'listening'"
+  (click)="toggleListen()"
+  [title]="getButtonTitle()">  <ng-container [ngSwitch]="status">
+    <i *ngSwitchCase="'speaking'" class="fas fa-stop"></i>
+    
+    <i *ngSwitchDefault class="fas fa-microphone"></i>
+  </ng-container>
+
+</button>
