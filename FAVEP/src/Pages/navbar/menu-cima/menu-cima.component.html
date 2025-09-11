@@ -19,7 +19,7 @@
     <div class="user-menu">
     <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
     <div class="dropdown-menu" *ngIf="mostrarDropdown">
-      <a routerLink="/usuario">Perfil</a>
+      <a (click)="abrirModalPerfil()">Perfil</a>
       <a (click)="logout()" class="logout-link">Sair</a>
     </div>
   </div>
@@ -143,4 +143,52 @@
         <div class="message error" *ngIf="forgotPasswordErrorMessage">{{ forgotPasswordErrorMessage }}</div>
     </form>
   </div>
+</div>
+
+<div class="modal-overlay" [class.active]="mostrarPerfilModal" *ngIf="mostrarPerfilModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Perfil</h3>
+            <button class="close-btn" (click)="fecharModalPerfil()" aria-label="Fechar modal">&times;</button>
+        </div>
+        <form (ngSubmit)="salvarAlteracoesPerfil()" #perfilForm="ngForm">
+            <div class="modal-body">
+
+                <div class="profile-photo-preview-container">
+                    <img [src]="usuarioEditavel.fotoperfil || 'assets/img/usuario.jpg'" alt="Pré-visualização da foto" class="profile-photo-preview">
+                </div>
+
+                <div class="form-group file-upload-group">
+                    <label for="file-upload" class="file-upload-label">
+                        <i class="fas fa-upload"></i> Escolher Nova Foto
+                    </label>
+                    <input id="file-upload" type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-nome">Nome:</label>
+                    <input type="text" id="edit-nome" name="nome" [(ngModel)]="usuarioEditavel.nome" required #nomeInput="ngModel">
+                    <div *ngIf="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)" class="validation-error">
+                        <small *ngIf="nomeInput.errors?.['required']">Nome é obrigatório.</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email:</label>
+                    <input type="email" id="edit-email" name="email" [(ngModel)]="usuarioEditavel.email" required email #emailInput="ngModel">
+                    <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="validation-error">
+                        <small *ngIf="emailInput.errors?.['required']">Email é obrigatório.</small>
+                        <small *ngIf="emailInput.errors?.['email']">Formato de email inválido.</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-telefone">Telefone:</label>
+                    <input type="tel" id="edit-telefone" name="telefone" [(ngModel)]="usuarioEditavel.telefone" mask="(00) 00000-0000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" (click)="fecharModalPerfil()">Cancelar</button>
+                <button type="submit" class="btn-save" [disabled]="!perfilForm.form.valid">Salvar</button>
+            </div>
+        </form>
+    </div>
 </div>

@@ -29,5 +29,5 @@ export const routes: Routes = [
     { path: 'estatistica', component: EstatisticaComponent, canActivate: [AuthGuard] },
     { path: 'relatorio', component: RelatorioComponent, canActivate: [AuthGuard] },
     { path: 'gerenciamento', component: GerenciamentoComponent, canActivate: [AuthGuard] },
-    { path: 'usuario', component: UsuarioComponent, canActivate: [AuthGuard] },
+    { path: 'usuario', component: UsuarioComponent, canActivate: [AuthGuard] }
 ];

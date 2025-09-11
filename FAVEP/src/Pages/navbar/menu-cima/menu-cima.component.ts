@@ -1,16 +1,18 @@
 import { Component, OnInit, OnDestroy, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Usuario } from '../../../models/api.models';
-import { NgxMaskDirective } from 'ngx-mask';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
+import { UsuarioService } from '../../../services/usuario.service';
 
 @Component({
   selector: 'app-menu-cima',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgxMaskDirective],
+  imports: [CommonModule, FormsModule, RouterLink, NgxMaskDirective, NgxMaskPipe],
+  providers: [DatePipe],
   templateUrl: './menu-cima.component.html',
   styleUrls: ['./menu-cima.component.css']
 })
@@ -19,15 +21,15 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   mostrarLoginModal = false;
   mostrarRegisterModal = false;
   mostrarForgotPasswordModal = false;
+  mostrarPerfilModal = false;
 
   // Propriedades para o formulário de Login
   loginEmail: string = '';
   loginPassword: string = '';
   loginRememberMe: boolean = false;
   loginErrorMessage: string = '';
-  loginPasswordVisible: boolean = false; 
+  loginPasswordVisible: boolean = false;
 
-  // --- CORREÇÃO APLICADA AQUI ---
   // Removido 'password' e 'confirmarSenha' do objeto inicial
   registerUser: any = { username: '', email: '', telefone: '' };
   registerSuccessMessage: string = '';
@@ -45,8 +47,12 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   // Propriedade para controlar o dropdown
   mostrarDropdown = false;
 
+  // Propriedades para o modal de perfil
+  usuarioEditavel: Partial<Usuario> = {};
+
   constructor(
     public apiService: AuthService,
+    private usuarioService: UsuarioService,
     private router: Router,
     private eRef: ElementRef,
     private cdr: ChangeDetectorRef
@@ -105,8 +111,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   abrirRegisterModal() {
     this.fecharModals();
     this.mostrarRegisterModal = true;
-    // --- CORREÇÃO APLICADA AQUI ---
-    // Resetando o objeto sem os campos de senha
     this.registerUser = { username: '', email: '', telefone: '' };
     this.registerSuccessMessage = '';
     this.registerErrorMessage = '';
@@ -124,6 +128,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.mostrarLoginModal = false;
     this.mostrarRegisterModal = false;
     this.mostrarForgotPasswordModal = false;
+    this.mostrarPerfilModal = false;
   }
 
   // --- Métodos de Submissão dos Formulários ---
@@ -147,17 +152,13 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   }
 
   onRegisterSubmit() {
-    // --- CORREÇÃO APLICADA AQUI ---
-    // 1. Validação de campos obrigatórios (sem senha)
     if (!this.registerUser.username || !this.registerUser.email || !this.registerUser.telefone) {
       this.registerErrorMessage = 'Nome, e-mail e telefone são obrigatórios.';
       return;
     }
 
-    // Limpa a mensagem de erro se a validação passar
     this.registerErrorMessage = '';
 
-    // 2. Mapeia os campos para o formato que o back-end espera (sem senha)
     const payload = {
       nome: this.registerUser.username,
       email: this.registerUser.email,
@@ -166,10 +167,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
     this.apiService.register(payload).subscribe({
       next: (response) => {
-        // --- ATUALIZAÇÃO ---
-        // Exibe a mensagem de sucesso que vem do backend
         this.registerSuccessMessage = response.message || 'Cadastro realizado! Verifique seu e-mail para continuar.';
-        // Fecha o modal de registro após um tempo para o usuário ler a mensagem
         setTimeout(() => {
             this.fecharModals();
         }, 3000);
@@ -196,6 +194,60 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Erro ao enviar link de recuperação', error);
         this.forgotPasswordSuccessMessage = 'Se o e-mail estiver cadastrado, um link de recuperação foi enviado.';
+      }
+    });
+  }
+
+  // --- Métodos para o Modal de Perfil ---
+  abrirModalPerfil(): void {
+    if (this.currentUserValue) {
+      this.usuarioEditavel = { ...this.currentUserValue };
+      this.mostrarPerfilModal = true;
+    }
+  }
+
+  fecharModalPerfil(): void {
+    this.mostrarPerfilModal = false;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        this.usuarioEditavel.fotoperfil = e.target?.result as string;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+
+  salvarAlteracoesPerfil(): void {
+    if (!this.currentUserValue) {
+        console.error('Usuário não está logado para atualização.');
+        return;
+    }
+
+    const payload = {
+      nome: this.usuarioEditavel.nome,
+      email: this.usuarioEditavel.email,
+      telefone: this.usuarioEditavel.telefone,
+      fotoperfil: this.usuarioEditavel.fotoperfil
+    };
+
+    this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
+      next: (response: any) => {
+        console.log('Perfil atualizado com sucesso:', response);
+        this.apiService.setUser(response.user);
+        this.fecharModalPerfil();
+        alert('Perfil atualizado com sucesso!');
+      },
+      error: (err) => {
+        console.error('Erro ao salvar alterações no perfil:', err);
+        const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
+        alert(errorMessage);
       }
     });
   }
