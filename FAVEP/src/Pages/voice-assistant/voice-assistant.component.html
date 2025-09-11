@@ -1,15 +1,61 @@
-<div *ngIf="statusMessage" class="status-text">
-  {{ statusMessage }}
+<div>
+  <div class="chat-widget" #chatWidget [class.open]="isChatOpen">
+    <header class="chat-header" (mousedown)="onDragStart($event)" (touchstart)="onDragStart($event)">
+      <div class="header-content">
+        <img src="assets/img/Sementinha.png" alt="Logo FAVEP" class="header-logo">
+        <div class="header-text">
+          <h3>Sementinha</h3>
+          <p [ngSwitch]="status">
+            <span *ngSwitchCase="'listening'">Ouvindo...</span>
+            <span *ngSwitchCase="'processing'">Processando...</span>
+            <span *ngSwitchCase="'speaking'">Falando...</span>
+            <span *ngSwitchDefault>Sua assistente virtual</span>
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button 
+          class="header-btn" 
+          (click)="handleHeaderClick($event, 'readAloud')"
+          [ngClass]="{ 'active': readAloudEnabled }"
+          aria-label="Ativar leitura em voz alta"
+          title="Ativar/Desativar leitura das respostas">
+          <i class="fas" [ngClass]="readAloudEnabled ? 'fa-volume-up' : 'fa-volume-mute'"></i>
+        </button>
+        <button class="header-btn close-chat-btn" (click)="handleHeaderClick($event, 'close')" aria-label="Fechar chat">&times;</button>
+      </div>
+    </header>
+
+    <main class="chat-body" #chatBody>
+      <div *ngFor="let message of messages" class="message-wrapper" [ngClass]="{'user-message-wrapper': message.sender === 'user', 'agent-message-wrapper': message.sender === 'agent'}">
+        <div class="message-bubble">
+          <p>{{ message.text }}</p>
+        </div>
+      </div>
+      <div *ngIf="status === 'processing'" class="message-wrapper agent-message-wrapper">
+        <div class="message-bubble typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="chat-footer">
+      <form (ngSubmit)="sendTextMessage()" class="chat-input-form">
+        <input type="text" [(ngModel)]="currentMessage" name="currentMessage" placeholder="Digite sua pergunta..." aria-label="Campo de texto para pergunta">
+        <button *ngIf="!currentMessage" type="button" class="mic-btn" (click)="toggleListen()" [ngClass]="{ 'listening': status === 'listening' }" aria-label="Enviar mensagem por voz">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button *ngIf="currentMessage" type="submit" class="send-btn" [disabled]="!currentMessage.trim()" aria-label="Enviar mensagem">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <button
+    class="voice-assistant-fab"
+    (click)="toggleChat()"
+    [title]="isChatOpen ? 'Fechar Chat' : 'Abrir Chat com a Assistente'">
+    <i class="fas" [ngClass]="isChatOpen ? 'fa-times' : 'fa-comment-dots'"></i>
+  </button>
 </div>
-
-<button
-  class="voice-assistant-fab"
-  [class.listening]="status === 'listening'"
-  (click)="toggleListen()"
-  [title]="getButtonTitle()">  <ng-container [ngSwitch]="status">
-    <i *ngSwitchCase="'speaking'" class="fas fa-stop"></i>
-    
-    <i *ngSwitchDefault class="fas fa-microphone"></i>
-  </ng-container>
-
-</button>

@@ -7,6 +7,12 @@ export interface AgentResponse {
   response: string;
 }
 
+// Interface para o formato do histórico
+export interface GeminiMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,8 +24,9 @@ export class AgentService {
   /**
    * Envia uma pergunta para a API do agente e retorna a resposta.
    * @param question A pergunta do usuário em formato de texto.
+   * @param history O histórico da conversa no formato da API Gemini.
    */
-  askQuestion(question: string): Observable<AgentResponse> {
-    return this.http.post<AgentResponse>(`${this.apiUrl}/chat`, { question });
+  askQuestion(question: string, history: GeminiMessage[]): Observable<AgentResponse> {
+    return this.http.post<AgentResponse>(`${this.apiUrl}/chat`, { question, history });
   }
 }

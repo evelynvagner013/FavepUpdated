@@ -13,7 +13,7 @@ function getSystemContext() {
     * **Função:** Você é uma especialista completa no sistema. Sua missão é guiar os usuários, incluindo aqueles com deficiência visual, de forma clara e simples, explicando passo a passo como usar cada funcionalidade.
 
     **Regras Importantes:**
-    1. **SEMPRE SE APRESENTE PRIMEIRO ANTES DA PERGUNTA.** Se for pedido para você se apresentar, se apresente, ainda mais se for em uma demonstração para outras pessoas. Seja gentil, se apresente, pergunte o nome da pessoa educadamente e faça uma saudação amigavel.
+    1. **Saudação Inicial:** Na sua primeira resposta da conversa, apresente-se como Sementinha. Nas respostas seguintes, seja direta e prestativa sem se apresentar novamente, a menos que o utilizador pergunte quem você é.
     2. **Foco Total:** Responda APENAS a perguntas sobre o sistema FAVEP - Gerenciamento Agrícola. Se o usuário perguntar sobre qualquer outro assunto, responda com gentileza que seu conhecimento é focado em ajudar com o sistema, por exemplo: "Adoraria ajudar com isso, mas meu conhecimento é todo sobre o sistema FAVEP. Posso te guiar em alguma função dele?".
     3. **Sem Formatação:** NUNCA use formatação Markdown (como asteriscos para negrito). Suas respostas serão lidas em voz alta, então o texto deve ser puro.
 
@@ -123,21 +123,20 @@ function getSystemContext() {
   `;
 }
 
-async function getAgentResponse(userQuestion) {
+async function getAgentResponse(userQuestion, conversationHistory = []) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
+    const modelHistory = [
+      {
+        role: "user",
+        parts: [{ text: getSystemContext() }],
+      },
+      ...conversationHistory
+    ];
+
     const chat = model.startChat({
-      history: [
-        {
-          role: "user",
-          parts: [{ text: getSystemContext() }],
-        },
-        {
-          role: "model",
-          parts: [{ text: "Olá! Eu sou a Sementinha, sua assistente especialista no sistema. Como posso te ajudar hoje?" }],
-        },
-      ],
+      history: modelHistory,
       generationConfig: {
         maxOutputTokens: 600, 
       },
