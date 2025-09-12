@@ -1,14 +1,26 @@
-
-
-
-<div class="acessibilidade-container">
-  <button class="acessibilidade-icon-button" (click)="toggleAccessibilityOptions()">
+<div class="chat-acessibilidade-container">
+  <button class="chat-acessibilidade-icon" (click)="toggleAccessibilityOptions()">
     A
   </button>
   
-  <div class="acessibilidade-buttons" *ngIf="showAccessibilityOptions">
-    <button (click)="aumentarFonte()">A+</button>
-    <button (click)="diminuirFonte()">A-</button>
+  <div class="chat-box" *ngIf="showAccessibilityOptions">
+    <div class="chat-header">
+      <span>Opções de Acessibilidade</span>
+      <button class="chat-close-btn" (click)="toggleAccessibilityOptions()">X</button>
+    </div>
+    <div class="chat-body">
+      <p>Tamanho da Fonte:</p>
+      <div class="font-buttons">
+        <button (click)="diminuirFonte()">A-</button>
+        <button (click)="aumentarFonte()">A+</button>
+      </div>
+      
+      <p>Esquema de Cores:</p>
+      <div class="color-buttons">
+        <button (click)="toggleHighContrast()">Alto Contraste</button>
+        <button (click)="toggleDarkMode()">Modo Escuro</button>
+      </div>
+    </div>
   </div>
 </div>
 

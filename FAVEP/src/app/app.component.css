@@ -1,45 +1,113 @@
-/* src/app/app.component.css */
-
-
-.acessibilidade-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+/* Container principal do chat */
+.chat-acessibilidade-container {
+  position: fixed; 
+  bottom: 230px;   /* posição fixa perto do VLibras */
+  right: 10px;    
+  z-index: 1000;   
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse; /* faz o chat abrir acima do botão */
   align-items: flex-end;
 }
 
-.acessibilidade-icon-button {
-  background-color: #f0f0f0;
+/* Estilo do botão que abre o chat */
+.chat-acessibilidade-icon {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 30%; 
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo do quadrado flutuante (o "chat") */
+.chat-box {
+  background-color: white;
   border: 1px solid #ccc;
-  border-radius: 50%; /* Faz com que o botão seja um círculo */
-  width: 50px;
-  height: 50px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  margin-bottom: 10px; /* abre acima do botão */
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  font-size: 24px; /* Aumenta o tamanho da letra 'A' */
-  font-weight: bold; /* Deixa a letra 'A' em negrito */
-  color: #333; /* Cor da letra 'A' */
 }
 
-.acessibilidade-buttons {
-  margin-top: 10px;
-  display: flex;
-  gap: 5px;
-  /* Adicione uma transição para a animação de aparecimento */
-  transition: opacity 0.3s ease-in-out;
-  opacity: 1;
-}
-
-.acessibilidade-buttons button {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  padding: 5px 10px;
-  cursor: pointer;
+.chat-header span {
   font-weight: bold;
+}
+
+.chat-close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chat-body {
+  padding: 15px;
+}
+
+.font-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.font-buttons button {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.color-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.color-buttons button {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* Estilos para os modos de acessibilidade de cor */
+body.high-contrast {
+  background-color: black !important;
+  color: yellow !important;
+}
+
+body.high-contrast h1, 
+body.high-contrast h2, 
+body.high-contrast h3 {
+  color: white !important;
+}
+
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-mode a {
+  color: #8ab4f8 !important;
+}
+
+body.dark-mode button {
+  background-color: #333 !important;
+  color: #e0e0e0 !important;
+  border-color: #555 !important;
 }

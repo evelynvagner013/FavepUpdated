@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent { 
    showAccessibilityOptions: boolean = false;
+   isHighContrast: boolean = false;
+   isDarkMode: boolean = false;
 
     constructor(
     private vlibras: VLibrasService
@@ -21,8 +23,8 @@ export class AppComponent {
 
   ngOnInit() {
     this.vlibras.initVLibras();
-}
- private readonly maxFontSize = 1.4; // 140%
+  }
+  private readonly maxFontSize = 1.4; // 140%
   private readonly minFontSize = 0.8; // 80%
   private readonly step = 0.1; // 10%
 
@@ -37,6 +39,33 @@ export class AppComponent {
     let currentFontSize = parseFloat(document.documentElement.style.fontSize || '1');
     if (currentFontSize > this.minFontSize) {
       document.documentElement.style.fontSize = `${currentFontSize - this.step}rem`;
+    }
+  }
+
+  toggleHighContrast() {
+    this.isHighContrast = !this.isHighContrast;
+    if (this.isHighContrast) {
+      this.isDarkMode = false;
+    }
+    this.applyColorModeClasses();
+  }
+
+  toggleDarkMode() {
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      this.isHighContrast = false;
+    }
+    this.applyColorModeClasses();
+  }
+  
+  private applyColorModeClasses() {
+    const body = document.body;
+    body.classList.remove('high-contrast', 'dark-theme');
+    if (this.isHighContrast) {
+      body.classList.add('high-contrast');
+    }
+    if (this.isDarkMode) {
+      body.classList.add('dark-theme');
     }
   }
 
