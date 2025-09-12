@@ -31,56 +31,57 @@
   </nav>
 
   <main class="main-content">
-    <nav class="main-nav">
-      <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
-        <i class="fas fa-map-marked"></i> Propriedades
-      </button>
-      <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
-        <i class="fas fa-wheat-awn"></i> Produção
-      </button>
-      <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
-        <i class="fas fa-money-bill-wave"></i> Financeiro
-      </button>
-    </nav>
+    <div class="content-header">
+      <nav class="main-nav">
+        <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
+          <i class="fas fa-map-marked"></i> Propriedades
+        </button>
+        <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
+          <i class="fas fa-wheat-awn"></i> Produção
+        </button>
+        <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
+          <i class="fas fa-money-bill-wave"></i> Financeiro
+        </button>
+      </nav>
 
-    <div class="toolbar">
-      <div class="filtros">
-        <div class="filtro-group" *ngIf="abaAtiva === 'producao' || abaAtiva === 'financeiro'">
-          <label for="filtro-propriedade">Filtrar por Propriedade:</label>
-          <select id="filtro-propriedade" [(ngModel)]="filtroPropriedade" (change)="aplicarFiltros()" name="filtroPropriedade">
-            <option *ngFor="let opcao of opcoesFiltroPropriedade" [value]="opcao.valor">{{opcao.texto}}</option>
-          </select>
+      <div class="toolbar">
+        <div class="filtros">
+          <div class="filtro-group" *ngIf="abaAtiva === 'producao' || abaAtiva === 'financeiro'">
+            <label for="filtro-propriedade">Filtrar por Propriedade:</label>
+            <select id="filtro-propriedade" [(ngModel)]="filtroPropriedade" (change)="aplicarFiltros()" name="filtroPropriedade">
+              <option *ngFor="let opcao of opcoesFiltroPropriedade" [value]="opcao.valor">{{opcao.texto}}</option>
+            </select>
+          </div>
+
+          <div class="filtro-group" *ngIf="abaAtiva === 'producao'">
+            <label for="filtro-tipo">Filtrar por Cultura:</label>
+            <select id="filtro-tipo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
+              <option *ngFor="let opcao of opcoesFiltro" [value]="opcao.valor">{{opcao.texto}}</option>
+            </select>
+          </div>
+
+          <div class="filtro-group" *ngIf="abaAtiva === 'financeiro'">
+            <label for="filtro-periodo">Período:</label>
+            <select id="filtro-periodo" [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+              <option value="180">Últimos 6 meses</option>
+              <option value="365">Último ano</option>
+              <option value="todos">Todos</option>
+            </select>
+          </div>
+
+          <div class="search-group" *ngIf="abaAtiva === 'propriedades'">
+            <input type="text" placeholder="Pesquisar por nome ou localização..." [(ngModel)]="termoBusca" (input)="aplicarFiltros()" name="termoBusca">
+            <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
+          </div>
         </div>
 
-        <div class="filtro-group" *ngIf="abaAtiva === 'producao'">
-          <label for="filtro-tipo">Filtrar por Cultura:</label>
-          <select id="filtro-tipo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
-            <option *ngFor="let opcao of opcoesFiltro" [value]="opcao.valor">{{opcao.texto}}</option>
-          </select>
-        </div>
-
-        <div class="filtro-group" *ngIf="abaAtiva === 'financeiro'">
-          <label for="filtro-periodo">Período:</label>
-          <select id="filtro-periodo" [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
-            <option value="30">Últimos 30 dias</option>
-            <option value="90">Últimos 90 dias</option>
-            <option value="180">Últimos 6 meses</option>
-            <option value="365">Último ano</option>
-            <option value="todos">Todos</option>
-          </select>
-        </div>
-
-        <div class="search-group" *ngIf="abaAtiva === 'propriedades'">
-          <input type="text" placeholder="Pesquisar por nome ou localização..." [(ngModel)]="termoBusca" (input)="aplicarFiltros()" name="termoBusca">
-          <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
-        </div>
+        <button class="btn-add" (click)="abrirModalAdicionar()">
+          <i class="fas fa-plus"></i> Adicionar
+        </button>
       </div>
-
-      <button class="btn-add" (click)="abrirModalAdicionar()">
-        <i class="fas fa-plus"></i> Adicionar
-      </button>
     </div>
-
     <section *ngIf="abaAtiva === 'propriedades'" class="content-section">
       <div class="summary-cards">
         <div class="summary-card">

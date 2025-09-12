@@ -1,3 +1,10 @@
+/* Adicione esta nova classe ao seu voice-assistant.component.css */
+
+.mic-btn.waiting {
+  background-color: #ffc107; /* Um amarelo para indicar atenção */
+  animation: pulse-mic 2s infinite; /* Reutiliza a animação existente */
+}
+
 /* Janela do Chat - Agora com posicionamento fixo independente */
 .chat-widget {
   position: fixed; /* Essencial para o arraste */

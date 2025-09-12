@@ -26,10 +26,11 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   @ViewChild('chatBody') private chatBody!: ElementRef;
 
   // --- Controle de Estado ---
-  status: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' = 'idle';
+  status: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' | 'waiting' = 'idle';
   isChatOpen = false;
   isSupported: boolean = false;
   readAloudEnabled = false;
+  conversationModeActive = false; // Novo: controla o modo de conversação contínua
   private isBrowser: boolean;
 
   // --- Mensagens e Conversa ---
@@ -164,7 +165,9 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   
   toggleChat(): void {
     this.isChatOpen = !this.isChatOpen;
-    if (!this.isChatOpen && this.status === 'listening') { this.stopListening(); }
+    if (!this.isChatOpen) {
+      this.stopConversationMode();
+    }
     if (this.isChatOpen && this.messages.length === 0) {
       this.messages.push({ sender: 'agent', text: 'Olá! Sou a Sementinha. Como posso te ajudar hoje?' });
       this.autoScrollToBottom();
@@ -200,12 +203,9 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     this.agentService.askQuestion(question, []).subscribe({
       next: (response) => {
         const fullResponse = response.response;
-        
         const sentences = fullResponse.match(/[^.!?]+[.!?]*/g) || [fullResponse];
-
         this.displaySentencesSequentially(sentences);
-
-        if (this.readAloudEnabled) {
+        if (this.readAloudEnabled || this.conversationModeActive) {
           this.speak(fullResponse);
         }
       },
@@ -214,19 +214,25 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
         this.messages.push({ sender: 'agent', text: errorMessage });
         this.autoScrollToBottom();
         this.setStatus('idle');
+        if (this.conversationModeActive) {
+          setTimeout(() => this.startListening(), 1000);
+        }
       }
     });
   }
   
   private displaySentencesSequentially(sentences: string[], index = 0) {
     if (index >= sentences.length) {
-      if (!this.readAloudEnabled) {
+      if (!this.readAloudEnabled && !this.conversationModeActive) {
         this.setStatus('idle');
       }
       return;
     }
 
+    // CORREÇÃO APLICADA AQUI:
+    // Sempre adiciona uma nova mensagem para cada frase.
     this.messages.push({ sender: 'agent', text: sentences[index].trim() });
+    
     this.autoScrollToBottom();
 
     setTimeout(() => {
@@ -242,30 +248,52 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     utterance.lang = 'pt-BR';
     if (this.ptBrVoice) utterance.voice = this.ptBrVoice;
     utterance.onstart = () => this.ngZone.run(() => this.setStatus('speaking'));
-    utterance.onend = () => this.ngZone.run(() => this.setStatus('idle'));
+    utterance.onend = () => this.ngZone.run(() => {
+      if (this.conversationModeActive) {
+        this.setStatus('waiting');
+        setTimeout(() => {
+            if (this.conversationModeActive) this.startListening();
+        }, 500);
+      } else {
+        this.setStatus('idle');
+      }
+    });
     window.speechSynthesis.speak(utterance);
   }
   
   private stopSpeaking(): void {
     if (this.isBrowser) window.speechSynthesis.cancel();
-    this.setStatus('idle');
+    if (!this.conversationModeActive) this.setStatus('idle');
   }
   
-  toggleListen(): void {
+  toggleConversationMode(): void {
     if (!this.isSupported || this.status === 'error') return;
-    if (this.status === 'idle') { this.startListening(); } 
-    else if (this.status === 'listening') { this.stopListening(); }
+    
+    if (this.conversationModeActive) {
+      this.stopConversationMode();
+    } else {
+      this.conversationModeActive = true;
+      this.readAloudEnabled = true;
+      this.startListening();
+    }
+  }
+
+  private stopConversationMode(): void {
+    this.conversationModeActive = false;
+    if (this.status === 'listening' || this.status === 'waiting') {
+      this.recognition.abort();
+      this.setStatus('idle');
+    }
+    if (this.status === 'speaking') {
+      this.stopSpeaking();
+    }
   }
   
   private startListening(): void {
+    if (!this.conversationModeActive) return;
     this.setStatus('listening');
-    try { this.recognition.start(); } catch (e) { this.setStatus('idle'); }
-  }
-  
-  private stopListening(): void {
-    if (this.status === 'listening') {
-      this.recognition.stop();
-      this.setStatus('idle');
+    try { this.recognition.start(); } catch (e) { 
+        if (this.conversationModeActive) this.setStatus('waiting');
     }
   }
   
@@ -283,8 +311,24 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
       });
     };
     
-    this.recognition.onend = () => this.ngZone.run(() => { if (this.status === 'listening') this.setStatus('idle'); });
-    this.recognition.onerror = () => this.ngZone.run(() => { this.setStatus('idle'); });
+    this.recognition.onend = () => this.ngZone.run(() => { 
+        if (this.conversationModeActive && this.status === 'listening') {
+            this.setStatus('waiting');
+            setTimeout(() => {
+              if (this.conversationModeActive) this.startListening();
+            }, 200);
+        }
+    });
+    this.recognition.onerror = (event: any) => this.ngZone.run(() => { 
+        if (this.conversationModeActive) {
+          this.setStatus('waiting');
+          setTimeout(() => {
+            if (this.conversationModeActive) this.startListening();
+          }, 500);
+        } else {
+          this.setStatus('idle');
+        }
+    });
   }
   
   private loadVoices(): void {
@@ -301,7 +345,7 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     getVoices();
   }
   
-  private setStatus(newStatus: 'idle' | 'listening' | 'processing' | 'speaking' | 'error'): void {
+  private setStatus(newStatus: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' | 'waiting'): void {
     this.ngZone.run(() => { this.status = newStatus; });
   }
 }

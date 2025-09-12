@@ -113,6 +113,26 @@
     gap: 1.5rem;
 }
 
+/* ======================================= */
+/* ==== INÍCIO DAS ALTERAÇÕES NO CSS ===== */
+/* ======================================= */
+
+/* NOVO ESTILO PARA O WRAPPER */
+.content-header {
+    position: sticky; /* Faz o elemento "grudar" no topo */
+    top: 0; /* Define a posição de "grude" no topo da área de rolagem */
+    z-index: 10; /* Garante que ele fique acima do conteúdo da tabela que rola por baixo */
+    background-color: #f4f7f6; /* Cor de fundo para não ficar transparente */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Mantém o espaçamento que existia entre o menu e a toolbar */
+}
+
+/* ======================================= */
+/* ===== FIM DAS ALTERAÇÕES NO CSS ======= */
+/* ======================================= */
+
+
 /* BARRA DE NAVEGAÇÃO INTERNA (ABAS) */
 .main-nav {
     display: flex;
