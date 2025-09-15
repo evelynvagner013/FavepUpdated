@@ -1,15 +1,13 @@
-/* Container principal do chat */
 .chat-acessibilidade-container {
   position: fixed; 
-  bottom: 230px;   /* posição fixa perto do VLibras */
+  bottom: 230px;  
   right: 10px;    
   z-index: 1000;   
   display: flex;
-  flex-direction: column-reverse; /* faz o chat abrir acima do botão */
+  flex-direction: column-reverse;
   align-items: flex-end;
 }
 
-/* Estilo do botão que abre o chat */
 .chat-acessibilidade-icon {
   background-color: #007bff;
   color: white;
@@ -22,14 +20,13 @@
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estilo do quadrado flutuante (o "chat") */
 .chat-box {
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 10px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   width: 300px;
-  margin-bottom: 10px; /* abre acima do botão */
+  margin-bottom: 10px; 
   overflow: hidden;
 }
 
@@ -85,7 +82,6 @@
   cursor: pointer;
 }
 
-/* Estilos para os modos de acessibilidade de cor */
 body.high-contrast {
   background-color: black !important;
   color: yellow !important;

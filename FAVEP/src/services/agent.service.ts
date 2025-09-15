@@ -7,7 +7,6 @@ export interface AgentResponse {
   response: string;
 }
 
-// Interface para o formato do histórico
 export interface GeminiMessage {
   role: 'user' | 'model';
   parts: { text: string }[];

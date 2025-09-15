@@ -1,3 +1,4 @@
+/* gerenciamento.component.css */
 .dashboard-container {
     display: grid;
     grid-template-columns: 250px 1fr;
@@ -113,24 +114,14 @@
     gap: 1.5rem;
 }
 
-/* ======================================= */
-/* ==== INÍCIO DAS ALTERAÇÕES NO CSS ===== */
-/* ======================================= */
-
 /* NOVO ESTILO PARA O WRAPPER */
 .content-header {
-    position: sticky; /* Faz o elemento "grudar" no topo */
-    top: 0; /* Define a posição de "grude" no topo da área de rolagem */
-    z-index: 10; /* Garante que ele fique acima do conteúdo da tabela que rola por baixo */
-    background-color: #f4f7f6; /* Cor de fundo para não ficar transparente */
+    /* REMOVIDO: position: sticky, top, z-index */
+    background-color: #f4f7f6;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Mantém o espaçamento que existia entre o menu e a toolbar */
+    gap: 1.5rem;
 }
-
-/* ======================================= */
-/* ===== FIM DAS ALTERAÇÕES NO CSS ======= */
-/* ======================================= */
 
 
 /* BARRA DE NAVEGAÇÃO INTERNA (ABAS) */
@@ -386,7 +377,7 @@ tr:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Mais escuro */
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -519,6 +510,45 @@ tr:hover {
     background-color: #c82333;
 }
 
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pagination-container button,
+.pagination-container span {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.pagination-container button:hover:not([disabled]),
+.pagination-container span:hover:not(.active) {
+  background-color: #e9ecef;
+}
+
+.pagination-container button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-container span.active {
+  background-color: #004d40;
+  color: white;
+  border-color: #004d40;
+}
 
 /* =================================================================== */
 /* ==== MEDIA QUERIES PARA RESPONSIVIDADE ==== */
@@ -593,11 +623,11 @@ tr:hover {
 
     .search-group {
         display: flex;
-        flex-direction: row; /* Mantém input e botão na mesma linha */
+        flex-direction: row;
     }
 
     .search-group input {
-        flex-grow: 1; /* Faz o input ocupar o espaço disponível */
+        flex-grow: 1;
     }
 
     .btn-add {

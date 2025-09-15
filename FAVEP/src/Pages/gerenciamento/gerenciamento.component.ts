@@ -1,3 +1,4 @@
+// gerenciamento.component.ts
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -18,7 +19,7 @@ import {
   Usuario,
   Propriedade,
   Producao,
-  Financeiro,
+  Financeiro
 } from '../../models/api.models';
 
 registerLocaleData(localePt);
@@ -54,7 +55,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   
   // Opções dos filtros
   opcoesFiltro: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas' }];
-  opcoesFiltroPropriedade: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas' }];
+  opcoesFiltroPropriedade: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas as Propriedades' }];
 
   // --- Listas de Dados ---
   propriedades: Propriedade[] = [];
@@ -75,6 +76,60 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   safras: string[] = [];
 
   private userSubscription: Subscription | undefined;
+
+  // ✅ INÍCIO DA LÓGICA DE PAGINAÇÃO
+  paginaAtualPropriedades = 1;
+  paginaAtualProducao = 1;
+  paginaAtualFinanceiro = 1;
+  itensPorPagina = 5;
+
+  get propriedadesPaginadas(): Propriedade[] {
+    const inicio = (this.paginaAtualPropriedades - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+    return this.propriedadesFiltradas.slice(inicio, fim);
+  }
+
+  get producoesPaginadas(): Producao[] {
+    const inicio = (this.paginaAtualProducao - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+    return this.producoesFiltradas.slice(inicio, fim);
+  }
+
+  get financeirosPaginados(): Financeiro[] {
+    const inicio = (this.paginaAtualFinanceiro - 1) * this.itensPorPagina;
+    const fim = inicio + this.itensPorPagina;
+    return this.financeirosFiltrados.slice(inicio, fim);
+  }
+
+  totalPaginas(totalItens: number): number {
+    return Math.ceil(totalItens / this.itensPorPagina);
+  }
+
+  mudarPagina(aba: string, novaPagina: number): void {
+    if (aba === 'propriedades') {
+      const total = this.totalPaginas(this.propriedadesFiltradas.length);
+      if (novaPagina >= 1 && novaPagina <= total) {
+        this.paginaAtualPropriedades = novaPagina;
+      }
+    } else if (aba === 'producao') {
+      const total = this.totalPaginas(this.producoesFiltradas.length);
+      if (novaPagina >= 1 && novaPagina <= total) {
+        this.paginaAtualProducao = novaPagina;
+      }
+    } else if (aba === 'financeiro') {
+      const total = this.totalPaginas(this.financeirosFiltrados.length);
+      if (novaPagina >= 1 && novaPagina <= total) {
+        this.paginaAtualFinanceiro = novaPagina;
+      }
+    }
+  }
+
+  paginasDisponiveis(totalItens: number): number[] {
+    const total = this.totalPaginas(totalItens);
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  // ✅ FIM DA LÓGICA DE PAGINAÇÃO
+
 
   constructor(
     private dashboardDataService: DashboardDataService,
@@ -130,6 +185,10 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.filtroAtivo = 'todos';
     this.filtroPropriedade = 'todos';
     this.termoBusca = '';
+    // ✅ RESETANDO PAGINAÇÃO AO MUDAR DE ABA
+    this.paginaAtualPropriedades = 1;
+    this.paginaAtualProducao = 1;
+    this.paginaAtualFinanceiro = 1;
     this.aplicarFiltros();
   }
 
@@ -174,14 +233,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return this.propriedades.reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
+  // ✅ ALTERADO: CORREÇÃO NO CÁLCULO DA PRODUÇÃO TOTAL
   calcularProducaoTotal(): number {
-    return this.producoesFiltradas.reduce((total, prod) => total + (prod.produtividade || 0), 0);
+    return this.producoes.reduce((total, prod) => total + (prod.areaproducao * (prod.produtividade || 0)), 0);
   }
   
   calcularAreaPlantada(): number {
-    return this.producoesFiltradas.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
+    return this.producoes.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
   }
 
+  // ✅ ALTERADO: CORREÇÃO NO CÁLCULO DA PRODUTIVIDADE MÉDIA
   calcularProdutividadeMedia(): number {
     const totalProducao = this.calcularProducaoTotal();
     const totalArea = this.calcularAreaPlantada();

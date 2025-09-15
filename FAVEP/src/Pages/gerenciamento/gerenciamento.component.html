@@ -104,7 +104,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let prop of propriedadesFiltradas; trackBy: trackById">
+            <tr *ngFor="let prop of propriedadesPaginadas; trackBy: trackById">
               <td>{{prop.nomepropriedade}}</td>
               <td>{{prop.area_ha | number:'1.0-0':'pt-BR'}}</td>
               <td>{{prop.localizacao}}</td>
@@ -119,7 +119,16 @@
           </tbody>
         </table>
       </div>
-    </section>
+      <div class="pagination-container" *ngIf="propriedadesFiltradas.length > itensPorPagina">
+        <button (click)="mudarPagina('propriedades', paginaAtualPropriedades - 1)" [disabled]="paginaAtualPropriedades === 1">Anterior</button>
+        <span *ngFor="let pagina of paginasDisponiveis(propriedadesFiltradas.length)" 
+              [class.active]="pagina === paginaAtualPropriedades" 
+              (click)="mudarPagina('propriedades', pagina)">
+          {{pagina}}
+        </span>
+        <button (click)="mudarPagina('propriedades', paginaAtualPropriedades + 1)" [disabled]="paginaAtualPropriedades === totalPaginas(propriedadesFiltradas.length)">Próxima</button>
+      </div>
+      </section>
 
     <section *ngIf="abaAtiva === 'producao'" class="content-section">
       <div class="summary-cards">
@@ -149,7 +158,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let prod of producoesFiltradas; trackBy: trackById">
+            <tr *ngFor="let prod of producoesPaginadas; trackBy: trackById">
               <td>{{prod.cultura}}</td>
               <td>{{prod.safra}}</td>
               <td>{{prod.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
@@ -160,13 +169,22 @@
                 <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
-            <tr *ngIf="producoesFiltradas.length === 0">
+            <tr *ngIf="producoesPaginadas.length === 0">
               <td colspan="6" class="no-data">Nenhuma produção encontrada.</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </section>
+      <div class="pagination-container" *ngIf="producoesFiltradas.length > itensPorPagina">
+        <button (click)="mudarPagina('producao', paginaAtualProducao - 1)" [disabled]="paginaAtualProducao === 1">Anterior</button>
+        <span *ngFor="let pagina of paginasDisponiveis(producoesFiltradas.length)" 
+              [class.active]="pagina === paginaAtualProducao" 
+              (click)="mudarPagina('producao', pagina)">
+          {{pagina}}
+        </span>
+        <button (click)="mudarPagina('producao', paginaAtualProducao + 1)" [disabled]="paginaAtualProducao === totalPaginas(producoesFiltradas.length)">Próxima</button>
+      </div>
+      </section>
 
     <section *ngIf="abaAtiva === 'financeiro'" class="content-section">
       <div class="summary-cards">
@@ -198,7 +216,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let fin of financeirosFiltrados; trackBy: trackById">
+            <tr *ngFor="let fin of financeirosPaginados; trackBy: trackById">
               <td>{{fin.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
               <td>
                 <span class="badge" [class.receita]="fin.tipo === 'receita'" [class.despesa]="fin.tipo === 'despesa'">
@@ -215,13 +233,22 @@
                 <button class="btn-delete" (click)="confirmarExclusao(fin, 'financeiro')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
-            <tr *ngIf="financeirosFiltrados.length === 0">
+            <tr *ngIf="financeirosPaginados.length === 0">
               <td colspan="6" class="no-data">Nenhum registro financeiro encontrado.</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </section>
+      <div class="pagination-container" *ngIf="financeirosFiltrados.length > itensPorPagina">
+        <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro - 1)" [disabled]="paginaAtualFinanceiro === 1">Anterior</button>
+        <span *ngFor="let pagina of paginasDisponiveis(financeirosFiltrados.length)" 
+              [class.active]="pagina === paginaAtualFinanceiro" 
+              (click)="mudarPagina('financeiro', pagina)">
+          {{pagina}}
+        </span>
+        <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro + 1)" [disabled]="paginaAtualFinanceiro === totalPaginas(financeirosFiltrados.length)">Próxima</button>
+      </div>
+      </section>
   </main>
 
   <div class="modal" *ngIf="modalAberto">
