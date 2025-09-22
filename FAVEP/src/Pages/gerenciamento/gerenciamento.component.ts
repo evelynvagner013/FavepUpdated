@@ -1,20 +1,15 @@
-// gerenciamento.component.ts
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { Subscription } from 'rxjs';
-
-// --- SERVIÇOS ---
 import { DashboardDataService } from '../../services/dashboard-data.service';
 import { PropriedadeService } from '../../services/propriedade.service';
 import { ProducaoService } from '../../services/producao.service';
 import { MovimentacaoService } from '../../services/movimentacao.service';
 import { AuthService } from '../../services/auth.service';
-
-// --- MODELOS CORRIGIDOS ---
 import {
   Usuario,
   Propriedade,
@@ -34,10 +29,14 @@ registerLocaleData(localePt);
 })
 export class GerenciamentoComponent implements OnInit, OnDestroy {
 
+  // --- Propriedades de UI e Dropdown ---
   menuAberto = false;
+  mostrarDropdown = false;
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-
+  private usuarioLogado: Usuario | null = null;
+  
+  // --- Controle de Abas e Modais ---
   abaAtiva: string = 'propriedades';
   modalAberto: boolean = false;
   confirmacaoAberta: boolean = false;
@@ -47,17 +46,17 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   itemParaExcluir: any = null;
   tipoExclusao: string = '';
   
-  // Filtros
+  // --- Propriedades de Filtros ---
   filtroAtivo: string = 'todos'; // Para culturas
   filtroPeriodo: string = '30';
   termoBusca: string = '';
   filtroPropriedade: string = 'todos';
   
-  // Opções dos filtros
+  // --- Opções para os Filtros ---
   opcoesFiltro: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas' }];
   opcoesFiltroPropriedade: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas as Propriedades' }];
 
-  // --- Listas de Dados ---
+  // --- Listas de Dados (Originais) ---
   propriedades: Propriedade[] = [];
   producoes: Producao[] = [];
   financeiros: Financeiro[] = [];
@@ -77,11 +76,41 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
   private userSubscription: Subscription | undefined;
 
-  // ✅ INÍCIO DA LÓGICA DE PAGINAÇÃO
+  // --- Propriedades de Paginação ---
   paginaAtualPropriedades = 1;
   paginaAtualProducao = 1;
   paginaAtualFinanceiro = 1;
   itensPorPagina = 5;
+
+  constructor(
+    private dashboardDataService: DashboardDataService,
+    private propriedadeService: PropriedadeService,
+    private producaoService: ProducaoService,
+    private movimentacaoService: MovimentacaoService,
+    private authService: AuthService,
+    private router: Router,
+    private datePipe: DatePipe
+  ) {}
+
+  ngOnInit(): void {
+    this.carregarTodosDados();
+    this.userSubscription = this.authService.currentUser.subscribe(user => {
+      if (user) {
+        this.usuarioLogado = user;
+        this.usuarioNome = user.nome;
+        this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+      } else {
+        this.usuarioNome = '';
+        this.usuarioFoto = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+  }
 
   get propriedadesPaginadas(): Propriedade[] {
     const inicio = (this.paginaAtualPropriedades - 1) * this.itensPorPagina;
@@ -106,54 +135,18 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   }
 
   mudarPagina(aba: string, novaPagina: number): void {
-    if (aba === 'propriedades') {
-      const total = this.totalPaginas(this.propriedadesFiltradas.length);
-      if (novaPagina >= 1 && novaPagina <= total) {
-        this.paginaAtualPropriedades = novaPagina;
-      }
-    } else if (aba === 'producao') {
-      const total = this.totalPaginas(this.producoesFiltradas.length);
-      if (novaPagina >= 1 && novaPagina <= total) {
-        this.paginaAtualProducao = novaPagina;
-      }
-    } else if (aba === 'financeiro') {
-      const total = this.totalPaginas(this.financeirosFiltrados.length);
-      if (novaPagina >= 1 && novaPagina <= total) {
-        this.paginaAtualFinanceiro = novaPagina;
-      }
+    if (aba === 'propriedades' && novaPagina >= 1 && novaPagina <= this.totalPaginas(this.propriedadesFiltradas.length)) {
+      this.paginaAtualPropriedades = novaPagina;
+    } else if (aba === 'producao' && novaPagina >= 1 && novaPagina <= this.totalPaginas(this.producoesFiltradas.length)) {
+      this.paginaAtualProducao = novaPagina;
+    } else if (aba === 'financeiro' && novaPagina >= 1 && novaPagina <= this.totalPaginas(this.financeirosFiltrados.length)) {
+      this.paginaAtualFinanceiro = novaPagina;
     }
   }
 
   paginasDisponiveis(totalItens: number): number[] {
     const total = this.totalPaginas(totalItens);
     return Array.from({ length: total }, (_, i) => i + 1);
-  }
-  // ✅ FIM DA LÓGICA DE PAGINAÇÃO
-
-
-  constructor(
-    private dashboardDataService: DashboardDataService,
-    private propriedadeService: PropriedadeService,
-    private producaoService: ProducaoService,
-    private movimentacaoService: MovimentacaoService,
-    private authService: AuthService,
-    private datePipe: DatePipe
-  ) {}
-
-  ngOnInit(): void {
-    this.userSubscription = this.authService.currentUser.subscribe(user => {
-      if (user) {
-        this.usuarioNome = user.nome;
-        this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-      }
-    });
-    this.carregarTodosDados();
-  }
-
-  ngOnDestroy(): void {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
   }
 
   carregarTodosDados(): void {
@@ -169,14 +162,14 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
         
         this.opcoesFiltroPropriedade = [
             { valor: 'todos', texto: 'Todas as Propriedades' },
-            ...this.propriedades.map(p => ({ valor: p.id, texto: p.nomepropriedade }))
+            ...this.propriedades.map(p => ({ valor: p.id!, texto: p.nomepropriedade }))
         ];
 
         this.todasCulturas = Array.from(uniqueCrops).sort();
-        this.safras = Array.from(new Set(this.producoes.map(p => p.safra).filter(Boolean))).sort();
+        this.safras = Array.from(new Set(this.producoes.map(p => p.safra).filter(Boolean) as string[])).sort();
         this.aplicarFiltros();
       },
-      error: (err) => console.error('Erro ao carregar dados:', err),
+      error: (err: any) => console.error('Erro ao carregar dados:', err),
     });
   }
 
@@ -185,7 +178,6 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.filtroAtivo = 'todos';
     this.filtroPropriedade = 'todos';
     this.termoBusca = '';
-    // ✅ RESETANDO PAGINAÇÃO AO MUDAR DE ABA
     this.paginaAtualPropriedades = 1;
     this.paginaAtualProducao = 1;
     this.paginaAtualFinanceiro = 1;
@@ -203,18 +195,18 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
       !this.termoBusca || prop.nomepropriedade.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
       (prop.localizacao && prop.localizacao.toLowerCase().includes(this.termoBusca.toLowerCase()))
     );
+    this.paginaAtualPropriedades = 1;
   }
 
-  // ✅ ALTERADO: Lógica de busca por texto removida.
   filtrarProducoes(): void {
     this.producoesFiltradas = this.producoes.filter(prod => {
       const filtroCultura = this.filtroAtivo === 'todos' || prod.cultura === this.filtroAtivo;
       const filtroProp = this.filtroPropriedade === 'todos' || prod.propriedadeId === this.filtroPropriedade;
       return filtroCultura && filtroProp;
     });
+    this.paginaAtualProducao = 1;
   }
 
-  // ✅ ALTERADO: Lógica de busca por texto removida.
   filtrarFinanceiros(): void {
     const dias = parseInt(this.filtroPeriodo, 10);
     const dataLimite = new Date();
@@ -227,22 +219,21 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
       const filtroProp = this.filtroPropriedade === 'todos' || fin.propriedadeId === this.filtroPropriedade;
       return periodo && filtroProp;
     });
+    this.paginaAtualFinanceiro = 1;
   }
 
   calcularAreaTotal(): number {
     return this.propriedades.reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
-  // ✅ ALTERADO: CORREÇÃO NO CÁLCULO DA PRODUÇÃO TOTAL
   calcularProducaoTotal(): number {
-    return this.producoes.reduce((total, prod) => total + (prod.areaproducao * (prod.produtividade || 0)), 0);
+    return this.producoes.reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.produtividade || 0)), 0);
   }
   
   calcularAreaPlantada(): number {
     return this.producoes.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
   }
 
-  // ✅ ALTERADO: CORREÇÃO NO CÁLCULO DA PRODUTIVIDADE MÉDIA
   calcularProdutividadeMedia(): number {
     const totalProducao = this.calcularProducaoTotal();
     const totalArea = this.calcularAreaPlantada();
@@ -263,6 +254,49 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
   calcularResultadoFinanceiro(): number {
     return this.calcularTotalReceitas() - this.calcularTotalDespesas();
+  }
+  
+  salvar(): void {
+    switch (this.tipoEdicao) {
+      case 'propriedades': this.salvarPropriedade(); break;
+      case 'producao': this.salvarProducao(); break;
+      case 'financeiro': this.salvarFinanceiro(); break;
+    }
+  }
+
+  salvarPropriedade(): void {
+    const { id, ...dados } = this.propriedadeEditada;
+    const observable = id
+      ? this.propriedadeService.atualizarPropriedade(id, dados)
+      : this.propriedadeService.adicionarPropriedade(dados as Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>);
+    observable.subscribe({
+      next: () => { this.carregarTodosDados(); this.fecharModal(); },
+      error: (err: any) => console.error('Erro ao salvar propriedade:', err),
+    });
+  }
+
+  salvarProducao(): void {
+    const { id, ...dados } = this.producaoEditada;
+    if (!dados.propriedadeId) { return; }
+    const observable = id
+      ? this.producaoService.atualizarProducao(id, dados)
+      : this.producaoService.adicionarProducao(dados as Omit<Producao, 'id' | 'propriedade'>);
+    observable.subscribe({
+      next: () => { this.carregarTodosDados(); this.fecharModal(); },
+      error: (err: any) => console.error('Erro ao salvar produção:', err),
+    });
+  }
+
+  salvarFinanceiro(): void {
+    const { id, ...dados } = this.financeiroEditado;
+    if (!dados.propriedadeId) { return; }
+    const observable = id
+      ? this.movimentacaoService.atualizarMovimentacao(id, dados)
+      : this.movimentacaoService.adicionarMovimentacao(dados as Omit<Financeiro, 'id' | 'propriedade'>);
+    observable.subscribe({
+      next: () => { this.carregarTodosDados(); this.fecharModal(); },
+      error: (err: any) => console.error('Erro ao salvar registro financeiro:', err),
+    });
   }
 
   executarExclusao(): void {
@@ -286,69 +320,8 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
         this.carregarTodosDados();
         this.cancelarExclusao();
       },
-      error: (err) => console.error(`Erro ao excluir ${this.tipoExclusao}:`, err),
+      error: (err: any) => console.error(`Erro ao excluir ${this.tipoExclusao}:`, err),
     });
-  }
-
-  salvar(): void {
-    switch (this.tipoEdicao) {
-      case 'propriedades': this.salvarPropriedade(); break;
-      case 'producao': this.salvarProducao(); break;
-      case 'financeiro': this.salvarFinanceiro(); break;
-    }
-  }
-
-  salvarPropriedade(): void {
-    const { id, ...dados } = this.propriedadeEditada;
-    
-    const observable = id
-      ? this.propriedadeService.atualizarPropriedade(id, dados)
-      : this.propriedadeService.adicionarPropriedade(dados as Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>);
-
-    observable.subscribe({
-      next: () => { this.carregarTodosDados(); this.fecharModal(); },
-      error: (err) => console.error('Erro ao salvar propriedade:', err),
-    });
-  }
-
-  salvarProducao(): void {
-    const { id, ...dados } = this.producaoEditada;
-    if (!dados.propriedadeId) {
-      console.error("ID da propriedade é obrigatório para salvar a produção.");
-      return;
-    }
-    const observable = id
-      ? this.producaoService.atualizarProducao(id, dados)
-      : this.producaoService.adicionarProducao(dados as Omit<Producao, 'id' | 'propriedade'>);
-
-    observable.subscribe({
-      next: () => { this.carregarTodosDados(); this.fecharModal(); },
-      error: (err) => console.error('Erro ao salvar produção:', err),
-    });
-  }
-
-  salvarFinanceiro(): void {
-    const { id, ...dados } = this.financeiroEditado;
-    if (!dados.propriedadeId) {
-      console.error("ID da propriedade é obrigatório para salvar o registro financeiro.");
-      return;
-    }
-    const observable = id
-      ? this.movimentacaoService.atualizarMovimentacao(id, dados)
-      : this.movimentacaoService.adicionarMovimentacao(dados as Omit<Financeiro, 'id' | 'propriedade'>);
-
-    observable.subscribe({
-      next: () => { this.carregarTodosDados(); this.fecharModal(); },
-      error: (err) => console.error('Erro ao salvar registro financeiro:', err),
-    });
-  }
-
-  @HostListener('document:click', ['$event'])
-  fecharMenuFora(event: MouseEvent) {
-    const alvo = event.target as HTMLElement;
-    if (!alvo.closest('.menu-toggle') && !alvo.closest('.main-menu')) {
-      this.menuAberto = false;
-    }
   }
 
   abrirModalAdicionar(): void {
@@ -357,15 +330,9 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.modalTitulo = `Adicionar ${this.getTituloModal()}`;
 
     switch (this.tipoEdicao) {
-      case 'propriedades': 
-        this.propriedadeEditada = {}; 
-        break;
-      case 'producao': 
-        this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, produtividade: 0, data: new Date(), propriedadeId: '' }; 
-        break;
-      case 'financeiro': 
-        this.financeiroEditado = { tipo: 'receita', data: new Date(), descricao: '', valor: 0, propriedadeId: '' }; 
-        break;
+      case 'propriedades': this.propriedadeEditada = {}; break;
+      case 'producao': this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, produtividade: 0, data: new Date(), propriedadeId: '' }; break;
+      case 'financeiro': this.financeiroEditado = { tipo: 'receita', data: new Date(), descricao: '', valor: 0, propriedadeId: '' }; break;
     }
   }
 
@@ -413,6 +380,17 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.tipoExclusao = '';
   }
 
+  @HostListener('document:click', ['$event'])
+  fecharMenuFora(event: MouseEvent): void {
+    const alvo = event.target as HTMLElement;
+    if (this.menuAberto && !alvo.closest('.main-menu') && !alvo.closest('.menu-toggle')) {
+        this.menuAberto = false;
+    }
+    if (this.mostrarDropdown && !alvo.closest('.user-info')) {
+      this.mostrarDropdown = false;
+    }
+  }
+
   getTituloModal(): string {
     const titulos: { [key: string]: string } = {
       propriedades: 'Propriedade',
@@ -435,4 +413,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   alternarMenu(): void {
     this.menuAberto = !this.menuAberto;
   }
+
+  abrirModalPerfil() {
+    this.mostrarDropdown = false;
+    this.router.navigate(['/usuario']);
+  }
+
+  logout() {
+    this.mostrarDropdown = false;
+    this.authService.logout();
+    this.router.navigate(['/home']);
+  }
 }
+

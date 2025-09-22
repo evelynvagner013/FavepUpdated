@@ -1,9 +1,9 @@
 import { Component, Inject, NgZone, OnInit, PLATFORM_ID, ViewChild, ElementRef, AfterViewInit, Renderer2, HostListener } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
-import { AgentService } from '../../services/agent.service';
+import { AgentService, GeminiMessage } from '../../services/agent.service';
 import { FormsModule } from '@angular/forms';
 
-// Interface para estruturar as mensagens
+// Interface para estruturar as mensagens de exibição
 export interface Message {
   sender: 'user' | 'agent';
   text: string;
@@ -30,12 +30,13 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   isChatOpen = false;
   isSupported: boolean = false;
   readAloudEnabled = false;
-  conversationModeActive = false; // Novo: controla o modo de conversação contínua
+  conversationModeActive = false;
   private isBrowser: boolean;
 
   // --- Mensagens e Conversa ---
   messages: Message[] = [];
   currentMessage: string = '';
+  private geminiHistory: GeminiMessage[] = [];
 
   // --- Propriedades para a Lógica de Arrastar ---
   private isDragging = false;
@@ -169,8 +170,10 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
       this.stopConversationMode();
     }
     if (this.isChatOpen && this.messages.length === 0) {
-      this.messages.push({ sender: 'agent', text: 'Olá! Sou a Sementinha. Como posso te ajudar hoje?' });
-      this.autoScrollToBottom();
+      const initialMessage = 'Olá! Sou a Sementinha. Como posso te ajudar hoje?';
+      this.messages.push({ sender: 'agent', text: initialMessage });
+      this.geminiHistory.push({ role: 'model', parts: [{ text: initialMessage }] });
+      this.autoScrollToBottom(true);
     }
   }
   
@@ -179,30 +182,42 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     if (!this.readAloudEnabled && this.status === 'speaking') { this.stopSpeaking(); }
   }
   
-  private autoScrollToBottom(): void {
+  // CORREÇÃO: Lógica de rolagem agora é condicional
+  private autoScrollToBottom(force: boolean = false): void {
     setTimeout(() => {
       try {
-        this.chatBody.nativeElement.scrollTop = this.chatBody.nativeElement.scrollHeight;
+        const element = this.chatBody.nativeElement;
+        // Adiciona uma tolerância para não precisar estar exatamente no fundo
+        const isScrolledToBottom = element.scrollHeight - element.clientHeight <= element.scrollTop + 40;
+
+        // Só rola se for forçado (ex: usuário enviou msg) ou se já estiver no final
+        if (force || isScrolledToBottom) {
+          element.scrollTop = element.scrollHeight;
+        }
       } catch (err) {}
-    }, 0);
+    }, 50);
   }
   
   // --- Métodos de Comunicação ---
   sendTextMessage(): void {
     if (!this.currentMessage.trim()) return;
     this.messages.push({ sender: 'user', text: this.currentMessage });
-    this.autoScrollToBottom();
+    this.autoScrollToBottom(true); // Força a rolagem ao enviar
     this.sendQuestionToAgent(this.currentMessage);
     this.currentMessage = '';
   }
 
   private sendQuestionToAgent(question: string): void {
     this.setStatus('processing');
-    this.autoScrollToBottom();
+    this.autoScrollToBottom(true); // Força a rolagem para mostrar o indicador de "processando"
 
-    this.agentService.askQuestion(question, []).subscribe({
+    this.geminiHistory.push({ role: 'user', parts: [{ text: question }] });
+
+    this.agentService.askQuestion(question, this.geminiHistory).subscribe({
       next: (response) => {
         const fullResponse = response.response;
+        this.geminiHistory.push({ role: 'model', parts: [{ text: fullResponse }] });
+        
         const sentences = fullResponse.match(/[^.!?]+[.!?]*/g) || [fullResponse];
         this.displaySentencesSequentially(sentences);
         if (this.readAloudEnabled || this.conversationModeActive) {
@@ -214,6 +229,7 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
         this.messages.push({ sender: 'agent', text: errorMessage });
         this.autoScrollToBottom();
         this.setStatus('idle');
+        this.geminiHistory.pop();
         if (this.conversationModeActive) {
           setTimeout(() => this.startListening(), 1000);
         }
@@ -229,15 +245,14 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // CORREÇÃO APLICADA AQUI:
-    // Sempre adiciona uma nova mensagem para cada frase.
     this.messages.push({ sender: 'agent', text: sentences[index].trim() });
     
-    this.autoScrollToBottom();
+    this.autoScrollToBottom(); // Rolagem condicional para as respostas da IA
 
+    // CORREÇÃO: Aumenta o tempo de espera entre as frases
     setTimeout(() => {
       this.displaySentencesSequentially(sentences, index + 1);
-    }, 900);
+    }, 1200);
   }
 
   // --- Lógica de Voz ---
@@ -306,7 +321,7 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
       const transcript = event.results[0][0].transcript;
       this.ngZone.run(() => {
         this.messages.push({ sender: 'user', text: `"${transcript}"` });
-        this.autoScrollToBottom();
+        this.autoScrollToBottom(true); // Força a rolagem ao receber transcrição de voz
         this.sendQuestionToAgent(transcript);
       });
     };

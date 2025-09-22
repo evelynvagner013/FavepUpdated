@@ -300,6 +300,13 @@ input:checked + .slider:before {
   text-decoration: none;
   font-size: 16px;
   transition: background-color 0.2s;
+  
+}
+
+hr {
+  border: 0;
+  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
+  height: 1px; /* Define a espessura da linha */
 }
 
 .dropdown-menu a:hover {
@@ -312,6 +319,10 @@ input:checked + .slider:before {
 
 .logout-link {
   background-color: #b31605;
+}
+
+.modal-perfil{
+  background-color: #044b92;
 }
 
 .dropdown-menu a.logout-link:hover {

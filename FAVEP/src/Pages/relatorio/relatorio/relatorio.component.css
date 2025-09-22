@@ -240,6 +240,51 @@ body.generating-pdf * {
     user-select: none;
 }
 
+/* --- Estilos do Dropdown do Usuário --- */
+
+/* Torna o container do usuário um ponto de referência para o posicionamento */
+.user-info {
+  position: relative; /* Essencial para o posicionamento do dropdown */
+  cursor: pointer;
+}
+
+/* Estilos do menu dropdown */
+.dropdown-menu {
+  position: absolute; /* Posiciona o menu em relação ao .user-info */
+  top: 110%; /* Aparece um pouco abaixo do avatar do usuário */
+  right: 0; /* Alinha o menu à direita */
+  background-color: #044b92; /* Fundo branco */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  z-index: 1000; /* Garante que o menu fique sobre outros elementos */
+  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados aos filhos */
+  display: block; /* Garante que seja visível quando o *ngIf for verdadeiro */
+}
+
+/* Estilos dos links dentro do dropdown */
+.dropdown-menu a {
+  display: block; /* Faz o link ocupar toda a largura */
+  padding: 12px 16px;
+  color: #d2d2d2;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+
+/* Estilo específico para o link de Sair */
+.dropdown-menu .logout-link {
+  background-color: #941a0d;
+  color: #d2d2d2;
+}
+
+hr {
+  border: 0;
+  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
+  height: 1px; /* Define a espessura da linha */
+}
 
 /* =================================================================== */
 /* ==== MEDIA QUERIES PARA RESPONSIVIDADE ==== */

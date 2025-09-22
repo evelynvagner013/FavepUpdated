@@ -25,6 +25,7 @@ import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 export class UsuarioComponent implements OnInit, OnDestroy {
   // Propriedades para o template
   menuAberto = false;
+  mostrarDropdown = false;
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
 
@@ -63,7 +64,6 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   private atualizarHeaderInfo(): void {
     if (this.usuario) {
       this.usuarioNome = this.usuario.nome;
-      // Corrigido para usar 'fotoperfil'
       this.usuarioFoto = this.usuario.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
     } else {
       this.usuarioNome = '';
@@ -81,7 +81,6 @@ export class UsuarioComponent implements OnInit, OnDestroy {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        // Corrigido para usar 'fotoperfil'
         this.usuarioEditavel.fotoperfil = e.target?.result as string;
       };
 
@@ -95,23 +94,21 @@ export class UsuarioComponent implements OnInit, OnDestroy {
         return;
     }
 
-    // Cria um payload para o backend, garantindo o nome correto do campo.
     const payload = {
       nome: this.usuarioEditavel.nome,
       email: this.usuarioEditavel.email,
       telefone: this.usuarioEditavel.telefone,
-      fotoperfil: this.usuarioEditavel.fotoperfil // Mapeamento correto
+      fotoperfil: this.usuarioEditavel.fotoperfil
     };
 
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
       next: (response: any) => {
         console.log('Perfil atualizado com sucesso:', response);
-        // O 'response.user' do backend já vem com 'fotoperfil'
         this.authService.setUser(response.user);
         this.fecharModalEdicao();
         alert('Perfil atualizado com sucesso!');
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erro ao salvar alterações no perfil:', err);
         const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
         alert(errorMessage);
@@ -140,13 +137,26 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   fecharMenuFora(event: MouseEvent): void {
     const alvo = event.target as HTMLElement;
-    // Verifica se o menu está aberto e se o clique não foi no botão que abre o menu ou no próprio menu
     if (this.menuAberto && !alvo.closest('.menu-toggle') && !alvo.closest('.main-menu')) {
       this.menuAberto = false;
+    }
+    if (this.mostrarDropdown && !alvo.closest('.user-info')) {
+      this.mostrarDropdown = false;
     }
   }
 
   navegarParaContato(): void {
     this.router.navigate(['/contato']);
+  }
+
+  abrirModalPerfil(): void {
+    this.mostrarDropdown = false;
+    this.abrirModalEdicao();
+  }
+
+  logout(): void {
+    this.mostrarDropdown = false;
+    this.authService.logout();
+    // A linha de navegação foi removida daqui, pois o AuthService já trata disso.
   }
 }

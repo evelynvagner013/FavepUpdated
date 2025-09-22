@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables, ChartType } from 'chart.js';
@@ -30,10 +30,12 @@ registerLocaleData(localePt);
   styleUrls: ['./relatorio.component.css']
 })
 export class RelatorioComponent implements OnInit, OnDestroy {
-  // --- Propriedades do Componente ---
+  // --- Propriedades do Componente e Dropdown ---
   menuAberto = false;
+  mostrarDropdown = false;
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+  private usuarioLogado: Usuario | null = null;
   
   // --- Listas de Dados Brutos ---
   propriedades: Propriedade[] = [];
@@ -55,7 +57,8 @@ export class RelatorioComponent implements OnInit, OnDestroy {
 
   constructor(
     private dashboardDataService: DashboardDataService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     Chart.register(...registerables);
   }
@@ -63,6 +66,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe(user => {
       if (user) {
+        this.usuarioLogado = user;
         this.usuarioNome = user.nome;
         this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
       }
@@ -80,14 +84,14 @@ export class RelatorioComponent implements OnInit, OnDestroy {
         const { propriedades, producoes, movimentacoes } = data;
         this.propriedades = propriedades;
         this.todasProducoes = producoes;
-        this.todasMovimentacoes = movimentacoes.map(rec => ({ ...rec, data: new Date(rec.data) }));
+        this.todasMovimentacoes = movimentacoes.map(rec => ({ ...rec, data: new Date(rec.data as string) }));
         
         const uniqueCropTypes = new Set<string>(this.todasProducoes.map(prod => prod.cultura));
         this.availableCropTypes = Array.from(uniqueCropTypes).sort().map(type => ({ value: type, text: type }));
         
-        this.gerarRelatorio(); // Gera o relatório inicial com todos os dados
+        this.gerarRelatorio();
       },
-      error: (err) => console.error('Erro ao carregar dados iniciais para o relatório:', err)
+      error: (err: any) => console.error('Erro ao carregar dados iniciais para o relatório:', err)
     });
   }
 
@@ -96,7 +100,6 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     const ctx = this.reportChartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
-    // --- LÓGICA DE FILTRAGEM ---
     let filteredProducoes = this.todasProducoes;
     let filteredMovimentacoes = this.todasMovimentacoes;
 
@@ -112,8 +115,8 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     if (this.reportType === 'financial') {
         filteredMovimentacoes = filteredMovimentacoes.filter(mov => {
             const movDate = new Date(mov.data);
-            const start = this.startDate ? new Date(this.startDate + 'T00:00:00') : null; // Adiciona T00:00:00 para evitar problemas de fuso
-            const end = this.endDate ? new Date(this.endDate + 'T23:59:59') : null; // Adiciona T23:59:59 para incluir o dia todo
+            const start = this.startDate ? new Date(this.startDate + 'T00:00:00') : null;
+            const end = this.endDate ? new Date(this.endDate + 'T23:59:59') : null;
             
             if (start && movDate < start) return false;
             if (end && movDate > end) return false;
@@ -135,7 +138,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
             productivityData.set(prod.cultura, { totalYield: 0, totalArea: 0 });
           }
           const data = productivityData.get(prod.cultura)!;
-          data.totalYield += (prod.produtividade * prod.areaproducao); // Produção total = produtividade * area
+          data.totalYield += (prod.produtividade * prod.areaproducao);
           data.totalArea += prod.areaproducao;
         });
         labels = Array.from(productivityData.keys()).sort();
@@ -164,7 +167,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
         const cropProductionData = new Map<string, number>();
         filteredProducoes.forEach(prod => {
           const currentTotal = cropProductionData.get(prod.cultura) || 0;
-          const productionOfThisEntry = prod.produtividade * prod.areaproducao; // Produção total
+          const productionOfThisEntry = prod.produtividade * prod.areaproducao;
           cropProductionData.set(prod.cultura, currentTotal + productionOfThisEntry);
         });
         labels = Array.from(cropProductionData.keys()).sort();
@@ -185,19 +188,14 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     });
   }
 
-  // --- Métodos Auxiliares e de UI ---
-
   async exportarRelatorioPDF(): Promise<void> {
     const reportContentElement = document.getElementById('report-content');
     if (!reportContentElement) {
       console.error("Elemento 'report-content' não encontrado para exportar o PDF.");
       return;
     }
-
     document.body.classList.add('generating-pdf');
-    
     const canvas = await html2canvas(reportContentElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-
     document.body.classList.remove('generating-pdf');
 
     const imgData = canvas.toDataURL('image/png');
@@ -228,5 +226,20 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     if (this.menuAberto && !target.closest('.main-menu') && !target.closest('.menu-toggle')) {
       this.menuAberto = false;
     }
+    if (this.mostrarDropdown && !target.closest('.user-info')) {
+      this.mostrarDropdown = false;
+    }
+  }
+
+  abrirModalPerfil() {
+    this.mostrarDropdown = false;
+    this.router.navigate(['/usuario']);
+  }
+
+  logout() {
+    this.mostrarDropdown = false;
+    this.authService.logout();
+    this.router.navigate(['/home']);
   }
 }
+

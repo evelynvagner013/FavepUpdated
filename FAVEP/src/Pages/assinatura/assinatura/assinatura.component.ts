@@ -29,10 +29,12 @@ export class AssinaturaComponent {
   // Injete o MercadoPagoService
   constructor(private mercadoPagoService: MercadoPagoService) {}
 
-  /**
-   * Lida com a criação de uma assinatura para planos pagos.
-   */
   async handleSubscription(plan: Plan, event: MouseEvent) {
+    if (plan.valor === 0) {
+      this.handleFreeSubscription();
+      return;
+    }
+
     this.isLoading = true;
     const button = event.target as HTMLButtonElement;
     const originalText = button.textContent;
@@ -41,37 +43,30 @@ export class AssinaturaComponent {
 
     try {
       console.log(`Iniciando assinatura para o plano:`, plan);
-
-      // Use o service para criar a assinatura
       const request$ = this.mercadoPagoService.criarAssinatura(plan.tipo, plan.valor);
       const data: MercadoPagoResponse = await lastValueFrom(request$);
 
-      // Redirecione o usuário para o link de pagamento do Mercado Pago
+ 
       if (data && data.init_point) {
         window.location.href = data.init_point;
       } else {
         console.error('Erro: A resposta da API não continha um "init_point".', data);
         alert('Ocorreu um erro ao gerar o link de pagamento. Tente novamente.');
         button.textContent = originalText;
+        button.disabled = false;
       }
     } catch (error) {
       console.error('Falha ao processar a assinatura:', error);
       alert('Não foi possível iniciar o processo de assinatura. Verifique o console para mais detalhes.');
       button.textContent = originalText;
+      button.disabled = false;
     } finally {
       this.isLoading = false;
-      if (button.textContent === 'Aguarde...') { // Só reabilita se não houve redirecionamento
-          button.disabled = false;
-      }
     }
   }
 
-  /**
-   * Lida com a assinatura do plano gratuito.
-   */
   handleFreeSubscription() {
     console.log('Usuário selecionou o plano gratuito.');
     alert('Plano gratuito ativado com sucesso!');
-    // Lógica futura: Chamar um service para registrar a ativação do plano gratuito no backend.
   }
 }

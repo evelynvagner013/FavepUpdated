@@ -15,7 +15,7 @@ const getFrequencyConfig = (tipoPlano) => {
     case 'Semestral':
       return { frequency: 6, frequency_type: 'months' };
     case 'Anual':
-      return { frequency: 1, frequency_type: 'years' };
+      return { frequency: 12, frequency_type: 'months' };
     default:
       return { frequency: 1, frequency_type: 'months' };
   }
