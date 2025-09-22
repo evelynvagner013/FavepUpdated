@@ -42,32 +42,8 @@ export class AppComponent {
     }
   }
 
-  toggleHighContrast() {
-    this.isHighContrast = !this.isHighContrast;
-    if (this.isHighContrast) {
-      this.isDarkMode = false;
-    }
-    this.applyColorModeClasses();
-  }
 
-  toggleDarkMode() {
-    this.isDarkMode = !this.isDarkMode;
-    if (this.isDarkMode) {
-      this.isHighContrast = false;
-    }
-    this.applyColorModeClasses();
-  }
-  
-  private applyColorModeClasses() {
-    const body = document.body;
-    body.classList.remove('high-contrast', 'dark-theme');
-    if (this.isHighContrast) {
-      body.classList.add('high-contrast');
-    }
-    if (this.isDarkMode) {
-      body.classList.add('dark-theme');
-    }
-  }
+
 
   toggleAccessibilityOptions() {
     this.showAccessibilityOptions = !this.showAccessibilityOptions;

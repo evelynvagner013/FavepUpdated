@@ -86,9 +86,10 @@
   background-color: #004d40;
 }
 
-.partner-loading-icon {
-  font-size: 5rem;
-  color: rgba(255, 255, 255, 0.6);
+.partner-logo {
+  max-width: 100%;
+  max-height: 100px;
+  border-radius: 8px;
 }
 
 .partner-card-body {

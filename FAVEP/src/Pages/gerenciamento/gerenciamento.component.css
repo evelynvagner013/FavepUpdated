@@ -48,6 +48,8 @@
     align-items: center;
     gap: 15px;
     white-space: nowrap;
+    position: relative;
+    cursor: pointer;
 }
 
 .user-avatar {
@@ -116,7 +118,6 @@
 
 /* NOVO ESTILO PARA O WRAPPER */
 .content-header {
-    /* REMOVIDO: position: sticky, top, z-index */
     background-color: #f4f7f6;
     display: flex;
     flex-direction: column;
@@ -583,17 +584,14 @@ tr:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
+.dropdown-menu a:hover {
+  background-color: #033a75;
+}
 
 /* Estilo específico para o link de Sair */
 .dropdown-menu .logout-link {
   background-color: #941a0d;
   color: #d2d2d2;
-}
-
-hr {
-  border: 0;
-  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
-  height: 1px; /* Define a espessura da linha */
 }
 
 /* =================================================================== */

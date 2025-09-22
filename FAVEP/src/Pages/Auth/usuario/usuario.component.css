@@ -53,6 +53,8 @@
     gap: 15px;
     white-space: nowrap;
     flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
 }
 
 .user-avatar {
@@ -316,12 +318,6 @@
     color: #616161;
 }
 
-.subscription-details strong.current-plan {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #007bff;
-}
-
 .change-plan-btn {
     background-color: #007bff;
     color: white;
@@ -464,31 +460,6 @@
     color: #495057;
 }
 
-/* --- ESTILOS DO CROPPER --- */
-.image-cropper-container {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px dashed #ced4da;
-    border-radius: 8px;
-    background-color: #fcfcfc;
-    text-align: center;
-}
-
-.image-cropper-container image-cropper {
-    max-width: 100%;
-    max-height: 300px;
-    overflow: hidden;
-    display: block;
-}
-
-.image-cropper-container .cropper-tip {
-    display: block;
-    margin-top: 10px;
-    font-size: 0.85rem;
-    color: #6c757d;
-}
-
 .form-group {
     margin-bottom: 20px;
 }
@@ -569,45 +540,22 @@
 
 /* --- Estilos do Dropdown do Usuário --- */
 
-/* Torna o container do usuário um ponto de referência para o posicionamento */
-.user-info {
-  position: relative; /* Essencial para o posicionamento do dropdown */
-  cursor: pointer;
-}
-
-/* Estilos do menu dropdown */
 .dropdown-menu {
-  position: absolute; /* Posiciona o menu em relação ao .user-info */
-  top: 110%; /* Aparece um pouco abaixo do avatar do usuário */
-  right: 0; /* Alinha o menu à direita */
-  background-color: #ffffff; /* Fundo branco */
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background-color: #044b92;
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   min-width: 150px;
-  z-index: 1000; /* Garante que o menu fique sobre outros elementos */
-  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados aos filhos */
-  display: block; /* Garante que seja visível quando o *ngIf for verdadeiro */
+  z-index: 1000;
+  overflow: hidden;
+  display: block;
 }
 
-/* Estilos dos links dentro do dropdown */
-.dropdown-menu {
-  position: absolute; /* Posiciona o menu em relação ao .user-info */
-  top: 110%; /* Aparece um pouco abaixo do avatar do usuário */
-  right: 0; /* Alinha o menu à direita */
-  background-color: #044b92; /* Fundo branco */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 150px;
-  z-index: 1000; /* Garante que o menu fique sobre outros elementos */
-  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados aos filhos */
-  display: block; /* Garante que seja visível quando o *ngIf for verdadeiro */
-}
-
-/* Estilos dos links dentro do dropdown */
 .dropdown-menu a {
-  display: block; /* Faz o link ocupar toda a largura */
+  display: block;
   padding: 12px 16px;
   color: #d2d2d2;
   text-decoration: none;
@@ -615,17 +563,13 @@
   transition: background-color 0.2s ease-in-out;
 }
 
+.dropdown-menu a:hover {
+  background-color: #033a75;
+}
 
-/* Estilo específico para o link de Sair */
 .dropdown-menu .logout-link {
   background-color: #941a0d;
   color: #d2d2d2;
-}
-
-hr {
-  border: 0;
-  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
-  height: 1px; /* Define a espessura da linha */
 }
 
 /* =================================================================== */
@@ -635,17 +579,13 @@ hr {
     .dashboard-container {
         grid-template-columns: 250px 1fr;
         grid-template-rows: 78px 1fr;
-        grid-template-areas:
-            "header header"
-            "menu content";
     }
 
     .dashboard-header {
-        grid-area: header;
+        grid-column: 1 / -1;
     }
 
     .main-menu {
-        grid-area: menu;
         transform: translateX(0);
         position: sticky;
         top: 78px;
@@ -653,7 +593,7 @@ hr {
     }
 
     .main-content-perfil {
-        grid-area: content;
+        grid-column: 2 / 3;
     }
 
     .menu-toggle {
@@ -710,8 +650,7 @@ hr {
     }
 
     .general-info,
-    .help-box,
-    .additional-info {
+    .help-box {
         flex-basis: auto;
         min-width: unset;
     }
@@ -725,7 +664,15 @@ hr {
         text-align: center;
     }
 
-    .plan-actions-container {
+    .subscription-section {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .subscription-details {
+        flex-direction: column;
+        gap: 10px;
         text-align: center;
     }
 }
@@ -766,8 +713,7 @@ hr {
         margin-bottom: 15px;
     }
 
-    .info-list p,
-    .additional-info p {
+    .info-list p {
         font-size: 0.9rem;
     }
 

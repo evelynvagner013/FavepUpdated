@@ -179,13 +179,10 @@
 }
 
 .texto ul, .texto1 ul {
-    list-style: none; /* Remove o marcador padrão */
+    list-style: none;
     padding: 0;
     margin: 0;
 }
-
-
-
 
 .imagem img {
     max-width: 100%;
@@ -227,159 +224,7 @@
     color: #616161;
 }
 
-/* GRID E CARDS DE PARCEIROS */
-.row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 0 -15px;
-}
-
-.col-lg-6, .col-md-12 {
-    padding: 0 15px;
-}
-
-.mb-4 {
-    margin-bottom: 1.5rem !important;
-}
-
-.d-flex {
-    display: flex !important;
-}
-
-.partner-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    border: 1px solid #e0e0e0; /* Borda mínima nos cards */
-}
-
-.partner-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-.partner-card-header {
-    padding: 20px;
-    background-color: #004d40;
-    text-align: center;
-    min-height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.partner-logo {
-    max-height: 100%;
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    /* Filtro para deixar o logo branco. Remova se não precisar. */
-    filter: brightness(0) invert(1);
-}
-
-.partner-card-body {
-    padding: 30px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.partner-name {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    font-size: 1.75rem;
-    color: #212121;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.partner-description {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 0.95rem;
-    color: #616161;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    flex-grow: 1;
-}
-
-.partner-contact-info,
-.partner-social-media {
-    margin-top: auto;
-    margin-bottom: 15px;
-}
-
-.partner-contact-info h4,
-.partner-social-media h4 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
-    font-size: 1.1rem;
-    color: #004d40;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.list-unstyled, .list-inline {
-    padding-left: 0;
-    list-style: none;
-    margin: 0;
-}
-
-.list-inline-item {
-    display: inline-block;
-}
-
-.list-inline-item:not(:last-child) {
-    margin-right: .5rem;
-}
-
-.partner-contact-info ul li,
-.partner-social-media ul li {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
-    color: #616161;
-}
-
-.partner-contact-info ul li i,
-.partner-social-media ul li i {
-    margin-right: 10px;
-    color: #ffb300;
-    width: 20px;
-    text-align: center;
-}
-
-.partner-contact-info a,
-.partner-social-media a {
-    color: #616161;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.partner-contact-info a:hover,
-.partner-social-media a:hover {
-    color: #004d40;
-    text-decoration: underline;
-}
-
-.partner-social-media .list-inline-item i {
-    font-size: 1.5rem;
-    color: #616161;
-    transition: color 0.3s ease;
-}
-
-.partner-social-media .list-inline-item a:hover i.fa-facebook-f { color: #3b5998; }
-.partner-social-media .list-inline-item a:hover i.fa-instagram { color: #e4405f; }
-.partner-social-media .list-inline-item a:hover i.fa-linkedin-in { color: #0077b5; }
-
+/* GRID E BOTÃO VER TODOS */
 .ver-todos-container {
     text-align: center;
     margin-top: 40px;
@@ -404,21 +249,47 @@
     transform: translateY(-2px);
 }
 
-/* RESPONSIVIDADE */
-@media (min-width: 992px) {
-  .col-lg-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
+/* CARROSSEL DE LOGOS */
+.carousel {
+    overflow: hidden;
+    width: 100%;
+    padding: 30px 0;
 }
 
+.carousel-track {
+    display: flex;
+    align-items: center;
+    animation: scroll 25s linear infinite;
+}
+
+.carousel img {
+    max-width: 120px;   /* largura máxima */
+    max-height: 60px;   /* altura máxima */
+    margin: 0 30px;
+    object-fit: contain; /* mantém proporção */
+    opacity: 0.9;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.carousel img:hover {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+@keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* RESPONSIVIDADE */
 @media (max-width: 991.98px) {
-  .col-md-12 {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
   .servico, .servico1 {
     flex-direction: column;
     gap: 30px;
+  }
+  .carousel img {
+    max-width: 80px;
+    max-height: 40px;
+    margin: 0 15px;
   }
 }

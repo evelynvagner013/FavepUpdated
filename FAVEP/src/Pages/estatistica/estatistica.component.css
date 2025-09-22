@@ -47,6 +47,8 @@
     align-items: center;
     gap: 15px;
     white-space: nowrap;
+    position: relative;
+    cursor: pointer;
 }
 
 .user-avatar {
@@ -275,12 +277,6 @@
 .dropdown-menu .logout-link {
   background-color: #941a0d;
   color: #d2d2d2;
-}
-
-hr {
-  border: 0;
-  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
-  height: 1px; /* Define a espessura da linha */
 }
 
 /* =================================================================== */
