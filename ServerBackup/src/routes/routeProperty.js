@@ -8,6 +8,6 @@ router.get('/properties', propertyController.getAllProperties);
 router.get('/propGetById/:id', propertyController.getPropertyById);
 router.post('/registerProp', propertyController.createProperty);
 router.put('/updateProp/:id', propertyController.updateProperty);
-router.delete('/propDelete/:id', propertyController.deleteProperty);
+router.patch('/propToggleStatus/:id', propertyController.togglePropertyStatus);
 
 module.exports = router;

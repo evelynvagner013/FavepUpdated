@@ -21,6 +21,7 @@ CREATE TABLE "propriedade" (
     "localizacao" TEXT,
     "usuarioId" TEXT NOT NULL,
     "area_ha" INTEGER,
+    "status" TEXT NOT NULL,
 
     CONSTRAINT "propriedade_pkey" PRIMARY KEY ("id")
 );
@@ -32,7 +33,7 @@ CREATE TABLE "producao" (
     "areaproducao" DOUBLE PRECISION NOT NULL,
     "data" TIMESTAMP(3) NOT NULL,
     "cultura" TEXT NOT NULL,
-    "produtividade" DOUBLE PRECISION NOT NULL,
+    "quantidade" DOUBLE PRECISION NOT NULL,
     "propriedadeId" TEXT NOT NULL,
 
     CONSTRAINT "producao_pkey" PRIMARY KEY ("id")

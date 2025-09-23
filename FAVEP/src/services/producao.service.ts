@@ -23,17 +23,14 @@ export class ProducaoService {
       );
     }
   
-    // CORREÇÃO: O tipo Omit agora reflete o modelo correto.
     adicionarProducao(prod: Omit<Producao, 'id' | 'propriedade'>): Observable<Producao> {
       return this.http.post<Producao>(`${this.baseUrl}/registerProduction`, prod);
     }
   
-    // CORREÇÃO: O ID é um número.
     atualizarProducao(id: number, prod: Partial<Producao>): Observable<Producao> {
       return this.http.put<Producao>(`${this.baseUrl}/updateProduction/${id}`, prod);
     }
   
-    // CORREÇÃO: O ID é um número.
     excluirProducao(id: number): Observable<any> {
       return this.http.delete(`${this.baseUrl}/productionDelete/${id}`);
     }

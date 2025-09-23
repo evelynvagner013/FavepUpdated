@@ -1,15 +1,16 @@
 const prisma = require('../lib/prisma');
 
 module.exports = {
-  // # getAllProperties
+  // # getAllProperties - Busca todas as propriedades (ativas e inativas)
   async getAllProperties(req, res) {
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para listar todas as propriedades do usuário: ${authenticatedUserId}`);
     try {
       const properties = await prisma.propriedade.findMany({
-        where: { usuarioId: authenticatedUserId },
+        where: { 
+          usuarioId: authenticatedUserId,
+        },
         include: {
-          // CORREÇÃO: Seleciona apenas campos seguros do usuário para evitar expor a senha.
           usuario: {
             select: { nome: true, email: true }
           },
@@ -39,16 +40,17 @@ module.exports = {
     }
   },
 
-  // # getPropertyById - CORRIGIDO
+  // # getPropertyById - CORRIGIDO: Agora busca a propriedade sem verificar o status 'ativo'
   async getPropertyById(req, res) {
-    const { id } = req.params; // Usa o ID da URL
+    const { id } = req.params;
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para buscar propriedade com ID: "${id}"`);
     try {
       const property = await prisma.propriedade.findFirst({
         where: {
-          id: id, // Busca pelo ID
-          usuarioId: authenticatedUserId,
+          id: id,
+          usuarioId: authenticatedUserId
+          // A linha 'status: 'ativo'' foi removida para buscar por ID independentemente do status
         },
         include: {
           usuario: {
@@ -77,7 +79,7 @@ module.exports = {
     }
   },
 
-  // # createProperty - CORRIGIDO
+  // # createProperty - Adicionado 'status' padrão como 'ativo'
   async createProperty(req, res) {
     const { nomepropriedade, area_ha, localizacao } = req.body;
     const authenticatedUserId = req.userId;
@@ -88,13 +90,13 @@ module.exports = {
     }
 
     try {
-      // REMOVIDO: Verificação de nome de propriedade existente, pois agora nomes podem ser repetidos.
 
       const newProperty = await prisma.propriedade.create({
         data: {
           nomepropriedade,
           area_ha,
           localizacao,
+          status: 'ativo',
           usuario: {
             connect: { id: authenticatedUserId },
           },
@@ -109,7 +111,7 @@ module.exports = {
       console.log('✅ Propriedade criada com sucesso:', newProperty.id);
       res.status(201).json({
         message: 'Propriedade cadastrada com sucesso!',
-        property: { ...newProperty, culturas: [] } // Retorna culturas vazio pois acabou de ser criada
+        property: { ...newProperty, culturas: [] }
       });
     } catch (error) {
       console.error('❌ Erro ao criar propriedade:', error);
@@ -120,9 +122,9 @@ module.exports = {
     }
   },
 
-  // # updateProperty - CORRIGIDO
+  // # updateProperty - Sem alterações
   async updateProperty(req, res) {
-    const { id } = req.params; // Usa o ID da URL
+    const { id } = req.params;
     const { nomepropriedade, area_ha, localizacao } = req.body;
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para atualizar propriedade com ID: "${id}"`);
@@ -136,7 +138,7 @@ module.exports = {
       });
       
       if (!property) {
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para atualizar.` });
+        return res.status(444).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para atualizar.` });
       }
 
       const updatedProperty = await prisma.propriedade.update({
@@ -144,7 +146,7 @@ module.exports = {
           id: id,
         },
         data: {
-          nomepropriedade, // Permite atualizar o nome
+          nomepropriedade, 
           area_ha,
           localizacao,
         },
@@ -173,11 +175,11 @@ module.exports = {
     }
   },
 
-  // # deleteProperty - CORRIGIDO
-  async deleteProperty(req, res) {
-    const { id } = req.params; // Usa o ID da URL
+  // # togglePropertyStatus - Sem alterações
+  async togglePropertyStatus(req, res) {
+    const { id } = req.params;
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para deletar propriedade com ID: "${id}"`);
+    console.log(`➡️ Requisição recebida para alterar status da propriedade com ID: "${id}"`);
     try {
       const property = await prisma.propriedade.findFirst({
         where: {
@@ -187,27 +189,21 @@ module.exports = {
       });
       
       if (!property) {
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para deletar.` });
+        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}".` });
       }
 
-      // Deleta registros relacionados primeiro para evitar erros de chave estrangeira
-      await prisma.financeiro.deleteMany({
-        where: { propriedadeId: id },
-      });
-      await prisma.producao.deleteMany({
-        where: { propriedadeId: id },
-      });
-      
-      // Finalmente, deleta a propriedade
-      await prisma.propriedade.delete({
+      const novoStatus = property.status === 'ativo' ? 'inativo' : 'ativo';
+
+      await prisma.propriedade.update({
         where: { id: id },
+        data: { status: novoStatus }
       });
 
-      console.log('🗑️ Propriedade e dados associados deletados com sucesso:', id);
-      res.status(204).send();
+      console.log(`🔄 Status da propriedade ${id} alterado para: ${novoStatus}`);
+      res.status(200).json({ message: `Propriedade ${novoStatus === 'ativo' ? 'ativada' : 'desativada'} com sucesso!` });
     } catch (error) {
-      console.error('❌ Erro ao deletar propriedade:', error);
-      res.status(500).json({ error: 'Ops! Ocorreu um erro ao deletar a propriedade.' });
+      console.error('❌ Erro ao alterar status da propriedade:', error);
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao alterar o status da propriedade.' });
     }
   },
 };

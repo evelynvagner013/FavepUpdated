@@ -61,20 +61,17 @@ module.exports = {
 
   // # createProduction (CORRIGIDO)
   async createProduction(req, res) {
-    // CORREÇÃO: Espera 'propriedadeId' no corpo da requisição
-    const { safra, areaproducao, data, propriedadeId, cultura, produtividade } = req.body;
+    const { safra, areaproducao, data, propriedadeId, cultura, quantidade } = req.body;
     const authenticatedUserId = req.userId;
     console.log('➡️ Requisição recebida para criar uma nova produção');
     console.log('📦 Dados recebidos:', req.body);
 
-    // CORREÇÃO: Validação atualizada para 'propriedadeId'
-    if (!safra || areaproducao === undefined || !data || !propriedadeId || !cultura || produtividade === undefined) {
+    if (!safra || areaproducao === undefined || !data || !propriedadeId || !cultura || quantidade === undefined) {
       console.warn('⚠️ Campos obrigatórios para criar produção ausentes.');
-      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: safra, areaproducao, produtividade, data, propriedadeId e cultura.' });
+      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: safra, areaproducao, quantidade, data, propriedadeId e cultura.' });
     }
 
     try {
-      // CORREÇÃO: Busca a propriedade pelo ID para verificar a permissão
       const property = await prisma.propriedade.findFirst({
         where: {
           id: propriedadeId,
@@ -90,11 +87,10 @@ module.exports = {
         data: {
           safra,
           areaproducao,
-          produtividade,
+          quantidade,
           data: new Date(data),
           cultura,
           propriedade: {
-            // CORREÇÃO: Conecta a produção à propriedade usando o ID
             connect: { id: propriedadeId },
           },
         },
@@ -116,11 +112,10 @@ module.exports = {
     }
   },
 
-  // # updateProduction (CORRIGIDO)
+  // # updateProduction 
   async updateProduction(req, res) {
     const { id } = req.params;
-    // CORREÇÃO: 'nomepropriedade' removido, pois a propriedade de uma produção não deve ser alterada aqui.
-    const { safra, areaproducao, data, cultura, produtividade } = req.body;
+    const { safra, areaproducao, data, cultura, quantidade } = req.body;
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para atualizar produção com ID: "${id}"`);
 
@@ -144,7 +139,7 @@ module.exports = {
         data: {
           safra,
           areaproducao,
-          produtividade,
+          quantidade,
           ...(data && { data: new Date(data) }),
           cultura,
         },

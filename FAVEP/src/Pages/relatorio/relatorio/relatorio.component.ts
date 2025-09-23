@@ -138,7 +138,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
             productivityData.set(prod.cultura, { totalYield: 0, totalArea: 0 });
           }
           const data = productivityData.get(prod.cultura)!;
-          data.totalYield += (prod.produtividade * prod.areaproducao);
+          data.totalYield += (prod.quantidade * prod.areaproducao);
           data.totalArea += prod.areaproducao;
         });
         labels = Array.from(productivityData.keys()).sort();
@@ -167,7 +167,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
         const cropProductionData = new Map<string, number>();
         filteredProducoes.forEach(prod => {
           const currentTotal = cropProductionData.get(prod.cultura) || 0;
-          const productionOfThisEntry = prod.produtividade * prod.areaproducao;
+          const productionOfThisEntry = prod.quantidade * prod.areaproducao;
           cropProductionData.set(prod.cultura, currentTotal + productionOfThisEntry);
         });
         labels = Array.from(cropProductionData.keys()).sort();

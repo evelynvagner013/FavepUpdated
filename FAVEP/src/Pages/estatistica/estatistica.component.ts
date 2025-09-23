@@ -118,9 +118,9 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
 
     const producaoPorCultura: { [key: string]: number } = {};
     this.producaoAtual = producoesFiltradas.reduce((sum, prod) => {
-      if (prod.produtividade) {
-        producaoPorCultura[prod.cultura] = (producaoPorCultura[prod.cultura] || 0) + prod.produtividade;
-        return sum + prod.produtividade;
+      if (prod.quantidade) {
+        producaoPorCultura[prod.cultura] = (producaoPorCultura[prod.cultura] || 0) + prod.quantidade;
+        return sum + prod.quantidade;
       }
       return sum;
     }, 0);

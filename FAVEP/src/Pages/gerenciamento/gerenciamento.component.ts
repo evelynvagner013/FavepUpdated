@@ -51,6 +51,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   filtroPeriodo: string = '30';
   termoBusca: string = '';
   filtroPropriedade: string = 'todos';
+  filtroStatus: string = 'ativo'; // Filtro de status da propriedade
   
   // --- Opções para os Filtros ---
   opcoesFiltro: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas' }];
@@ -191,10 +192,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   }
 
   filtrarPropriedades(): void {
-    this.propriedadesFiltradas = this.propriedades.filter(prop =>
-      !this.termoBusca || prop.nomepropriedade.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
-      (prop.localizacao && prop.localizacao.toLowerCase().includes(this.termoBusca.toLowerCase()))
-    );
+    this.propriedadesFiltradas = this.propriedades.filter(prop => {
+      const buscaValida = !this.termoBusca || 
+                         prop.nomepropriedade.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
+                         (prop.localizacao && prop.localizacao.toLowerCase().includes(this.termoBusca.toLowerCase()));
+
+      if (this.filtroStatus === 'todos') {
+        return buscaValida;
+      }
+      return prop.status === this.filtroStatus && buscaValida;
+    });
     this.paginaAtualPropriedades = 1;
   }
 
@@ -222,16 +229,30 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.paginaAtualFinanceiro = 1;
   }
 
+  // --- MÉTODOS DE CÁLCULO ATUALIZADOS ---
+
+  getPropriedadesAtivas(): Propriedade[] {
+    return this.propriedades.filter(p => p.status === 'ativo');
+  }
+
+  calcularTotalPropriedadesAtivas(): number {
+    return this.getPropriedadesAtivas().length;
+  }
+
   calcularAreaTotal(): number {
-    return this.propriedades.reduce((total, prop) => total + (prop.area_ha || 0), 0);
+    return this.getPropriedadesAtivas().reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
   calcularProducaoTotal(): number {
-    return this.producoes.reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.produtividade || 0)), 0);
+    const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
+    const producoesAtivas = this.producoes.filter(prod => idsPropriedadesAtivas.has(prod.propriedadeId));
+    return producoesAtivas.reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.quantidade || 0)), 0);
   }
   
   calcularAreaPlantada(): number {
-    return this.producoes.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
+    const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
+    const producoesAtivas = this.producoes.filter(prod => idsPropriedadesAtivas.has(prod.propriedadeId));
+    return producoesAtivas.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
   }
 
   calcularProdutividadeMedia(): number {
@@ -241,14 +262,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   }
 
   calcularTotalReceitas(): number {
+    const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
     return this.financeirosFiltrados
-      .filter(m => m.tipo === 'receita')
+      .filter(m => m.tipo === 'receita' && idsPropriedadesAtivas.has(m.propriedadeId))
       .reduce((total, m) => total + m.valor, 0);
   }
 
   calcularTotalDespesas(): number {
+    const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
     return this.financeirosFiltrados
-      .filter(m => m.tipo === 'despesa')
+      .filter(m => m.tipo === 'despesa' && idsPropriedadesAtivas.has(m.propriedadeId))
       .reduce((total, m) => total + m.valor, 0);
   }
 
@@ -268,7 +291,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     const { id, ...dados } = this.propriedadeEditada;
     const observable = id
       ? this.propriedadeService.atualizarPropriedade(id, dados)
-      : this.propriedadeService.adicionarPropriedade(dados as Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>);
+      : this.propriedadeService.adicionarPropriedade(dados as Omit<Propriedade, 'id' | 'usuarioId' | 'culturas' | 'status'>);
     observable.subscribe({
       next: () => { this.carregarTodosDados(); this.fecharModal(); },
       error: (err: any) => console.error('Erro ao salvar propriedade:', err),
@@ -305,7 +328,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
     switch (this.tipoExclusao) {
       case 'propriedades':
-        exclusaoObservable = this.propriedadeService.excluirPropriedade(this.itemParaExcluir.id);
+        exclusaoObservable = this.propriedadeService.togglePropertyStatus(this.itemParaExcluir.id);
         break;
       case 'producao':
         exclusaoObservable = this.producaoService.excluirProducao(this.itemParaExcluir.id);
@@ -320,7 +343,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
         this.carregarTodosDados();
         this.cancelarExclusao();
       },
-      error: (err: any) => console.error(`Erro ao excluir ${this.tipoExclusao}:`, err),
+      error: (err: any) => console.error(`Erro ao executar ação em ${this.tipoExclusao}:`, err),
     });
   }
 
@@ -331,7 +354,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
     switch (this.tipoEdicao) {
       case 'propriedades': this.propriedadeEditada = {}; break;
-      case 'producao': this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, produtividade: 0, data: new Date(), propriedadeId: '' }; break;
+      case 'producao': this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, quantidade: 0, data: new Date(), propriedadeId: '' }; break;
       case 'financeiro': this.financeiroEditado = { tipo: 'receita', data: new Date(), descricao: '', valor: 0, propriedadeId: '' }; break;
     }
   }
@@ -370,7 +393,12 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.itemParaExcluir = item;
     this.tipoExclusao = tipo;
     const nomeItem = item.nomepropriedade || item.descricao || item.cultura || `ID: ${item.id}`;
-    this.mensagemConfirmacao = `Tem certeza que deseja excluir "${nomeItem}"? Esta ação não pode ser desfeita.`;
+    if (tipo === 'propriedades') {
+      const acao = item.status === 'ativo' ? 'desativar' : 'ativar';
+      this.mensagemConfirmacao = `Tem certeza que deseja ${acao} a propriedade "${nomeItem}"?`;
+    } else {
+      this.mensagemConfirmacao = `Tem certeza que deseja excluir "${nomeItem}"? Esta ação não pode ser desfeita.`;
+    }
     this.confirmacaoAberta = true;
   }
 
@@ -425,4 +453,3 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 }
-

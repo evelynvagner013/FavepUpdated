@@ -20,6 +20,7 @@ export interface Propriedade {
   localizacao: string;
   area_ha: number;
   usuarioId: string;
+  status: string; // NOVO CAMPO
   culturas?: string[]; // Adicionado para comportar os dados que vêm do controller
 }
 
@@ -28,7 +29,7 @@ export interface Producao {
   propriedadeId: string; // Chave estrangeira CORRETA
   cultura: string;
   safra: string;
-  produtividade: number;
+  quantidade: number; // Campo alterado de 'produtividade' para 'quantidade'
   areaproducao: number;
   data: Date | string; // Permitir string para facilitar o binding de formulários
   propriedade?: Propriedade; // Opcional para dados aninhados

@@ -1,356 +1,376 @@
 <div class="dashboard-container">
- <header class="dashboard-header">
-    <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
-      <i class="fas fa-bars"></i>
-    </button>
-    <h1>
-      <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agrícola
-    </h1>
-    <div class="user-info" (click)="mostrarDropdown = !mostrarDropdown">
-      <span>Olá, {{ usuarioNome }}</span>
-      <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
-      <div class="dropdown-menu" *ngIf="mostrarDropdown">
-        <a (click)="abrirModalPerfil()">Perfil</a>
-        <a (click)="logout()" class="logout-link">Sair</a>
-      </div>
-    </div>
-  </header>
-
-  <nav class="main-menu" [class.open]="menuAberto">
-    <a routerLink="/home" routerLinkActive="active">
-      <span class="material-symbols-outlined">home</span> Home
-    </a>
-    <a routerLink="/gerenciamento" routerLinkActive="active">
-      <span class="material-symbols-outlined">dashboard</span> Gerenciamento
-    </a>
-    <a routerLink="/estatistica" routerLinkActive="active">
-      <span class="material-symbols-outlined">monitoring</span> Estatística
-    </a>
-    <a routerLink="/relatorio" routerLinkActive="active">
-      <span class="material-symbols-outlined">overview</span> Relatório geral
-    </a>
-    <a routerLink="/usuario" routerLinkActive="active">
-      <span class="material-symbols-outlined">account_circle</span> Configuração
-    </a>
-  </nav>
-
-  <main class="main-content">
-    <div class="content-header">
-      <nav class="main-nav">
-        <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
-          <i class="fas fa-map-marked"></i> Propriedades
-        </button>
-        <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
-          <i class="fas fa-wheat-awn"></i> Produção
-        </button>
-        <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
-          <i class="fas fa-money-bill-wave"></i> Financeiro
-        </button>
-      </nav>
-
-      <div class="toolbar">
-        <div class="filtros">
-          <div class="filtro-group" *ngIf="abaAtiva === 'producao' || abaAtiva === 'financeiro'">
-            <label for="filtro-propriedade">Filtrar por Propriedade:</label>
-            <select id="filtro-propriedade" [(ngModel)]="filtroPropriedade" (change)="aplicarFiltros()" name="filtroPropriedade">
-              <option *ngFor="let opcao of opcoesFiltroPropriedade" [value]="opcao.valor">{{opcao.texto}}</option>
-            </select>
-          </div>
-
-          <div class="filtro-group" *ngIf="abaAtiva === 'producao'">
-            <label for="filtro-tipo">Filtrar por Cultura:</label>
-            <select id="filtro-tipo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
-              <option *ngFor="let opcao of opcoesFiltro" [value]="opcao.valor">{{opcao.texto}}</option>
-            </select>
-          </div>
-
-          <div class="filtro-group" *ngIf="abaAtiva === 'financeiro'">
-            <label for="filtro-periodo">Período:</label>
-            <select id="filtro-periodo" [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
-              <option value="30">Últimos 30 dias</option>
-              <option value="90">Últimos 90 dias</option>
-              <option value="180">Últimos 6 meses</option>
-              <option value="365">Último ano</option>
-              <option value="todos">Todos</option>
-            </select>
-          </div>
-
-          <div class="search-group" *ngIf="abaAtiva === 'propriedades'">
-            <input type="text" placeholder="Pesquisar por nome ou localização..." [(ngModel)]="termoBusca" (input)="aplicarFiltros()" name="termoBusca">
-            <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
-          </div>
-        </div>
-
-        <button class="btn-add" (click)="abrirModalAdicionar()">
-          <i class="fas fa-plus"></i> Adicionar
-        </button>
-      </div>
-    </div>
-    <section *ngIf="abaAtiva === 'propriedades'" class="content-section">
-      <div class="summary-cards">
-        <div class="summary-card">
-          <h3>Total Propriedades</h3>
-          <p class="value">{{propriedades.length}}</p>
-        </div>
-        <div class="summary-card">
-          <h3>Área Total</h3>
-          <p class="value">{{calcularAreaTotal() | number:'1.0-0':'pt-BR'}} ha</p>
-        </div>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Área (ha)</th>
-              <th>Localização</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let prop of propriedadesPaginadas; trackBy: trackById">
-              <td>{{prop.nomepropriedade}}</td>
-              <td>{{prop.area_ha | number:'1.0-0':'pt-BR'}}</td>
-              <td>{{prop.localizacao}}</td>
-              <td class="actions">
-                <button class="btn-edit" (click)="editarPropriedade(prop)" aria-label="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(prop, 'propriedades')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
-              </td>
-            </tr>
-            <tr *ngIf="propriedadesFiltradas.length === 0">
-              <td colspan="4" class="no-data">Nenhuma propriedade encontrada.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination-container" *ngIf="propriedadesFiltradas.length > itensPorPagina">
-        <button (click)="mudarPagina('propriedades', paginaAtualPropriedades - 1)" [disabled]="paginaAtualPropriedades === 1">Anterior</button>
-        <span *ngFor="let pagina of paginasDisponiveis(propriedadesFiltradas.length)" 
-              [class.active]="pagina === paginaAtualPropriedades" 
-              (click)="mudarPagina('propriedades', pagina)">
-          {{pagina}}
-        </span>
-        <button (click)="mudarPagina('propriedades', paginaAtualPropriedades + 1)" [disabled]="paginaAtualPropriedades === totalPaginas(propriedadesFiltradas.length)">Próxima</button>
-      </div>
-      </section>
-
-    <section *ngIf="abaAtiva === 'producao'" class="content-section">
-      <div class="summary-cards">
-        <div class="summary-card">
-          <h3>Produção Total</h3>
-          <p class="value">{{calcularProducaoTotal() | number:'1.0-0':'pt-BR'}} kg</p>
-        </div>
-        <div class="summary-card">
-          <h3>Área Plantada</h3>
-          <p class="value">{{calcularAreaPlantada() | number:'1.0-0':'pt-BR'}} ha</p>
-        </div>
-        <div class="summary-card">
-          <h3>Produtividade Média</h3>
-          <p class="value">{{calcularProdutividadeMedia() | number:'1.2-2':'pt-BR'}} kg/ha</p>
-        </div>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Cultura</th>
-              <th>Safra</th>
-              <th>Data</th>
-              <th>Área (ha)</th>
-              <th>Propriedade</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let prod of producoesPaginadas; trackBy: trackById">
-              <td>{{prod.cultura}}</td>
-              <td>{{prod.safra}}</td>
-              <td>{{prod.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
-              <td>{{prod.areaproducao | number:'1.0-0':'pt-BR'}}</td>
-              <td>{{getNomePropriedade(prod.propriedadeId)}}</td>
-              <td class="actions">
-                <button class="btn-edit" (click)="editarProducao(prod)" aria-label="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
-              </td>
-            </tr>
-            <tr *ngIf="producoesPaginadas.length === 0">
-              <td colspan="6" class="no-data">Nenhuma produção encontrada.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination-container" *ngIf="producoesFiltradas.length > itensPorPagina">
-        <button (click)="mudarPagina('producao', paginaAtualProducao - 1)" [disabled]="paginaAtualProducao === 1">Anterior</button>
-        <span *ngFor="let pagina of paginasDisponiveis(producoesFiltradas.length)" 
-              [class.active]="pagina === paginaAtualProducao" 
-              (click)="mudarPagina('producao', pagina)">
-          {{pagina}}
-        </span>
-        <button (click)="mudarPagina('producao', paginaAtualProducao + 1)" [disabled]="paginaAtualProducao === totalPaginas(producoesFiltradas.length)">Próxima</button>
-      </div>
-      </section>
-
-    <section *ngIf="abaAtiva === 'financeiro'" class="content-section">
-      <div class="summary-cards">
-        <div class="summary-card">
-          <h3>Receitas</h3>
-          <p class="value positivo">{{calcularTotalReceitas() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</p>
-        </div>
-        <div class="summary-card">
-          <h3>Despesas</h3>
-          <p class="value negativo">{{calcularTotalDespesas() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</p>
-        </div>
-        <div class="summary-card">
-          <h3>Resultado</h3>
-          <p class="value" [class.positivo]="calcularResultadoFinanceiro() >= 0" [class.negativo]="calcularResultadoFinanceiro() < 0">
-            {{calcularResultadoFinanceiro() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
-          </p>
-        </div>
-      </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Tipo</th>
-              <th>Descrição</th>
-              <th>Propriedade</th>
-              <th>Valor</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let fin of financeirosPaginados; trackBy: trackById">
-              <td>{{fin.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
-              <td>
-                <span class="badge" [class.receita]="fin.tipo === 'receita'" [class.despesa]="fin.tipo === 'despesa'">
-                  {{fin.tipo | titlecase}}
-                </span>
-              </td>
-              <td>{{fin.descricao || '-'}}</td>
-              <td>{{getNomePropriedade(fin.propriedadeId)}}</td>
-              <td [class.positivo]="fin.tipo === 'receita'" [class.negativo]="fin.tipo === 'despesa'">
-                {{fin.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
-              </td>
-              <td class="actions">
-                <button class="btn-edit" (click)="editarMovimentacao(fin)" aria-label="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn-delete" (click)="confirmarExclusao(fin, 'financeiro')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
-              </td>
-            </tr>
-            <tr *ngIf="financeirosPaginados.length === 0">
-              <td colspan="6" class="no-data">Nenhum registro financeiro encontrado.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination-container" *ngIf="financeirosFiltrados.length > itensPorPagina">
-        <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro - 1)" [disabled]="paginaAtualFinanceiro === 1">Anterior</button>
-        <span *ngFor="let pagina of paginasDisponiveis(financeirosFiltrados.length)" 
-              [class.active]="pagina === paginaAtualFinanceiro" 
-              (click)="mudarPagina('financeiro', pagina)">
-          {{pagina}}
-        </span>
-        <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro + 1)" [disabled]="paginaAtualFinanceiro === totalPaginas(financeirosFiltrados.length)">Próxima</button>
-      </div>
-      </section>
-  </main>
-
-  <div class="modal" *ngIf="modalAberto">
-    <div class="modal-content">
-      <span class="close" (click)="fecharModal()" aria-label="Fechar modal">&times;</span>
-      <h3>{{modalTitulo}}</h3>
-
-      <form (ngSubmit)="salvar()" #form="ngForm">
-        <div *ngIf="tipoEdicao === 'propriedades'">
-          <div class="form-group">
-            <label for="propertyName">Nome da Propriedade</label>
-            <input type="text" id="propertyName" [(ngModel)]="propriedadeEditada.nomepropriedade" name="propertyName" required>
-          </div>
-          <div class="form-group">
-            <label for="propertyArea">Área Total (ha)</label>
-            <input type="number" id="propertyArea" min="0" step="0.01" [(ngModel)]="propriedadeEditada.area_ha" name="propertyArea" required>
-          </div>
-          <div class="form-group">
-            <label for="propertyLocation">Localização</label>
-            <input type="text" id="propertyLocation" [(ngModel)]="propriedadeEditada.localizacao" name="propertyLocation" required>
-          </div>
-        </div>
-        
-        <div *ngIf="tipoEdicao === 'producao'">
-          <div class="form-group">
-            <label for="cropName">Cultura</label>
-            <input type="text" id="cropName" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
-          </div>
-          <div class="form-group">
-            <label for="cropType">Safra</label>
-            <input type="text" id="cropType" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
-          </div>
-          <div class="form-group">
-            <label for="producaoArea">Área de Produção (ha)</label>
-            <input type="number" id="producaoArea" min="0" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
-          </div>
-          <div class="form-group">
-            <label for="producaoProdutividade">Produtividade (kg/ha)</label>
-            <input type="number" id="producaoProdutividade" min="0" step="0.01" [(ngModel)]="producaoEditada.produtividade" name="producaoProdutividade" required>
-          </div>
-          <div class="form-group">
-            <label for="plantingDate">Data</label>
-            <input type="date" id="plantingDate" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
-          </div>
-          <div class="form-group">
-            <label for="cropProperty">Propriedade</label>
-            <select id="cropProperty" [(ngModel)]="producaoEditada.propriedadeId" name="cropProperty" required>
-              <option [ngValue]="''" disabled>Selecione uma propriedade</option>
-              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
-            </select>
-          </div>
-        </div>
-
-        <div *ngIf="tipoEdicao === 'financeiro'">
-          <div class="form-group">
-            <label for="financialType">Tipo</label>
-            <select id="financialType" [(ngModel)]="financeiroEditado.tipo" name="financialType" required>
-              <option value="receita">Receita</option>
-              <option value="despesa">Despesa</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="financialDescription">Descrição</label>
-            <input type="text" id="financialDescription" [(ngModel)]="financeiroEditado.descricao" name="financialDescription" required>
-          </div>
-          <div class="form-group">
-            <label for="financialAmount">Valor (R$)</label>
-            <input type="number" id="financialAmount" min="0" step="0.01" [(ngModel)]="financeiroEditado.valor" name="financialAmount" required>
-          </div>
-          <div class="form-group">
-            <label for="financialDate">Data</label>
-            <input type="date" id="financialDate" [(ngModel)]="financeiroEditado.data" name="financialDate" required>
-          </div>
-          <div class="form-group">
-            <label for="financialProperty">Propriedade</label>
-            <select id="financialProperty" [(ngModel)]="financeiroEditado.propriedadeId" name="financialProperty" required>
-              <option [ngValue]="''" disabled>Selecione uma propriedade</option>
-              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
-            </select>
-          </div>
-          </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" (click)="fecharModal()">Cancelar</button>
-          <button type="submit" class="btn-save" [disabled]="!form.valid">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal" *ngIf="confirmacaoAberta">
-    <div class="modal-content confirm-modal">
-      <h3>Confirmar Exclusão</h3>
-      <p>{{mensagemConfirmacao}}</p>
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelarExclusao()">Cancelar</button>
-        <button class="btn-confirm" (click)="executarExclusao()">Confirmar</button>
-      </div>
-    </div>
-  </div>
-</div>
+  <header class="dashboard-header">
+     <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
+       <i class="fas fa-bars"></i>
+     </button>
+     <h1>
+       <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agrícola
+     </h1>
+     <div class="user-info" (click)="mostrarDropdown = !mostrarDropdown">
+       <span>Olá, {{ usuarioNome }}</span>
+       <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
+       <div class="dropdown-menu" *ngIf="mostrarDropdown">
+         <a (click)="abrirModalPerfil()">Perfil</a>
+         <a (click)="logout()" class="logout-link">Sair</a>
+       </div>
+     </div>
+   </header>
+ 
+   <nav class="main-menu" [class.open]="menuAberto">
+     <a routerLink="/home" routerLinkActive="active">
+       <span class="material-symbols-outlined">home</span> Home
+     </a>
+     <a routerLink="/gerenciamento" routerLinkActive="active">
+       <span class="material-symbols-outlined">dashboard</span> Gerenciamento
+     </a>
+     <a routerLink="/estatistica" routerLinkActive="active">
+       <span class="material-symbols-outlined">monitoring</span> Estatística
+     </a>
+     <a routerLink="/relatorio" routerLinkActive="active">
+       <span class="material-symbols-outlined">overview</span> Relatório geral
+     </a>
+     <a routerLink="/usuario" routerLinkActive="active">
+       <span class="material-symbols-outlined">account_circle</span> Configuração
+     </a>
+   </nav>
+ 
+   <main class="main-content">
+     <div class="content-header">
+       <nav class="main-nav">
+         <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
+           <i class="fas fa-map-marked"></i> Propriedades
+         </button>
+         <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
+           <i class="fas fa-wheat-awn"></i> Produção
+         </button>
+         <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
+           <i class="fas fa-money-bill-wave"></i> Financeiro
+         </button>
+       </nav>
+ 
+       <div class="toolbar">
+         <div class="filtros">
+           <div class="filtro-group" *ngIf="abaAtiva === 'propriedades'">
+             <label for="filtro-status">Exibir:</label>
+             <select id="filtro-status" [(ngModel)]="filtroStatus" (change)="aplicarFiltros()" name="filtroStatus">
+               <option value="ativo">Ativas</option>
+               <option value="inativo">Inativas</option>
+               <option value="todos">Todas</option>
+             </select>
+           </div>
+           
+           <div class="filtro-group" *ngIf="abaAtiva === 'producao' || abaAtiva === 'financeiro'">
+             <label for="filtro-propriedade">Filtrar por Propriedade:</label>
+             <select id="filtro-propriedade" [(ngModel)]="filtroPropriedade" (change)="aplicarFiltros()" name="filtroPropriedade">
+               <option *ngFor="let opcao of opcoesFiltroPropriedade" [value]="opcao.valor">{{opcao.texto}}</option>
+             </select>
+           </div>
+ 
+           <div class="filtro-group" *ngIf="abaAtiva === 'producao'">
+             <label for="filtro-tipo">Filtrar por Cultura:</label>
+             <select id="filtro-tipo" [(ngModel)]="filtroAtivo" (change)="aplicarFiltros()" name="filtroTipo">
+               <option *ngFor="let opcao of opcoesFiltro" [value]="opcao.valor">{{opcao.texto}}</option>
+             </select>
+           </div>
+ 
+           <div class="filtro-group" *ngIf="abaAtiva === 'financeiro'">
+             <label for="filtro-periodo">Período:</label>
+             <select id="filtro-periodo" [(ngModel)]="filtroPeriodo" (change)="aplicarFiltros()" name="filtroPeriodo">
+               <option value="30">Últimos 30 dias</option>
+               <option value="90">Últimos 90 dias</option>
+               <option value="180">Últimos 6 meses</option>
+               <option value="365">Último ano</option>
+               <option value="todos">Todos</option>
+             </select>
+           </div>
+ 
+           <div class="search-group" *ngIf="abaAtiva === 'propriedades'">
+             <input type="text" placeholder="Pesquisar por nome ou localização..." [(ngModel)]="termoBusca" (input)="aplicarFiltros()" name="termoBusca">
+             <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
+           </div>
+         </div>
+ 
+         <button class="btn-add" (click)="abrirModalAdicionar()">
+           <i class="fas fa-plus"></i> Adicionar
+         </button>
+       </div>
+     </div>
+     <section *ngIf="abaAtiva === 'propriedades'" class="content-section">
+       <div class="summary-cards">
+         <div class="summary-card">
+           <h3>Total Propriedades Ativas</h3>
+           <p class="value">{{calcularTotalPropriedadesAtivas()}}</p>
+         </div>
+         <div class="summary-card">
+           <h3>Área Total (Ativas)</h3>
+           <p class="value">{{calcularAreaTotal() | number:'1.0-0':'pt-BR'}} ha</p>
+         </div>
+       </div>
+       <div class="table-container">
+         <table>
+           <thead>
+             <tr>
+               <th>Nome</th>
+               <th>Área (ha)</th>
+               <th>Localização</th>
+               <th>Status</th>
+               <th>Ações</th>
+             </tr>
+           </thead>
+           <tbody>
+             <tr *ngFor="let prop of propriedadesPaginadas; trackBy: trackById" [class.inativa]="prop.status === 'inativo'">
+               <td>{{prop.nomepropriedade}}</td>
+               <td>{{prop.area_ha | number:'1.0-0':'pt-BR'}}</td>
+               <td>{{prop.localizacao}}</td>
+               <td>
+                 <span class="badge" [class.ativo]="prop.status === 'ativo'" [class.inativo]="prop.status === 'inativo'">
+                   {{prop.status | titlecase}}
+                 </span>
+               </td>
+               <td class="actions">
+                 <button class="btn-edit" (click)="editarPropriedade(prop)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                 <button class="btn-toggle" 
+                         [class.ativo]="prop.status === 'ativo'"
+                         (click)="confirmarExclusao(prop, 'propriedades')" 
+                         [attr.aria-label]="prop.status === 'ativo' ? 'Desativar' : 'Ativar'">
+                   <i class="fas" [class.fa-toggle-on]="prop.status === 'ativo'" [class.fa-toggle-off]="prop.status !== 'ativo'"></i>
+                 </button>
+               </td>
+             </tr>
+             <tr *ngIf="propriedadesFiltradas.length === 0">
+               <td colspan="5" class="no-data">Nenhuma propriedade encontrada.</td>
+             </tr>
+           </tbody>
+         </table>
+       </div>
+       <div class="pagination-container" *ngIf="propriedadesFiltradas.length > itensPorPagina">
+         <button (click)="mudarPagina('propriedades', paginaAtualPropriedades - 1)" [disabled]="paginaAtualPropriedades === 1">Anterior</button>
+         <span *ngFor="let pagina of paginasDisponiveis(propriedadesFiltradas.length)" 
+               [class.active]="pagina === paginaAtualPropriedades" 
+               (click)="mudarPagina('propriedades', pagina)">
+           {{pagina}}
+         </span>
+         <button (click)="mudarPagina('propriedades', paginaAtualPropriedades + 1)" [disabled]="paginaAtualPropriedades === totalPaginas(propriedadesFiltradas.length)">Próxima</button>
+       </div>
+       </section>
+ 
+     <section *ngIf="abaAtiva === 'producao'" class="content-section">
+       <div class="summary-cards">
+         <div class="summary-card">
+           <h3>Produção Total</h3>
+           <p class="value">{{calcularProducaoTotal() | number:'1.0-0':'pt-BR'}} kg</p>
+         </div>
+         <div class="summary-card">
+           <h3>Área Plantada</h3>
+           <p class="value">{{calcularAreaPlantada() | number:'1.0-0':'pt-BR'}} ha</p>
+         </div>
+         <div class="summary-card">
+           <h3>Produtividade Média</h3>
+           <p class="value">{{calcularProdutividadeMedia() | number:'1.2-2':'pt-BR'}} kg/ha</p>
+         </div>
+       </div>
+       <div class="table-container">
+         <table>
+           <thead>
+             <tr>
+               <th>Cultura</th>
+               <th>Safra</th>
+               <th>Data</th>
+               <th>Área (ha)</th>
+               <th>Propriedade</th>
+               <th>Ações</th>
+             </tr>
+           </thead>
+           <tbody>
+             <tr *ngFor="let prod of producoesPaginadas; trackBy: trackById">
+               <td>{{prod.cultura}}</td>
+               <td>{{prod.safra}}</td>
+               <td>{{prod.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
+               <td>{{prod.areaproducao | number:'1.0-0':'pt-BR'}}</td>
+               <td>{{getNomePropriedade(prod.propriedadeId)}}</td>
+               <td class="actions">
+                 <button class="btn-edit" (click)="editarProducao(prod)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                 <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
+               </td>
+             </tr>
+             <tr *ngIf="producoesPaginadas.length === 0">
+               <td colspan="6" class="no-data">Nenhuma produção encontrada.</td>
+             </tr>
+           </tbody>
+         </table>
+       </div>
+       <div class="pagination-container" *ngIf="producoesFiltradas.length > itensPorPagina">
+         <button (click)="mudarPagina('producao', paginaAtualProducao - 1)" [disabled]="paginaAtualProducao === 1">Anterior</button>
+         <span *ngFor="let pagina of paginasDisponiveis(producoesFiltradas.length)" 
+               [class.active]="pagina === paginaAtualProducao" 
+               (click)="mudarPagina('producao', pagina)">
+           {{pagina}}
+         </span>
+         <button (click)="mudarPagina('producao', paginaAtualProducao + 1)" [disabled]="paginaAtualProducao === totalPaginas(producoesFiltradas.length)">Próxima</button>
+       </div>
+       </section>
+ 
+     <section *ngIf="abaAtiva === 'financeiro'" class="content-section">
+       <div class="summary-cards">
+         <div class="summary-card">
+           <h3>Receitas</h3>
+           <p class="value positivo">{{calcularTotalReceitas() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</p>
+         </div>
+         <div class="summary-card">
+           <h3>Despesas</h3>
+           <p class="value negativo">{{calcularTotalDespesas() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</p>
+         </div>
+         <div class="summary-card">
+           <h3>Resultado</h3>
+           <p class="value" [class.positivo]="calcularResultadoFinanceiro() >= 0" [class.negativo]="calcularResultadoFinanceiro() < 0">
+             {{calcularResultadoFinanceiro() | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+           </p>
+         </div>
+       </div>
+       <div class="table-container">
+         <table>
+           <thead>
+             <tr>
+               <th>Data</th>
+               <th>Tipo</th>
+               <th>Descrição</th>
+               <th>Propriedade</th>
+               <th>Valor</th>
+               <th>Ações</th>
+             </tr>
+           </thead>
+           <tbody>
+             <tr *ngFor="let fin of financeirosPaginados; trackBy: trackById">
+               <td>{{fin.data | date:'dd/MM/yyyy':'UTC':'pt-BR'}}</td>
+               <td>
+                 <span class="badge" [class.receita]="fin.tipo === 'receita'" [class.despesa]="fin.tipo === 'despesa'">
+                   {{fin.tipo | titlecase}}
+                 </span>
+               </td>
+               <td>{{fin.descricao || '-'}}</td>
+               <td>{{getNomePropriedade(fin.propriedadeId)}}</td>
+               <td [class.positivo]="fin.tipo === 'receita'" [class.negativo]="fin.tipo === 'despesa'">
+                 {{fin.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+               </td>
+               <td class="actions">
+                 <button class="btn-edit" (click)="editarMovimentacao(fin)" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                 <button class="btn-delete" (click)="confirmarExclusao(fin, 'financeiro')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
+               </td>
+             </tr>
+             <tr *ngIf="financeirosPaginados.length === 0">
+               <td colspan="6" class="no-data">Nenhum registro financeiro encontrado.</td>
+             </tr>
+           </tbody>
+         </table>
+       </div>
+       <div class="pagination-container" *ngIf="financeirosFiltrados.length > itensPorPagina">
+         <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro - 1)" [disabled]="paginaAtualFinanceiro === 1">Anterior</button>
+         <span *ngFor="let pagina of paginasDisponiveis(financeirosFiltrados.length)" 
+               [class.active]="pagina === paginaAtualFinanceiro" 
+               (click)="mudarPagina('financeiro', pagina)">
+           {{pagina}}
+         </span>
+         <button (click)="mudarPagina('financeiro', paginaAtualFinanceiro + 1)" [disabled]="paginaAtualFinanceiro === totalPaginas(financeirosFiltrados.length)">Próxima</button>
+       </div>
+       </section>
+   </main>
+ 
+   <div class="modal" *ngIf="modalAberto">
+     <div class="modal-content">
+       <span class="close" (click)="fecharModal()" aria-label="Fechar modal">&times;</span>
+       <h3>{{modalTitulo}}</h3>
+ 
+       <form (ngSubmit)="salvar()" #form="ngForm">
+         <div *ngIf="tipoEdicao === 'propriedades'">
+           <div class="form-group">
+             <label for="propertyName">Nome da Propriedade</label>
+             <input type="text" id="propertyName" [(ngModel)]="propriedadeEditada.nomepropriedade" name="propertyName" required>
+           </div>
+           <div class="form-group">
+             <label for="propertyArea">Área Total (ha)</label>
+             <input type="number" id="propertyArea" min="0" step="0.01" [(ngModel)]="propriedadeEditada.area_ha" name="propertyArea" required>
+           </div>
+           <div class="form-group">
+             <label for="propertyLocation">Localização</label>
+             <input type="text" id="propertyLocation" [(ngModel)]="propriedadeEditada.localizacao" name="propertyLocation" required>
+           </div>
+         </div>
+         
+         <div *ngIf="tipoEdicao === 'producao'">
+           <div class="form-group">
+             <label for="cropName">Cultura</label>
+             <input type="text" id="cropName" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
+           </div>
+           <div class="form-group">
+             <label for="cropType">Safra</label>
+             <input type="text" id="cropType" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
+           </div>
+           <div class="form-group">
+             <label for="producaoArea">Área de Produção (ha)</label>
+             <input type="number" id="producaoArea" min="0" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
+           </div>
+           <div class="form-group">
+             <label for="producaoQuantidade">Quantidade (kg)</label>
+             <input type="number" id="producaoQuantidade" min="0" step="0.01" [(ngModel)]="producaoEditada.quantidade" name="producaoQuantidade" required>
+           </div>
+           <div class="form-group">
+             <label for="plantingDate">Data</label>
+             <input type="date" id="plantingDate" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
+           </div>
+           <div class="form-group">
+             <label for="cropProperty">Propriedade</label>
+             <select id="cropProperty" [(ngModel)]="producaoEditada.propriedadeId" name="cropProperty" required>
+               <option [ngValue]="''" disabled>Selecione uma propriedade</option>
+               <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
+             </select>
+           </div>
+         </div>
+ 
+         <div *ngIf="tipoEdicao === 'financeiro'">
+           <div class="form-group">
+             <label for="financialType">Tipo</label>
+             <select id="financialType" [(ngModel)]="financeiroEditado.tipo" name="financialType" required>
+               <option value="receita">Receita</option>
+               <option value="despesa">Despesa</option>
+             </select>
+           </div>
+           <div class="form-group">
+             <label for="financialDescription">Descrição</label>
+             <input type="text" id="financialDescription" [(ngModel)]="financeiroEditado.descricao" name="financialDescription" required>
+           </div>
+           <div class="form-group">
+             <label for="financialAmount">Valor (R$)</label>
+             <input type="number" id="financialAmount" min="0" step="0.01" [(ngModel)]="financeiroEditado.valor" name="financialAmount" required>
+           </div>
+           <div class="form-group">
+             <label for="financialDate">Data</label>
+             <input type="date" id="financialDate" [(ngModel)]="financeiroEditado.data" name="financialDate" required>
+           </div>
+           <div class="form-group">
+             <label for="financialProperty">Propriedade</label>
+             <select id="financialProperty" [(ngModel)]="financeiroEditado.propriedadeId" name="financialProperty" required>
+               <option [ngValue]="''" disabled>Selecione uma propriedade</option>
+               <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
+             </select>
+           </div>
+           </div>
+ 
+         <div class="form-actions">
+           <button type="button" class="btn-cancel" (click)="fecharModal()">Cancelar</button>
+           <button type="submit" class="btn-save" [disabled]="!form.valid">Salvar</button>
+         </div>
+       </form>
+     </div>
+   </div>
+ 
+   <div class="modal" *ngIf="confirmacaoAberta">
+     <div class="modal-content confirm-modal">
+       <h3>Confirmar Ação</h3>
+       <p>{{mensagemConfirmacao}}</p>
+       <div class="confirm-actions">
+         <button class="btn-cancel" (click)="cancelarExclusao()">Cancelar</button>
+         <button class="btn-confirm" (click)="executarExclusao()">Confirmar</button>
+       </div>
+     </div>
+   </div>
+ </div>

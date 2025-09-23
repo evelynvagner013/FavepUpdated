@@ -23,7 +23,7 @@ export class PropriedadeService {
     );
   }
 
-  adicionarPropriedade(prop: Omit<Propriedade, 'id' | 'usuarioId' | 'culturas'>): Observable<Propriedade> {
+  adicionarPropriedade(prop: Omit<Propriedade, 'id' | 'usuarioId' | 'culturas' | 'status'>): Observable<Propriedade> {
     return this.http.post<Propriedade>(`${this.baseUrl}/registerProp`, prop).pipe(
       catchError(error => {
         console.error('Erro ao adicionar propriedade:', error);
@@ -32,7 +32,6 @@ export class PropriedadeService {
     );
   }
 
-  // CORREÇÃO: Usar o ID (string) para atualizar, não o nome.
   atualizarPropriedade(id: string, prop: Partial<Propriedade>): Observable<Propriedade> {
     return this.http.put<Propriedade>(`${this.baseUrl}/updateProp/${id}`, prop).pipe(
       catchError(error => {
@@ -42,11 +41,10 @@ export class PropriedadeService {
     );
   }
 
-  // CORREÇÃO: Usar o ID (string) para excluir, não o nome.
-  excluirPropriedade(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/propDelete/${id}`).pipe(
+  togglePropertyStatus(id: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/propToggleStatus/${id}`, {}).pipe(
       catchError(error => {
-        console.error('Erro ao excluir propriedade:', error);
+        console.error('Erro ao alterar status da propriedade:', error);
         throw error;
       })
     );
