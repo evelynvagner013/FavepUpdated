@@ -1,7 +1,7 @@
 /* SEÇÃO HERO/BANNER */
 .parceiros-hero {
   background: url("/assets/img/fundo.jpg") no-repeat center center/cover;
-  min-height: 40vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +55,24 @@
   margin: 0 -15px;
 }
 
-.col-lg-4, .col-md-6, .col-sm-12 {
+/* SEÇÃO DE CARDS DE PARCEIROS - VERSÃO HORIZONTAL */
+.parceiros-section {
+  padding: 60px 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 -15px;
+}
+
+.col-lg-6, .col-md-12, .col-sm-12 {
+  padding: 0 15px;
+  margin-bottom: 30px;
+}
+
+.col-lg-12, .col-md-12, .col-sm-12 {
   padding: 0 15px;
   margin-bottom: 30px;
 }
@@ -67,8 +84,11 @@
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  
+  /* --- MUDANÇA PRINCIPAL --- */
+  flex-direction: row; /* Altera a direção para horizontal */
+  min-height: 300px; /* Define uma altura mínima para o formato paisagem */
+  align-items: stretch; /* Faz os filhos esticarem para a mesma altura */
 }
 
 .partner-card:hover {
@@ -76,28 +96,42 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* --- ÁREA DA IMAGEM --- */
 .partner-card-header {
-  padding: 20px;
-  text-align: center;
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #004d40;
+  /* Removemos o padding e cor de fundo, a imagem vai preencher tudo */
+  padding: 0;
+  
+  /* Define a largura da área da imagem (ex: 35% do card) */
+  flex: 0 0 35%; 
+  
+  /* Arredonda apenas os cantos da esquerda */
+  border-radius: 12px 0 0 12px; 
 }
 
+/* --- A IMAGEM DO LOGO --- */
 .partner-logo {
-  max-width: 100%;
-  max-height: 100px;
-  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  
+  /* CRUCIAL: Faz a imagem preencher o espaço, cortando o excesso sem distorcer */
+  object-fit: cover; 
+  
+  /* Removemos estilos que não são mais necessários */
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
 }
 
+/* --- ÁREA DO TEXTO --- */
 .partner-card-body {
   padding: 30px;
-  flex-grow: 1;
+  flex-grow: 1; /* Faz esta área ocupar o resto do espaço */
   display: flex;
   flex-direction: column;
-  text-align: center;
+  
+  /* Alinha o texto à esquerda para melhor leitura */
+  text-align: left; 
 }
 
 .partner-name {
@@ -117,10 +151,6 @@
   flex-grow: 1;
 }
 
-.partner-contact-info h4 {
-  display: none;
-}
-
 .list-unstyled {
   list-style: none;
   padding-left: 0;
@@ -131,6 +161,7 @@
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
   color: #616161;
+  text-align: left;
 }
 
 .partner-contact-info li i {
@@ -148,6 +179,19 @@
 
 .partner-contact-info a:hover {
   color: #004d40;
+}
+
+/* RESPONSIVIDADE (Ajustada para o novo layout) */
+@media (max-width: 767.98px) {
+  .partner-card {
+    flex-direction: column; /* Em telas pequenas, volta a ser vertical */
+    min-height: auto;
+  }
+  .partner-card-header {
+    flex-basis: auto; /* Reseta a base de largura */
+    height: 200px; /* Define uma altura fixa para a imagem no modo vertical */
+    border-radius: 12px 12px 0 0; /* Arredonda cantos superiores */
+  }
 }
 
 /* RESPONSIVIDADE */

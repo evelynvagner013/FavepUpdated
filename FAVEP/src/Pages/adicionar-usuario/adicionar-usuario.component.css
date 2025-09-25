@@ -1,0 +1,280 @@
+/* =================================================================== */
+/* ==== ESTILO GERAL DO CORPO DA PÁGINA ==== */
+/* =================================================================== */
+body {
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #f4f7f6;
+  }
+  
+  /* =================================================================== */
+  /* ==== CABEÇALHO FIXO (HEADER) ==== */
+  /* =================================================================== */
+  .dashboard-header {
+    height: 70px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    box-sizing: border-box;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .dashboard-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-family: 'Merriweather', serif;
+  }
+  
+  .header-logo-img {
+    height: 40px;
+    width: auto;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #27ae60;
+  }
+  
+  /* =================================================================== */
+  /* ==== MENU LATERAL FIXO (SIDEBAR) ==== */
+  /* =================================================================== */
+  .main-menu {
+    width: 250px;
+    height: calc(100vh - 70px);
+    position: fixed;
+    top: 70px;
+    left: 0;
+    background-color: #34495e;
+    color: white;
+    padding: 20px 0;
+    overflow-y: auto;
+    z-index: 999;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .main-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+  }
+  
+  .main-menu a:hover {
+    background-color: #2c3e50;
+  }
+  
+  
+  .main-menu .material-symbols-outlined {
+    font-size: 24px;
+    margin-right: 5px;
+  }
+  
+  /* =================================================================== */
+  /* ==== DROPDOWN DO MENU LATERAL ==== */
+  /* =================================================================== */
+  .menu-item-dropdown {
+    position: relative;
+    width: 100%;
+  }
+  
+  .menu-item-dropdown > a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  .menu-item-dropdown .dropdown-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .menu-item-dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+  }
+  
+  .submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .menu-item-dropdown.open .submenu {
+    max-height: 200px;
+  }
+  
+  .submenu li a {
+    padding-left: 45px;
+    font-size: 0.9em;
+  }
+  
+  /* =================================================================== */
+  /* ==== ESTILO E POSICIONAMENTO DO CONTEÚDO (CARD-ADDUSER) ==== */
+  /* =================================================================== */
+  .card-adduser {
+    /* 1. POSICIONAMENTO: Empurra o card para não ficar atrás das barras fixas E adiciona o seu espaçamento extra */
+    margin-top: 7rem;   /* Altura do header + 32px de espaço */
+    margin-left: 23rem; /* Largura do menu + 32px de espaço */
+  
+    /* 2. ESTILO: Suas regras de aparência para o card */
+    max-width: 1000px;
+    max-height: 350px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box; /* Garante que o padding não afete a largura total */
+  }
+  
+  .card-adduser h4 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin: 0 0 25px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card-adduser h4 i {
+    margin-right: 12px;
+    color: #3498db;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+    flex: 1;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #4a5568;
+    font-size: 0.9em;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #f7fafc;
+    color: #2d3748;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  }
+  
+  .form-group-button {
+    flex: 1;
+    margin-bottom: 20px;
+  }
+  
+  .add-user-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #27ae60;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .add-user-btn i {
+    margin-right: 8px;
+  }
+  
+  .add-user-btn:hover {
+    background-color: #229954;
+    transform: translateY(-2px);
+  }
+  
+  /* =================================================================== */
+  /* ==== RESPONSIVIDADE ==== */
+  /* =================================================================== */
+  .menu-toggle {
+    display: none;
+  }
+  
+  @media (max-width: 992px) {
+    .menu-toggle {
+      display: block;
+    }
+    
+    .dashboard-header h1 {
+      display: none;
+    }
+  
+    .main-menu {
+      transform: translateX(-100%);
+    }
+  
+    .main-menu.open {
+      transform: translateX(0);
+    }
+    
+    /* Em telas pequenas, a margem é ajustada para o conteúdo */
+    .card-adduser {
+      margin: calc(70px + 1.5rem) 1.5rem 1.5rem 1.5rem;
+      max-width: none; /* Permite que o card ocupe a largura disponível */
+    }
+  
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+      align-items: stretch;
+    }
+  }

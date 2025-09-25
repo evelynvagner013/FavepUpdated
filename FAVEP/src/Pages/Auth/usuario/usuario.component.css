@@ -6,7 +6,6 @@
     grid-template-columns: 250px 1fr;
     grid-template-rows: auto 1fr;
     min-height: 100vh;
-    overflow: hidden;
 }
 
 .dashboard-header {
@@ -20,7 +19,7 @@
     align-items: center;
     gap: 1rem;
     z-index: 100;
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -75,7 +74,9 @@
     display: none;
 }
 
+
 .main-menu {
+    /* ... Suas regras existentes ... */
     grid-column: 1;
     grid-row: 2;
     background-color: #34495e;
@@ -84,6 +85,13 @@
     overflow-y: auto;
     transition: transform 0.3s ease-in-out;
     z-index: 90;
+
+    /* --- ADICIONE ESTAS DUAS LINHAS --- */
+    position: fixed;
+    top: 10;
+
+    /* Opcional: Garante que o menu ocupe toda a altura da tela */
+    height: 100vh; 
 }
 
 .main-menu a {
@@ -104,6 +112,70 @@
 .main-menu .material-symbols-outlined {
     font-size: 24px;
     margin-right: 5px;
+}
+
+/* --- Estilo para o item de menu com Dropdown --- */
+.menu-item-dropdown {
+    position: relative; /* Necessário para posicionar o submenu */
+    width: 100%;
+}
+
+/* Estilo para o link principal que abre o dropdown */
+.menu-item-dropdown > a {
+    display: flex;
+    justify-content: space-between; /* Alinha o ícone da seta à direita */
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+}
+
+/* Ícone da seta (expand_more) */
+.menu-item-dropdown .dropdown-icon {
+    transition: transform 0.3s ease; /* Animação de rotação */
+}
+
+/* Rotaciona a seta quando o menu está aberto */
+.menu-item-dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* --- Estilo para o Submenu (a lista <ul>) --- */
+.submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* Animação de "slide down" */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.1); /* Fundo levemente mais escuro */
+}
+
+/* Mostra o submenu quando a classe .open é adicionada */
+.menu-item-dropdown.open .submenu {
+    max-height: 200px; /* Um valor maior que a altura real do submenu */
+}
+
+/* Estilo para os links dentro do submenu */
+.submenu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px 12px 45px; /* Adiciona um recuo à esquerda */
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.submenu li a:hover,
+.submenu li a.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.submenu li a .material-symbols-outlined {
+    margin-right: 15px;
+    font-size: 1.2em;
 }
 
 /* =================================================================== */
@@ -181,6 +253,8 @@
     color: #1a202c;
     margin: 0;
 }
+
+
 
 .general-info {
     background: #ffffff;

@@ -1,0 +1,71 @@
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
+        <i class="fas fa-bars"></i>
+        </button>
+        <h1>
+        <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agrícola
+        </h1>
+        <div class="user-info" (click)="mostrarDropdown = !mostrarDropdown">
+        <span>Olá, {{ usuarioNome }}</span>
+        <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
+        <div class="dropdown-menu" *ngIf="mostrarDropdown">
+            <a (click)="abrirModalPerfil($event)">Perfil</a>
+            <a (click)="logout($event)" class="logout-link">Sair</a>
+        </div>
+        </div>
+    </header>
+
+    <nav class="main-menu" [class.open]="menuAberto">
+        <a routerLink="/home" routerLinkActive="active">
+        <span class="material-symbols-outlined">home</span> Home
+        </a>
+        <a routerLink="/gerenciamento" routerLinkActive="active">
+        <span class="material-symbols-outlined">dashboard</span> Gerenciamento
+        </a>
+        <a routerLink="/estatistica" routerLinkActive="active">
+        <span class="material-symbols-outlined">monitoring</span> Estatística
+        </a>
+        <a routerLink="/relatorio" routerLinkActive="active">
+        <span class="material-symbols-outlined">overview</span> Relatório geral
+        </a>
+        <div class="menu-item-dropdown" [class.open]="submenuAberto">
+            <a (click)="toggleSubmenu()" [class.active]="isConfigActive()">
+                <span class="material-symbols-outlined">account_circle</span>
+                Configuração
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </a>
+
+            <ul class="submenu">
+                <li>
+                    <a routerLink="/usuario" routerLinkActive="active">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        Perfil
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/plano-assinatura" routerLinkActive="active">
+                        <span class="material-symbols-outlined">credit_card</span>
+                        Trocar Plano
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/adicionar-usuario" routerLinkActive="active">
+                        <span class="material-symbols-outlined">person_add</span>
+                        Adicionar Perfil
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>  
+
+    <div class="subscription-section card-perfil">
+        <div class="card-header">
+            <h2>Plano de Assinatura</h2>
+        </div>
+        <div class="subscription-details">
+            <p>Seu plano atual é:</p>
+            <button class="change-plan-btn" routerLink="/home"> <i class="fas fa-exchange-alt"></i> Trocar de Plano</button>
+        </div>
+    </div>
+</div>

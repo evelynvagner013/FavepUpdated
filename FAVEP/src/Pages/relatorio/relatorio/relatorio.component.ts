@@ -33,6 +33,7 @@ export class RelatorioComponent implements OnInit, OnDestroy {
   // --- Propriedades do Componente e Dropdown ---
   menuAberto = false;
   mostrarDropdown = false;
+  submenuAberto = false; // <<< ADICIONADO
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
   private usuarioLogado: Usuario | null = null;
@@ -231,15 +232,28 @@ export class RelatorioComponent implements OnInit, OnDestroy {
     }
   }
 
-  abrirModalPerfil() {
+  // --- MÉTODOS ADICIONADOS PARA O SUBMENU ---
+  toggleSubmenu(): void {
+    this.submenuAberto = !this.submenuAberto;
+  }
+
+  isConfigActive(): boolean {
+    const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
+    return configRoutes.some(route => this.router.isActive(route, false));
+  }
+  // ---------------------------------------------
+
+  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
+  navigateToProfile(event: MouseEvent) {
+    event.stopPropagation(); // Impede a propagação do clique
     this.mostrarDropdown = false;
     this.router.navigate(['/usuario']);
   }
 
-  logout() {
+  logout(event: MouseEvent) {
+    event.stopPropagation(); // Impede a propagação do clique
     this.mostrarDropdown = false;
     this.authService.logout();
-    this.router.navigate(['/home']);
   }
+  // -----------------------------------------
 }
-

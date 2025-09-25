@@ -29,6 +29,8 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
 
+  public submenuAberto: boolean = false;
+
   // Propriedades para o estado do componente
   usuario: Usuario | null = null;
   usuarioEditavel: Partial<Usuario> = {};
@@ -131,6 +133,16 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     this.menuAberto = !this.menuAberto;
   }
 
+  // ▼▼▼ 2. ADICIONE OS MÉTODOS PARA O SUBMENU AQUI ▼▼▼
+  toggleSubmenu(): void {
+    this.submenuAberto = !this.submenuAberto;
+  }
+
+  isConfigActive(): boolean {
+    return this.router.url.startsWith('/configuracao');
+  }
+  // ▲▲▲ FIM DA PARTE 2 ▲▲▲
+
   /**
    * Fecha o menu se o clique ocorrer fora dele.
    */
@@ -142,8 +154,14 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     }
     if (this.mostrarDropdown && !alvo.closest('.user-info')) {
       this.mostrarDropdown = false;
+    } // ▼▼▼ 3. ADICIONE ESTA LINHA PARA FECHAR O SUBMENU AUTOMATICAMENTE ▼▼▼
+    if (this.submenuAberto && !alvo.closest('.menu-item-dropdown')) {
+      this.submenuAberto = false;
     }
+    // ▲▲▲ FIM DA PARTE 3 ▲▲▲
   }
+
+  
 
   navegarParaContato(): void {
     this.router.navigate(['/contato']);

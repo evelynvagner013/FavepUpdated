@@ -29,6 +29,7 @@ registerLocaleData(localePt);
 export class EstatisticaComponent implements OnInit, OnDestroy {
   menuAberto = false;
   mostrarDropdown = false;
+  submenuAberto = false; 
 
   @ViewChild('produtividadeChart', { static: true }) produtividadeChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('financeiroChart', { static: true }) financeiroChart!: ElementRef<HTMLCanvasElement>;
@@ -208,6 +209,9 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   alternarMenu() {
     this.menuAberto = !this.menuAberto;
   }
+  toggleSubmenu(): void {
+    this.submenuAberto = !this.submenuAberto;
+  }
 
   @HostListener('document:click', ['$event'])
   fecharMenuFora(event: MouseEvent) {
@@ -218,17 +222,30 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
     if (this.mostrarDropdown && !target.closest('.user-info')) {
       this.mostrarDropdown = false;
     }
+    if (this.submenuAberto && !target.closest('.menu-item-dropdown')) {
+      this.submenuAberto = false;
+  }
   }
 
-  abrirModalPerfil() {
+
+ 
+
+  isConfigActive(): boolean {
+    const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
+    return configRoutes.some(route => this.router.isActive(route, false));
+  }
+  // ---------------------------------------------
+
+  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
+  navigateToProfile(event: MouseEvent) {
+    event.stopPropagation(); // Impede que o clique se propague para o user-info
     this.mostrarDropdown = false;
-    this.router.navigate(['/usuario']); // <<< ALTERAÇÃO AQUI
+    this.router.navigate(['/usuario']);
   }
 
-  logout() {
+  logout(event: MouseEvent) {
+    event.stopPropagation(); // Impede que o clique se propague para o user-info
     this.mostrarDropdown = false;
     this.authService.logout();
-    this.router.navigate(['/home']);
   }
 }
-

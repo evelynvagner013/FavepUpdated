@@ -107,6 +107,71 @@
     margin-right: 5px;
 }
 
+/* --- Estilo para o item de menu com Dropdown --- */
+.menu-item-dropdown {
+    position: relative; /* Necessário para posicionar o submenu */
+    width: 100%;
+}
+
+/* Estilo para o link principal que abre o dropdown */
+.menu-item-dropdown > a {
+    display: flex;
+    justify-content: space-between; /* Alinha o ícone da seta à direita */
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+}
+
+/* Ícone da seta (expand_more) */
+.menu-item-dropdown .dropdown-icon {
+    transition: transform 0.3s ease; /* Animação de rotação */
+}
+
+/* Rotaciona a seta quando o menu está aberto */
+.menu-item-dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* --- Estilo para o Submenu (a lista <ul>) --- */
+.submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* Animação de "slide down" */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.1); /* Fundo levemente mais escuro */
+}
+
+/* Mostra o submenu quando a classe .open é adicionada */
+.menu-item-dropdown.open .submenu {
+    max-height: 200px; /* Um valor maior que a altura real do submenu */
+}
+
+/* Estilo para os links dentro do submenu */
+.submenu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px 12px 45px; /* Adiciona um recuo à esquerda */
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.submenu li a:hover,
+.submenu li a.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.submenu li a .material-symbols-outlined {
+    margin-right: 15px;
+    font-size: 1.2em;
+}
+
+
 /* =================================================================== */
 /* ==== ESTILOS DO CONTEÚDO PRINCIPAL ==== */
 /* =================================================================== */
