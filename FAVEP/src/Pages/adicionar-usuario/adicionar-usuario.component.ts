@@ -1,15 +1,14 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core'; // Adicionado OnDestroy
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { NgForm, FormsModule } from '@angular/forms'; // Adicionado NgForm e FormsModule
 import { AuthService } from '../../services/auth.service';
-import { Router, RouterLink } from '@angular/router'; // Adicionado RouterLink
+import { Router, RouterLink } from '@angular/router';
 import { Usuario } from '../../models/api.models';
-import { Subscription } from 'rxjs'; // Adicionado Subscription
-import { CommonModule } from '@angular/common'; // Adicionado CommonModule
-import { FormsModule } from '@angular/forms'; // Adicionado FormsModule
+import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-adicionar-usuario',
   standalone: true,
-  // Adicionado CommonModule, RouterLink e FormsModule para as diretivas do template
   imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './adicionar-usuario.component.html',
   styleUrls: ['./adicionar-usuario.component.css']
@@ -22,7 +21,15 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
   
-  private userSubscription: Subscription | undefined; // Variável para a inscrição
+  private userSubscription: Subscription | undefined;
+
+  // --- Propriedades do formulário de usuário ---
+  newUser = {
+    email: '',
+    password: '',
+    accessLevel: ''
+  };
+  statusMessage: string = '';
 
   constructor(
     private router: Router,
@@ -30,7 +37,6 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Guarda a inscrição para poder cancelá-la depois
     this.userSubscription = this.authService.currentUser.subscribe((user: Usuario | null) => {
       if (user) {
         this.usuarioNome = user.nome;
@@ -40,7 +46,6 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Cancela a inscrição ao destruir o componente
     this.userSubscription?.unsubscribe();
   }
   
@@ -53,13 +58,11 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
     this.submenuAberto = !this.submenuAberto; 
   }
 
-  // Lógica de menu ativo melhorada
   isConfigActive(): boolean { 
     const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
     return configRoutes.some(route => this.router.isActive(route, false));
   }
   
-  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
   abrirModalPerfil(event: MouseEvent): void { 
     event.stopPropagation();
     this.mostrarDropdown = false;
@@ -72,7 +75,6 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
     this.authService.logout();
     this.router.navigate(['/home']);
   }
-  // -----------------------------------------
   
   @HostListener('document:click', ['$event'])
   fecharMenuFora(event: MouseEvent): void {
@@ -82,6 +84,20 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
     }
     if (this.mostrarDropdown && !alvo.closest('.user-info')) { 
       this.mostrarDropdown = false; 
+    }
+  }
+
+  // --- Novo método para adicionar usuário ---
+  addUser(form: NgForm): void {
+    if (form.valid) {
+      // Simulação de chamada de serviço para criar o usuário
+      // Na vida real, você chamaria um serviço como: this.authService.createUser(this.newUser).subscribe(...)
+      console.log('Dados do novo usuário:', this.newUser);
+
+      this.statusMessage = 'Usuário adicionado com sucesso!';
+      form.resetForm(); // Limpa o formulário após o sucesso
+    } else {
+      this.statusMessage = 'Erro: Por favor, preencha todos os campos corretamente.';
     }
   }
 }

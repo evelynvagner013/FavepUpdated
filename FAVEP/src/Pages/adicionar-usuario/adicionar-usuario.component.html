@@ -60,34 +60,57 @@
 
     <div class="card-adduser">
         <h4><i class="fas fa-user-plus"></i> Adicionar Novo Usuário</h4>
-        
-        <form>
+
+        <form #userForm="ngForm" (ngSubmit)="addUser(userForm)">
             <div class="form-row">
                 <div class="form-group">
                     <label for="newUserEmail">E-mail do Usuário</label>
-                    <input type="email" id="newUserEmail" name="email" placeholder="exemplo@dominio.com" required>
+                    <input type="email" id="newUserEmail" name="email" [(ngModel)]="newUser.email" placeholder="exemplo@dominio.com" required email #emailInput="ngModel">
+                    <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="validation-message">
+                        <div *ngIf="emailInput.errors?.['required']">
+                            E-mail é obrigatório.
+                        </div>
+                        <div *ngIf="emailInput.errors?.['email']">
+                            Por favor, insira um e-mail válido.
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="newUserPassword">Senha Provisória</label>
-                    <input type="password" id="newUserPassword" name="password" placeholder="Crie uma senha forte" required>
+                    <input type="password" id="newUserPassword" name="password" [(ngModel)]="newUser.password" placeholder="Crie uma senha forte" required minlength="8" #passwordInput="ngModel">
+                    <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="validation-message">
+                        <div *ngIf="passwordInput.errors?.['required']">
+                            A senha é obrigatória.
+                        </div>
+                        <div *ngIf="passwordInput.errors?.['minlength']">
+                            A senha deve ter pelo menos 8 caracteres.
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="accessLevel">Nível de Acesso</label>
-                    <select id="accessLevel" name="accessLevel" required>
+                    <select id="accessLevel" name="accessLevel" [(ngModel)]="newUser.accessLevel" required #levelSelect="ngModel">
                         <option value="" disabled selected>Selecione um nível</option>
                         <option value="admin">Administrador (Acesso total, exceto adicionar usuários)</option>
                         <option value="funcionario">Funcionário (Visualização e gerar relatórios)</option>
                     </select>
+                    <div *ngIf="levelSelect.invalid && (levelSelect.dirty || levelSelect.touched)" class="validation-message">
+                        Nível de acesso é obrigatório.
+                    </div>
                 </div>
-                
+
                 <div class="form-group-button">
-                    <button type="submit" class="add-user-btn">
+                    <button type="submit" class="add-user-btn" [disabled]="!userForm.form.valid">
                         <i class="fas fa-check"></i> Criar Usuário
                     </button>
                 </div>
+            </div>
+            
+            <div *ngIf="statusMessage" [class.success]="statusMessage.includes('sucesso')" [class.error]="statusMessage.includes('erro')" class="status-message">
+                {{ statusMessage }}
             </div>
         </form>
     </div>

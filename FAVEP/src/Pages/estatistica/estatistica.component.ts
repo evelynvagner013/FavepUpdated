@@ -12,6 +12,8 @@ import { DashboardDataService } from '../../services/dashboard-data.service';
 import { AuthService } from '../../services/auth.service';
 import { Propriedade, Producao, Financeiro, Usuario } from '../../models/api.models';
 import { UsuarioService } from '../../services/usuario.service';
+import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
+import { MenuCentralComponent } from "../menu-central/menu-central.component";
 
 registerLocaleData(localePt);
 
@@ -21,26 +23,23 @@ registerLocaleData(localePt);
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
-  ],
+    RouterLink,
+    MenuLateralComponent,
+    MenuCentralComponent
+],
   templateUrl: './estatistica.component.html',
   styleUrls: ['./estatistica.component.css']
 })
 export class EstatisticaComponent implements OnInit, OnDestroy {
-  menuAberto = false;
-  mostrarDropdown = false;
-  submenuAberto = false; 
+
 
   @ViewChild('produtividadeChart', { static: true }) produtividadeChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('financeiroChart', { static: true }) financeiroChart!: ElementRef<HTMLCanvasElement>;
 
   clima: any = null;
   climaErro: string = '';
-  // --- Propriedades do Usuário ---
-  usuarioNome: string = '';
-  usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-  private usuarioLogado: Usuario | null = null;
-
+  
+ 
   // --- Listas de Dados (Brutos e Filtrados) ---
   private todasProducoes: Producao[] = [];
   private todasMovimentacoes: Financeiro[] = [];
@@ -71,15 +70,9 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.userSubscription = this.authService.currentUser.subscribe(user => {
-      if (user) {
-        this.usuarioLogado = user;
-        this.usuarioNome = user.nome;
-        this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-      }
-    });
     this.carregarDadosIniciais();
   }
+ 
 
   ngOnDestroy(): void {
     if (this.userSubscription) {
@@ -104,14 +97,19 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   }
 
   processarDadosEstatisticos(): void {
+    console.log('Filtro selecionado:', this.selectedPropertyId);
+
     let producoesFiltradas = this.todasProducoes;
     let movimentacoesFiltradas = this.todasMovimentacoes;
     let propriedadesFiltradas = this.propriedades;
 
     if (this.selectedPropertyId !== 'todos') {
-      producoesFiltradas = this.todasProducoes.filter(p => p.propriedadeId === this.selectedPropertyId);
-      movimentacoesFiltradas = this.todasMovimentacoes.filter(m => m.propriedadeId === this.selectedPropertyId);
-      propriedadesFiltradas = this.propriedades.filter(p => p.id === this.selectedPropertyId);
+      const selectedId = this.selectedPropertyId;
+      console.log('Filtrando dados para o ID:', selectedId);
+      
+      producoesFiltradas = this.todasProducoes.filter(p => p.propriedadeId == selectedId);
+      movimentacoesFiltradas = this.todasMovimentacoes.filter(m => m.propriedadeId == selectedId);
+      propriedadesFiltradas = this.propriedades.filter(p => p.id == selectedId);
     }
     
     this.totalPropriedades = propriedadesFiltradas.length;
@@ -204,48 +202,5 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
         }
       });
     }
-  }
-
-  alternarMenu() {
-    this.menuAberto = !this.menuAberto;
-  }
-  toggleSubmenu(): void {
-    this.submenuAberto = !this.submenuAberto;
-  }
-
-  @HostListener('document:click', ['$event'])
-  fecharMenuFora(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (this.menuAberto && !target.closest('.main-menu') && !target.closest('.menu-toggle')) {
-      this.menuAberto = false;
-    }
-    if (this.mostrarDropdown && !target.closest('.user-info')) {
-      this.mostrarDropdown = false;
-    }
-    if (this.submenuAberto && !target.closest('.menu-item-dropdown')) {
-      this.submenuAberto = false;
-  }
-  }
-
-
- 
-
-  isConfigActive(): boolean {
-    const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
-    return configRoutes.some(route => this.router.isActive(route, false));
-  }
-  // ---------------------------------------------
-
-  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
-  navigateToProfile(event: MouseEvent) {
-    event.stopPropagation(); // Impede que o clique se propague para o user-info
-    this.mostrarDropdown = false;
-    this.router.navigate(['/usuario']);
-  }
-
-  logout(event: MouseEvent) {
-    event.stopPropagation(); // Impede que o clique se propague para o user-info
-    this.mostrarDropdown = false;
-    this.authService.logout();
   }
 }

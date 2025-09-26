@@ -1,0 +1,42 @@
+<nav class="main-menu" [class.open]="menuAberto">
+    <a routerLink="/home" routerLinkActive="active">
+    <span class="material-symbols-outlined">home</span> Home
+    </a>
+    <a routerLink="/gerenciamento" routerLinkActive="active">
+    <span class="material-symbols-outlined">dashboard</span> Gerenciamento
+    </a>
+    <a routerLink="/estatistica" routerLinkActive="active">
+    <span class="material-symbols-outlined">monitoring</span> Estatística
+    </a>
+    <a routerLink="/relatorio" routerLinkActive="active">
+    <span class="material-symbols-outlined">overview</span> Relatório geral
+    </a>
+    <div class="menu-item-dropdown" [class.open]="submenuAberto">
+        <a (click)="toggleSubmenu()" [class.active]="isConfigActive()">
+            <span class="material-symbols-outlined">account_circle</span>
+            Configuração
+            <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+        </a>
+
+        <ul class="submenu">
+            <li>
+                <a routerLink="/usuario" routerLinkActive="active">
+                    <span class="material-symbols-outlined">account_circle</span>
+                    Perfil
+                </a>
+            </li>
+            <li>
+                <a routerLink="/plano-assinatura" routerLinkActive="active">
+                    <span class="material-symbols-outlined">credit_card</span>
+                    Trocar Plano
+                </a>
+            </li>
+            <li>
+                <a routerLink="/adicionar-usuario" routerLinkActive="active">
+                    <span class="material-symbols-outlined">person_add</span>
+                    Adicionar Perfil
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>  

@@ -57,15 +57,51 @@
                 </li>
             </ul>
         </div>
-    </nav>  
+    </nav>
 
     <div class="subscription-section card-perfil">
         <div class="card-header">
             <h2>Plano de Assinatura</h2>
         </div>
+        
         <div class="subscription-details">
-            <p>Seu plano atual é:</p>
-            <button class="change-plan-btn" routerLink="/home"> <i class="fas fa-exchange-alt"></i> Trocar de Plano</button>
+            <div *ngIf="planoAtual; else loadingTemplate" class="current-plan-card">
+                <h3>Seu plano atual é: <span class="plan-name">{{ planoAtual.nome }}</span></h3>
+                <p class="plan-price">{{ planoAtual.preco }}</p>
+                <p>{{ planoAtual.descricao }}</p>
+                <button class="change-plan-btn" (click)="trocarDePlano()">
+                    <i class="fas fa-exchange-alt"></i> Trocar de Plano
+                </button>
+            </div>
+            
+            <ng-template #loadingTemplate>
+                <div class="loading-message">Carregando detalhes do plano...</div>
+            </ng-template>
+        </div>
+        
+        <div class="plan-comparison-section">
+            <h4>Outros Planos Disponíveis</h4>
+            <div class="plan-grid">
+                <div class="plan-card">
+                    <h5>Plano Básico</h5>
+                    <p class="plan-price">R$ 49,90/mês</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Gerenciamento de tarefas</li>
+                        <li><i class="fas fa-check-circle"></i> Acesso a relatórios básicos</li>
+                    </ul>
+                    <button class="select-plan-btn">Selecionar</button>
+                </div>
+                <div class="plan-card">
+                    <h5>Plano Pro</h5>
+                    <p class="plan-price">R$ 99,90/mês</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Todos os recursos do Plano Básico</li>
+                        <li><i class="fas fa-check-circle"></i> Relatórios avançados</li>
+                        <li><i class="fas fa-check-circle"></i> Suporte prioritário</li>
+                    </ul>
+                    <button class="select-plan-btn">Selecionar</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

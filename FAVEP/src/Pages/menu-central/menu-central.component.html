@@ -1,0 +1,16 @@
+  <header class="dashboard-header">
+    <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1>
+      <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agrícola
+    </h1>
+    <div class="user-info" (click)="mostrarDropdown = !mostrarDropdown">
+      <span>Olá, {{ usuarioNome }}</span>
+      <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
+      <div class="dropdown-menu" *ngIf="mostrarDropdown">
+        <a (click)="navigateToProfile($event)">Perfil</a>
+        <a (click)="logout($event)" class="logout-link">Sair</a>
+      </div>
+    </div>
+  </header>

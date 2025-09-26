@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,27 +16,21 @@ import {
   Producao,
   Financeiro
 } from '../../models/api.models';
+import { MenuCentralComponent } from "../menu-central/menu-central.component";
+import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
 
 registerLocaleData(localePt);
 
 @Component({
   selector: 'app-gerenciamento',
   standalone: true,
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, MenuCentralComponent, MenuLateralComponent],
   providers: [DatePipe],
   templateUrl: './gerenciamento.component.html',
   styleUrl: './gerenciamento.component.css',
 })
 export class GerenciamentoComponent implements OnInit, OnDestroy {
 
-  // --- Propriedades de UI e Dropdown ---
-  menuAberto = false;
-  mostrarDropdown = false;
-  submenuAberto = false; // <<< ADICIONADO
-  usuarioNome: string = '';
-  usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-  private usuarioLogado: Usuario | null = null;
-  
   // --- Controle de Abas e Modais ---
   abaAtiva: string = 'propriedades';
   modalAberto: boolean = false;
@@ -96,16 +90,6 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.carregarTodosDados();
-    this.userSubscription = this.authService.currentUser.subscribe(user => {
-      if (user) {
-        this.usuarioLogado = user;
-        this.usuarioNome = user.nome;
-        this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-      } else {
-        this.usuarioNome = '';
-        this.usuarioFoto = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -209,7 +193,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   filtrarProducoes(): void {
     this.producoesFiltradas = this.producoes.filter(prod => {
       const filtroCultura = this.filtroAtivo === 'todos' || prod.cultura === this.filtroAtivo;
-      const filtroProp = this.filtroPropriedade === 'todos' || prod.propriedadeId === this.filtroPropriedade;
+      const filtroProp = this.filtroPropriedade === 'todos' || prod.propriedadeId == this.filtroPropriedade;
       return filtroCultura && filtroProp;
     });
     this.paginaAtualProducao = 1;
@@ -224,7 +208,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
     this.financeirosFiltrados = this.financeiros.filter(fin => {
       const periodo = this.filtroPeriodo === 'todos' || new Date(fin.data as string) >= dataLimite;
-      const filtroProp = this.filtroPropriedade === 'todos' || fin.propriedadeId === this.filtroPropriedade;
+      const filtroProp = this.filtroPropriedade === 'todos' || fin.propriedadeId == this.filtroPropriedade;
       return periodo && filtroProp;
     });
     this.paginaAtualFinanceiro = 1;
@@ -409,17 +393,6 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.tipoExclusao = '';
   }
 
-  @HostListener('document:click', ['$event'])
-  fecharMenuFora(event: MouseEvent): void {
-    const alvo = event.target as HTMLElement;
-    if (this.menuAberto && !alvo.closest('.main-menu') && !alvo.closest('.menu-toggle')) {
-        this.menuAberto = false;
-    }
-    if (this.mostrarDropdown && !alvo.closest('.user-info')) {
-      this.mostrarDropdown = false;
-    }
-  }
-
   getTituloModal(): string {
     const titulos: { [key: string]: string } = {
       propriedades: 'Propriedade',
@@ -438,33 +411,4 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   trackById(index: number, item: { id: any }): any {
     return item.id;
   }
-
-  alternarMenu(): void {
-    this.menuAberto = !this.menuAberto;
-  }
-
-  // --- MÉTODOS ADICIONADOS PARA O SUBMENU ---
-  toggleSubmenu(): void {
-    this.submenuAberto = !this.submenuAberto;
-  }
-
-  isConfigActive(): boolean {
-    const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
-    return configRoutes.some(route => this.router.isActive(route, false));
-  }
-  // ---------------------------------------------
-
-  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
-  navigateToProfile(event: MouseEvent) {
-    event.stopPropagation(); // Impede a propagação do clique
-    this.mostrarDropdown = false;
-    this.router.navigate(['/usuario']);
-  }
-
-  logout(event: MouseEvent) {
-    event.stopPropagation(); // Impede a propagação do clique
-    this.mostrarDropdown = false;
-    this.authService.logout();
-  }
-  // -----------------------------------------
 }

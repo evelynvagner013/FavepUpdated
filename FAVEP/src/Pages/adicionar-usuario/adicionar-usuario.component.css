@@ -96,9 +96,6 @@ body {
     margin-right: 5px;
   }
   
-  /* =================================================================== */
-  /* ==== DROPDOWN DO MENU LATERAL ==== */
-  /* =================================================================== */
   .menu-item-dropdown {
     position: relative;
     width: 100%;
@@ -139,22 +136,16 @@ body {
     font-size: 0.9em;
   }
   
-  /* =================================================================== */
-  /* ==== ESTILO E POSICIONAMENTO DO CONTEÚDO (CARD-ADDUSER) ==== */
-  /* =================================================================== */
   .card-adduser {
-    /* 1. POSICIONAMENTO: Empurra o card para não ficar atrás das barras fixas E adiciona o seu espaçamento extra */
-    margin-top: 7rem;   /* Altura do header + 32px de espaço */
-    margin-left: 23rem; /* Largura do menu + 32px de espaço */
-  
-    /* 2. ESTILO: Suas regras de aparência para o card */
+    margin-top: 7rem;  
+    margin-left: 20rem; 
     max-width: 1000px;
     max-height: 350px;
     background-color: #ffffff;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box; /* Garante que o padding não afete a largura total */
+    box-sizing: border-box; 
   }
   
   .card-adduser h4 {
@@ -233,13 +224,41 @@ body {
     align-items: center;
   }
   
-  .add-user-btn i {
-    margin-right: 8px;
-  }
-  
   .add-user-btn:hover {
     background-color: #229954;
     transform: translateY(-2px);
+  }
+  
+  /* Novo estilo para desabilitar o botão quando o formulário é inválido */
+  .add-user-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Estilos para as mensagens de validação e status */
+  .validation-message {
+    color: #e74c3c;
+    font-size: 0.85em;
+    margin-top: 5px;
+  }
+  
+  .status-message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .status-message.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .status-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
   }
   
   /* =================================================================== */
@@ -277,4 +296,4 @@ body {
       gap: 0;
       align-items: stretch;
     }
-  }
+}

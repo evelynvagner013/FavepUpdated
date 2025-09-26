@@ -18,6 +18,7 @@ import { PasswordComponent } from '../Pages/password/password.component';
 import { AuthGuard } from '../services/auth.guard';
 import { PlanoAssinaturaComponent } from '../Pages/plano-assinatura/plano-assinatura.component';
 import { AdicionarUsuarioComponent } from '../Pages/adicionar-usuario/adicionar-usuario.component';
+import { MenuLateralComponent } from '../Pages/menu-lateral/menu-lateral.component';
 
 export const routes: Routes = [
     // Rotas públicas
@@ -33,5 +34,6 @@ export const routes: Routes = [
     { path: 'gerenciamento', component: GerenciamentoComponent, canActivate: [AuthGuard] },
     { path: 'usuario', component: UsuarioComponent, canActivate: [AuthGuard] },
     { path: 'plano-assinatura', component: PlanoAssinaturaComponent },
-    { path: 'adicionar-usuario', component: AdicionarUsuarioComponent }
+    { path: 'adicionar-usuario', component: AdicionarUsuarioComponent },
+    { path: 'menuLateral', component: MenuLateralComponent}
 ];

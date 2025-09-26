@@ -1,14 +1,13 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core'; // Adicionado OnDestroy
-import { Router, RouterLink } from '@angular/router'; // Adicionado RouterLink
-import { CommonModule } from '@angular/common'; // Adicionado CommonModule
-import { Subscription } from 'rxjs'; // Adicionado Subscription
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { Usuario } from '../../models/api.models';
 
 @Component({
   selector: 'app-plano-assinatura',
   standalone: true,
-  // Adicionado CommonModule e RouterLink para diretivas como *ngIf e routerLink
   imports: [CommonModule, RouterLink], 
   templateUrl: './plano-assinatura.component.html',
   styleUrls: ['./plano-assinatura.component.css']
@@ -21,7 +20,10 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
   
-  private userSubscription: Subscription | undefined; // Variável para guardar a inscrição
+  // Nova propriedade para armazenar o plano atual do usuário
+  planoAtual: any;
+  
+  private userSubscription: Subscription | undefined;
 
   constructor(
     private router: Router,
@@ -29,17 +31,18 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Guarda a inscrição para poder cancelá-la depois
     this.userSubscription = this.authService.currentUser.subscribe((user: Usuario | null) => {
       if (user) {
         this.usuarioNome = user.nome;
         this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
       }
     });
+
+    // Simulação do carregamento do plano atual
+    this.loadCurrentPlan();
   }
 
   ngOnDestroy(): void {
-    // Cancela a inscrição ao destruir o componente para evitar vazamento de memória
     this.userSubscription?.unsubscribe();
   }
 
@@ -52,13 +55,11 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     this.submenuAberto = !this.submenuAberto; 
   }
 
-  // Lógica de menu ativo melhorada
   isConfigActive(): boolean { 
     const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
     return configRoutes.some(route => this.router.isActive(route, false));
   }
 
-  // --- MÉTODOS DO DROPDOWN ATUALIZADOS ---
   abrirModalPerfil(event: MouseEvent): void { 
     event.stopPropagation();
     this.mostrarDropdown = false;
@@ -69,8 +70,8 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.mostrarDropdown = false;
     this.authService.logout(); 
+    this.router.navigate(['/home']); // Adicionado redirecionamento após o logout
   }
-  // -----------------------------------------
 
   @HostListener('document:click', ['$event'])
   fecharMenuFora(event: MouseEvent): void {
@@ -81,7 +82,24 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     if (this.mostrarDropdown && !alvo.closest('.user-info')) { 
       this.mostrarDropdown = false; 
     }
-    // A lógica do submenu já é tratada pelo toggle, esta linha pode ser removida para evitar conflitos
-    // if (this.submenuAberto && !alvo.closest('.menu-item-dropdown')) { this.submenuAberto = false; }
+  }
+
+  // --- Novos métodos para a lógica do plano ---
+  loadCurrentPlan(): void {
+    // Simulação de uma chamada de API para obter o plano atual
+    setTimeout(() => {
+      this.planoAtual = {
+        nome: 'Plano Básico',
+        preco: 'R$ 49,90/mês',
+        descricao: 'Acesso a recursos de gerenciamento e relatórios básicos.'
+      };
+    }, 1000); // Simula um atraso de 1 segundo para o carregamento
+  }
+
+  trocarDePlano(): void {
+    // Lógica para iniciar o processo de troca de plano.
+    // Pode ser um redirecionamento para outra página ou abertura de um modal.
+    console.log('Iniciando processo de troca de plano...');
+    alert('Processo de troca de plano iniciado!');
   }
 }
