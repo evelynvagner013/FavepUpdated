@@ -1,107 +1,50 @@
-<div class="dashboard-container">
-    <header class="dashboard-header">
-        <button class="menu-toggle" aria-label="Abrir menu" (click)="alternarMenu()">
-        <i class="fas fa-bars"></i>
-        </button>
-        <h1>
-        <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img"> FAVEP - Gestão Agrícola
-        </h1>
-        <div class="user-info" (click)="mostrarDropdown = !mostrarDropdown">
-        <span>Olá, {{ usuarioNome }}</span>
-        <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar">
-        <div class="dropdown-menu" *ngIf="mostrarDropdown">
-            <a (click)="abrirModalPerfil($event)">Perfil</a>
-            <a (click)="logout($event)" class="logout-link">Sair</a>
-        </div>
-        </div>
-    </header>
+<app-menu-central></app-menu-central>
+<app-menu-lateral></app-menu-lateral>
 
-    <nav class="main-menu" [class.open]="menuAberto">
-        <a routerLink="/home" routerLinkActive="active">
-        <span class="material-symbols-outlined">home</span> Home
-        </a>
-        <a routerLink="/gerenciamento" routerLinkActive="active">
-        <span class="material-symbols-outlined">dashboard</span> Gerenciamento
-        </a>
-        <a routerLink="/estatistica" routerLinkActive="active">
-        <span class="material-symbols-outlined">monitoring</span> Estatística
-        </a>
-        <a routerLink="/relatorio" routerLinkActive="active">
-        <span class="material-symbols-outlined">overview</span> Relatório geral
-        </a>
-        <div class="menu-item-dropdown" [class.open]="submenuAberto">
-            <a (click)="toggleSubmenu()" [class.active]="isConfigActive()">
-                <span class="material-symbols-outlined">account_circle</span>
-                Configuração
-                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
-            </a>
-
-            <ul class="submenu">
-                <li>
-                    <a routerLink="/usuario" routerLinkActive="active">
-                        <span class="material-symbols-outlined">account_circle</span>
-                        Perfil
-                    </a>
-                </li>
-                <li>
-                    <a routerLink="/plano-assinatura" routerLinkActive="active">
-                        <span class="material-symbols-outlined">credit_card</span>
-                        Trocar Plano
-                    </a>
-                </li>
-                <li>
-                    <a routerLink="/adicionar-usuario" routerLinkActive="active">
-                        <span class="material-symbols-outlined">person_add</span>
-                        Adicionar Perfil
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <div class="subscription-section card-perfil">
-        <div class="card-header">
-            <h2>Plano de Assinatura</h2>
-        </div>
-        
-        <div class="subscription-details">
-            <div *ngIf="planoAtual; else loadingTemplate" class="current-plan-card">
-                <h3>Seu plano atual é: <span class="plan-name">{{ planoAtual.nome }}</span></h3>
-                <p class="plan-price">{{ planoAtual.preco }}</p>
-                <p>{{ planoAtual.descricao }}</p>
-                <button class="change-plan-btn" (click)="trocarDePlano()">
-                    <i class="fas fa-exchange-alt"></i> Trocar de Plano
-                </button>
-            </div>
-            
-            <ng-template #loadingTemplate>
-                <div class="loading-message">Carregando detalhes do plano...</div>
-            </ng-template>
-        </div>
-        
-        <div class="plan-comparison-section">
-            <h4>Outros Planos Disponíveis</h4>
-            <div class="plan-grid">
-                <div class="plan-card">
-                    <h5>Plano Básico</h5>
-                    <p class="plan-price">R$ 49,90/mês</p>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Gerenciamento de tarefas</li>
-                        <li><i class="fas fa-check-circle"></i> Acesso a relatórios básicos</li>
-                    </ul>
-                    <button class="select-plan-btn">Selecionar</button>
-                </div>
-                <div class="plan-card">
-                    <h5>Plano Pro</h5>
-                    <p class="plan-price">R$ 99,90/mês</p>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Todos os recursos do Plano Básico</li>
-                        <li><i class="fas fa-check-circle"></i> Relatórios avançados</li>
-                        <li><i class="fas fa-check-circle"></i> Suporte prioritário</li>
-                    </ul>
-                    <button class="select-plan-btn">Selecionar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<main class="main-content">
+  <div class="subscription-section card-perfil">
+      <div class="card-header">
+          <h2>Plano de Assinatura</h2>
+      </div>
+      
+      <div class="subscription-details">
+          <div *ngIf="planoAtual; else loadingTemplate" class="current-plan-card">
+              <h3>Seu plano atual é: <span class="plan-name">{{ planoAtual.nome }}</span></h3>
+              <p class="plan-price">{{ planoAtual.preco }}</p>
+              <p>{{ planoAtual.descricao }}</p>
+              <button class="change-plan-btn" (click)="trocarDePlano()">
+                  <i class="fas fa-exchange-alt"></i> Trocar de Plano
+              </button>
+          </div>
+          
+          <ng-template #loadingTemplate>
+              <div class="loading-message">Carregando detalhes do plano...</div>
+          </ng-template>
+      </div>
+      
+      <div class="plan-comparison-section">
+          <h4>Outros Planos Disponíveis</h4>
+          <div class="plan-grid">
+              <div class="plan-card">
+                  <h5>Plano Básico</h5>
+                  <p class="plan-price">R$ 49,90/mês</p>
+                  <ul>
+                      <li><i class="fas fa-check-circle"></i> Gerenciamento de tarefas</li>
+                      <li><i class="fas fa-check-circle"></i> Acesso a relatórios básicos</li>
+                  </ul>
+                  <button class="select-plan-btn">Selecionar</button>
+              </div>
+              <div class="plan-card">
+                  <h5>Plano Pro</h5>
+                  <p class="plan-price">R$ 99,90/mês</p>
+                  <ul>
+                      <li><i class="fas fa-check-circle"></i> Todos os recursos do Plano Básico</li>
+                      <li><i class="fas fa-check-circle"></i> Relatórios avançados</li>
+                      <li><i class="fas fa-check-circle"></i> Suporte prioritário</li>
+                  </ul>
+                  <button class="select-plan-btn">Selecionar</button>
+              </div>
+          </div>
+      </div>
+  </div>
+</main>

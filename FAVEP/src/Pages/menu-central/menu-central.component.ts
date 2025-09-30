@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Adicionado
 import { Usuario } from '../../models/api.models';
 import { AuthService } from '../../services/auth.service';
 import { UsuarioService } from '../../services/usuario.service';
@@ -9,7 +10,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-menu-central',
   standalone: true,
-  imports: [],
+  imports: [CommonModule], // Adicionado CommonModule
   templateUrl: './menu-central.component.html',
   styleUrl: './menu-central.component.css'
 })
@@ -27,14 +28,17 @@ export class MenuCentralComponent {
       ) {
         Chart.register(...registerables);
       }
-
-
-  
+    
     alternarMenu() {
       this.menuAberto = !this.menuAberto;
     }
     toggleSubmenu(): void {
       this.submenuAberto = !this.submenuAberto;
+    }
+
+    toggleDropdown(event: MouseEvent) {
+      event.stopPropagation();
+      this.mostrarDropdown = !this.mostrarDropdown;
     }
   
     @HostListener('document:click', ['$event'])
@@ -51,34 +55,23 @@ export class MenuCentralComponent {
     }
     }
 
-
     usuarioNome: string = '';
-      usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-      private usuarioLogado: Usuario | null = null;
-
+    usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+    private usuarioLogado: Usuario | null = null;
 
     navigateToProfile(event: MouseEvent) {
-    event.stopPropagation(); // Impede que o clique se propague para o user-info
-    this.mostrarDropdown = false;
-    this.router.navigate(['/usuario']);
-  }
-
-  logout(event: MouseEvent) {
-    event.stopPropagation(); // Impede que o clique se propague para o user-info
-    this.mostrarDropdown = false;
-    this.authService.logout();
-  }
-
+      event.stopPropagation();
+      this.mostrarDropdown = false;
+      this.router.navigate(['/usuario']);
+    }
     
-    
-      ngOnInit(): void {
-        this.userSubscription = this.authService.currentUser.subscribe(user => {
-          if (user) {
-            this.usuarioLogado = user;
-            this.usuarioNome = user.nome;
-            this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-          }
-        });
-      }
-
+    ngOnInit(): void {
+      this.userSubscription = this.authService.currentUser.subscribe(user => {
+        if (user) {
+          this.usuarioLogado = user;
+          this.usuarioNome = user.nome;
+          this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+        }
+      });
+    }
 }

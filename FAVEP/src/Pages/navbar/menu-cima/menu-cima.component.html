@@ -19,7 +19,7 @@
     <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
     <div class="dropdown-menu" *ngIf="mostrarDropdown">
       <a routerLink="/gerenciamento" class="painel-controle">Gerenciar</a>
-      <a (click)="abrirModalPerfil()" class="modal-perfil">Perfil</a>
+      <a  routerLink="/usuario" class="modal-perfil">Perfil</a>
       <a (click)="logout()" class="logout-link">Sair</a>
     </div>
   </div>

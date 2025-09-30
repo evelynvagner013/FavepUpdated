@@ -1,26 +1,21 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { Usuario } from '../../models/api.models';
+import { MenuCentralComponent } from "../menu-central/menu-central.component";
+import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
 
 @Component({
   selector: 'app-plano-assinatura',
   standalone: true,
-  imports: [CommonModule, RouterLink], 
+  imports: [CommonModule, RouterLink, MenuCentralComponent, MenuLateralComponent],
   templateUrl: './plano-assinatura.component.html',
   styleUrls: ['./plano-assinatura.component.css']
 })
 export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
-
-  menuAberto = false;
-  mostrarDropdown = false;
-  submenuAberto = false;
-  usuarioNome: string = '';
-  usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
-  
-  // Nova propriedade para armazenar o plano atual do usuário
+  // Propriedade para armazenar o plano atual do usuário
   planoAtual: any;
   
   private userSubscription: Subscription | undefined;
@@ -32,9 +27,9 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe((user: Usuario | null) => {
+      // Lógica aqui se necessário, por exemplo, carregar o plano do usuário logado
       if (user) {
-        this.usuarioNome = user.nome;
-        this.usuarioFoto = user.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
+        // ... carregar plano com base no user.id
       }
     });
 
@@ -46,47 +41,10 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     this.userSubscription?.unsubscribe();
   }
 
-  // --- Métodos do menu e header ---
-  alternarMenu(): void { 
-    this.menuAberto = !this.menuAberto; 
-  }
-
-  toggleSubmenu(): void { 
-    this.submenuAberto = !this.submenuAberto; 
-  }
-
-  isConfigActive(): boolean { 
-    const configRoutes = ['/usuario', '/plano-assinatura', '/adicionar-usuario'];
-    return configRoutes.some(route => this.router.isActive(route, false));
-  }
-
-  abrirModalPerfil(event: MouseEvent): void { 
-    event.stopPropagation();
-    this.mostrarDropdown = false;
-    this.router.navigate(['/usuario']); 
-  }
-
-  logout(event: MouseEvent): void { 
-    event.stopPropagation();
-    this.mostrarDropdown = false;
-    this.authService.logout(); 
-    this.router.navigate(['/home']); // Adicionado redirecionamento após o logout
-  }
-
-  @HostListener('document:click', ['$event'])
-  fecharMenuFora(event: MouseEvent): void {
-    const alvo = event.target as HTMLElement;
-    if (this.menuAberto && !alvo.closest('.menu-toggle') && !alvo.closest('.main-menu')) { 
-      this.menuAberto = false; 
-    }
-    if (this.mostrarDropdown && !alvo.closest('.user-info')) { 
-      this.mostrarDropdown = false; 
-    }
-  }
-
-  // --- Novos métodos para a lógica do plano ---
+  /**
+   * Simula a chamada de uma API para obter o plano atual do usuário.
+   */
   loadCurrentPlan(): void {
-    // Simulação de uma chamada de API para obter o plano atual
     setTimeout(() => {
       this.planoAtual = {
         nome: 'Plano Básico',
@@ -96,9 +54,10 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     }, 1000); // Simula um atraso de 1 segundo para o carregamento
   }
 
+  /**
+   * Lógica para iniciar o processo de troca de plano.
+   */
   trocarDePlano(): void {
-    // Lógica para iniciar o processo de troca de plano.
-    // Pode ser um redirecionamento para outra página ou abertura de um modal.
     console.log('Iniciando processo de troca de plano...');
     alert('Processo de troca de plano iniciado!');
   }

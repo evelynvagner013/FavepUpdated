@@ -2,6 +2,8 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MenuCentralComponent } from "../../menu-central/menu-central.component";
+import { MenuLateralComponent } from "../../menu-lateral/menu-lateral.component";
 
 
 interface Usuario {
@@ -22,8 +24,9 @@ fotoperfil: any;
     CommonModule,
     FormsModule,
     RouterLink,
-  
-  ],
+    MenuCentralComponent,
+    MenuLateralComponent
+],
   providers: [DatePipe],
   templateUrl: './usuario.component.html',
   styleUrls: ['./usuario.component.css']

@@ -1,13 +1,15 @@
-
-.dashboard-content {
+/* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
+.main-content {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
-    padding: 35px;
-    background-color: #f5f7fa;
+    padding: 2rem;
+    background-color: #f4f7f6;
     overflow-y: auto;
-    margin-left: 15%
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-left: 15%;
 }
-
 
 .container-principal {
     background-color: #ffffff;
@@ -75,8 +77,8 @@
 .chart-area {
     position: relative;
     width: 100%;
-    min-height: 450px; /* Altura mínima */
-    height: 50vh; /* Altura responsiva */
+    min-height: 450px;
+    height: 50vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -126,144 +128,47 @@
     font-size: 1.1rem;
 }
 
-/* Estilo para evitar que o conteúdo seja selecionado durante a geração do PDF */
-body.generating-pdf * {
-    user-select: none;
-}
-
-/* --- Estilos do Dropdown do Usuário --- */
-
-/* Torna o container do usuário um ponto de referência para o posicionamento */
-.user-info {
-  position: relative; /* Essencial para o posicionamento do dropdown */
-  cursor: pointer;
-}
-
-/* Estilos do menu dropdown */
-.dropdown-menu {
-  position: absolute; /* Posiciona o menu em relação ao .user-info */
-  top: 110%; /* Aparece um pouco abaixo do avatar do usuário */
-  right: 0; /* Alinha o menu à direita */
-  background-color: #044b92; /* Fundo branco */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 150px;
-  z-index: 1000; /* Garante que o menu fique sobre outros elementos */
-  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados aos filhos */
-  display: block; /* Garante que seja visível quando o *ngIf for verdadeiro */
-}
-
-/* Estilos dos links dentro do dropdown */
-.dropdown-menu a {
-  display: block; /* Faz o link ocupar toda a largura */
-  padding: 12px 16px;
-  color: #d2d2d2;
-  text-decoration: none;
-  font-size: 14px;
-  transition: background-color 0.2s ease-in-out;
-}
-
-
-/* Estilo específico para o link de Sair */
-.dropdown-menu .logout-link {
-  background-color: #941a0d;
-  color: #d2d2d2;
-}
-
 hr {
-  border: 0;
-  background-color: #ccc; /* Define uma cor de fundo (cinza claro, por exemplo) */
-  height: 1px; /* Define a espessura da linha */
+    border: 0;
+    background-color: #ccc;
+    height: 1px;
 }
 
-/* =================================================================== */
-/* ==== MEDIA QUERIES PARA RESPONSIVIDADE ==== */
-/* =================================================================== */
-
-@media (max-width: 1024px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
-        height: auto;
-        min-height: 100vh;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .main-menu {
-        grid-row: 1 / -1;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        transform: translateX(-100%);
-        z-index: 1001;
-        padding-top: 80px;
-    }
-
-    .main-menu.open {
-        transform: translateX(0);
-    }
-
-    .dashboard-content {
+/* MEDIA QUERIES PARA RESPONSIVIDADE */
+@media (max-width: 992px) {
+    .main-content {
         grid-column: 1 / -1;
-        grid-row: 2;
-        padding: 25px;
-    }
-
-    .dashboard-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .header-logo-img {
-        height: 2.5rem;
-    }
-
-    .user-info span {
-        display: none;
-    }
-
-    .titulo {
-        font-size: 2rem;
+        margin-left: 0;
+        padding: 1rem;
     }
 }
 
 @media (max-width: 768px) {
-    .dashboard-content {
+    .main-content {
         padding: 20px;
     }
-    
     .container-principal {
         padding: 25px;
     }
-
     .titulo {
         font-size: 1.8rem;
     }
-
     .report-controls {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
     }
-
     .control-group select,
     .control-group input[type="date"] {
         width: 100%;
         min-width: unset;
     }
-    
     .chart-area {
         height: 400px;
     }
-
     .action-buttons {
         flex-direction: column;
     }
-
     .action-buttons .btn-generate-report,
     .action-buttons .btn-export-pdf {
         width: 100%;

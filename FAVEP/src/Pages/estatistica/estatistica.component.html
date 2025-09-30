@@ -1,46 +1,44 @@
+<app-menu-central></app-menu-central>
+<app-menu-lateral></app-menu-lateral>
 
-
- <app-menu-central></app-menu-central>
-  <app-menu-lateral></app-menu-lateral>
-
-  <main class="dashboard-content">
-    <div class="filtros-container">
-      <div class="filtro-group">
-        <label for="filtro-propriedade">Filtrar por Propriedade:</label>
-        <select id="filtro-propriedade" [(ngModel)]="selectedPropertyId" (change)="processarDadosEstatisticos()">
-          <option *ngFor="let prop of propriedades" [value]="prop.id">{{ prop.nomepropriedade }}</option>
-          <option value="todos">Todas as Propriedades</option>
-        </select>
-      </div>
+<main class="main-content">
+  <div class="filtros-container">
+    <div class="filtro-group">
+      <label for="filtro-propriedade">Filtrar por Propriedade:</label>
+      <select id="filtro-propriedade" [(ngModel)]="selectedPropertyId" (change)="processarDadosEstatisticos()">
+        <option *ngFor="let prop of propriedades" [value]="prop.id">{{ prop.nomepropriedade }}</option>
+        <option value="todos">Todas as Propriedades</option>
+      </select>
     </div>
-    
-    <div class="resumo-cards">
-      <div class="resumo-card">
-        <h3>Propriedades</h3>
-        <p class="valor">{{totalPropriedades}}</p>
-        <p class="info">Área Total: {{areaTotal | number:'1.0-0':'pt-BR'}} ha</p>
-      </div>
-
-      <div class="resumo-card">
-        <h3>Produção Total</h3>
-        <p class="valor">{{producaoAtual | number:'1.0-0':'pt-BR'}} kg</p>
-        </div>
-
-      <div class="resumo-card">
-        <h3>Resultado Financeiro</h3>
-        <p class="valor" [class.positivo]="resultadoFinanceiro >= 0" [class.negativo]="resultadoFinanceiro < 0">
-          {{resultadoFinanceiro | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
-        </p>
-      </div>
+  </div>
+  
+  <div class="resumo-cards">
+    <div class="resumo-card">
+      <h3>Propriedades</h3>
+      <p class="valor">{{totalPropriedades}}</p>
+      <p class="info">Área Total: {{areaTotal | number:'1.0-0':'pt-BR'}} ha</p>
     </div>
-    <div class="graficos-container">
-      <div class="grafico-card">
-        <h3>Produtividade por Cultura</h3>
-        <canvas #produtividadeChart></canvas>
-      </div>
-      <div class="grafico-card">
-        <h3>Receitas x Despesas</h3>
-        <canvas #financeiroChart></canvas>
-      </div>
+
+    <div class="resumo-card">
+      <h3>Produção Total</h3>
+      <p class="valor">{{producaoAtual | number:'1.0-0':'pt-BR'}} kg</p>
     </div>
-  </main>
+
+    <div class="resumo-card">
+      <h3>Resultado Financeiro</h3>
+      <p class="valor" [class.positivo]="resultadoFinanceiro >= 0" [class.negativo]="resultadoFinanceiro < 0">
+        {{resultadoFinanceiro | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
+      </p>
+    </div>
+  </div>
+  <div class="graficos-container">
+    <div class="grafico-card">
+      <h3>Produtividade por Cultura</h3>
+      <canvas #produtividadeChart></canvas>
+    </div>
+    <div class="grafico-card">
+      <h3>Receitas x Despesas</h3>
+      <canvas #financeiroChart></canvas>
+    </div>
+  </div>
+</main>

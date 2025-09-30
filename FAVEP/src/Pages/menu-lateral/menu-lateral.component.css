@@ -96,3 +96,8 @@
     margin-right: 15px;
     font-size: 1.2em;
 }
+
+
+.logout-link {
+    margin-top:115%; /* Adicionado para mover o link para o final */
+}

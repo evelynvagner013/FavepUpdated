@@ -1,14 +1,15 @@
-
-
-.dashboard-content {
+/* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
+.main-content {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
-    padding: 35px;
-    background-color: #f5f7fa;
+    padding: 2rem;
+    background-color: #f4f7f6;
     overflow-y: auto;
-    margin-left: 15%
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-left: 15%;
 }
-
 
 /* ESTILOS DA TELA DE ESTATÍSTICAS */
 .filtros-container {
@@ -102,7 +103,6 @@
     margin-bottom: 30px;
 }
 
-/* Em telas maiores, 2 colunas */
 @media (min-width: 1200px) {
     .graficos-container {
         grid-template-columns: repeat(2, 1fr);
@@ -136,134 +136,41 @@
     max-height: 350px;
 }
 
-/* --- Estilos do Dropdown do Usuário --- */
-
-/* Torna o container do usuário um ponto de referência para o posicionamento */
-.user-info {
-  position: relative; /* Essencial para o posicionamento do dropdown */
-  cursor: pointer;
-}
-
-/* Estilos do menu dropdown */
-.dropdown-menu {
-  position: absolute; /* Posiciona o menu em relação ao .user-info */
-  top: 110%; /* Aparece um pouco abaixo do avatar do usuário */
-  right: 0; /* Alinha o menu à direita */
-  background-color: #044b92; /* Fundo branco */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 150px;
-  z-index: 1000; /* Garante que o menu fique sobre outros elementos */
-  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados aos filhos */
-  display: block; /* Garante que seja visível quando o *ngIf for verdadeiro */
-}
-
-/* Estilos dos links dentro do dropdown */
-.dropdown-menu a {
-  display: block; /* Faz o link ocupar toda a largura */
-  padding: 12px 16px;
-  color: #d2d2d2;
-  text-decoration: none;
-  font-size: 14px;
-  transition: background-color 0.2s ease-in-out;
-}
-
-
-/* Estilo específico para o link de Sair */
-.dropdown-menu .logout-link {
-  background-color: #941a0d;
-  color: #d2d2d2;
-}
-
-/* =================================================================== */
-/* ==== MEDIA QUERIES PARA RESPONSIVIDADE ==== */
-/* =================================================================== */
-
-@media (max-width: 1024px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
-        height: auto;
-        min-height: 100vh;
-    }
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .main-menu {
-        grid-row: 1 / -1;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 250px;
-        height: 100%;
-        transform: translateX(-100%);
-        z-index: 1001;
-        padding-top: 80px;
-    }
-
-    .main-menu.open {
-        transform: translateX(0);
-    }
-
-    .dashboard-content {
+/* MEDIA QUERIES PARA RESPONSIVIDADE */
+@media (max-width: 992px) {
+    .main-content {
         grid-column: 1 / -1;
-        grid-row: 2;
-        padding: 25px;
-    }
-
-    .dashboard-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .header-logo-img {
-        height: 2.5rem;
-    }
-
-    .user-info span {
-        display: none;
+        margin-left: 0;
+        padding: 1.5rem;
     }
 }
-
 
 @media (max-width: 768px) {
-    .dashboard-header {
-        padding: 0.8rem 1rem;
-    }
-
-    .dashboard-content {
+    .main-content {
         padding: 20px;
     }
-
     .resumo-cards {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-
     .filtros-container {
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
     }
-
     .filtro-group {
         justify-content: space-between;
     }
-
     .filtro-group select {
         flex-grow: 1;
     }
-
     .graficos-container {
         grid-template-columns: 1fr;
     }
-
     .grafico-card {
         height: 400px;
         padding: 15px;
     }
-
     .resumo-card .valor {
         font-size: 2rem;
     }

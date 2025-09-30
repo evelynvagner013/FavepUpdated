@@ -1,60 +1,60 @@
- <app-menu-central></app-menu-central>
- <app-menu-lateral></app-menu-lateral>
+<app-menu-central></app-menu-central>
+<app-menu-lateral></app-menu-lateral>
 
-  <main class="dashboard-content">
-    <div class="container-principal">
+<main class="main-content">
+  <div class="container-principal">
 
-      <div id="report-content">
-        <h1 class="titulo">Gerar Relatórios</h1>
+    <div id="report-content">
+      <h1 class="titulo">Gerar Relatórios</h1>
 
-        <div class="report-controls">
-          <div class="control-group">
-            <label for="reportType">Tipo de Relatório:</label>
-            <select id="reportType" [(ngModel)]="reportType" (change)="gerarRelatorio()" name="reportTypeSelect">
-              <option value="productivity">Produtividade por Cultura</option>
-              <option value="financial">Resultado Financeiro</option>
-              <option value="crop_production">Produção por Cultura</option>
-            </select>
-          </div>
-
-          <div class="control-group">
-            <label for="propertyFilter">Propriedade:</label>
-            <select id="propertyFilter" [(ngModel)]="selectedPropertyId" (change)="gerarRelatorio()" name="propertyFilterSelect">
-              <option value="todos">Todas as Propriedades</option>
-              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
-            </select>
-          </div>
-
-          <div class="control-group" *ngIf="reportType === 'productivity' || reportType === 'crop_production'">
-            <label for="cropTypeFilter">Cultura:</label>
-            <select id="cropTypeFilter" [(ngModel)]="selectedCropType" (change)="gerarRelatorio()" name="cropTypeFilterSelect">
-              <option value="todos">Todas as Culturas</option>
-              <option *ngFor="let cropType of availableCropTypes" [value]="cropType.value">{{cropType.text}}</option>
-            </select>
-          </div>
-
-          <div class="control-group" *ngIf="reportType === 'financial'">
-            <label for="startDate">Data Início:</label>
-            <input type="date" id="startDate" [(ngModel)]="startDate" (change)="gerarRelatorio()" name="startDateInput">
-          </div>
-          <div class="control-group" *ngIf="reportType === 'financial'">
-            <label for="endDate">Data Fim:</label>
-            <input type="date" id="endDate" [(ngModel)]="endDate" (change)="gerarRelatorio()" name="endDateInput">
-          </div>
+      <div class="report-controls">
+        <div class="control-group">
+          <label for="reportType">Tipo de Relatório:</label>
+          <select id="reportType" [(ngModel)]="reportType" (change)="gerarRelatorio()" name="reportTypeSelect">
+            <option value="productivity">Produtividade por Cultura</option>
+            <option value="financial">Resultado Financeiro</option>
+            <option value="crop_production">Produção por Cultura</option>
+          </select>
         </div>
 
-        <div class="chart-area">
-          <canvas #reportChartCanvas id="reportChartCanvas"></canvas>
+        <div class="control-group">
+          <label for="propertyFilter">Propriedade:</label>
+          <select id="propertyFilter" [(ngModel)]="selectedPropertyId" (change)="gerarRelatorio()" name="propertyFilterSelect">
+            <option value="todos">Todas as Propriedades</option>
+            <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
+          </select>
+        </div>
+
+        <div class="control-group" *ngIf="reportType === 'productivity' || reportType === 'crop_production'">
+          <label for="cropTypeFilter">Cultura:</label>
+          <select id="cropTypeFilter" [(ngModel)]="selectedCropType" (change)="gerarRelatorio()" name="cropTypeFilterSelect">
+            <option value="todos">Todas as Culturas</option>
+            <option *ngFor="let cropType of availableCropTypes" [value]="cropType.value">{{cropType.text}}</option>
+          </select>
+        </div>
+
+        <div class="control-group" *ngIf="reportType === 'financial'">
+          <label for="startDate">Data Início:</label>
+          <input type="date" id="startDate" [(ngModel)]="startDate" (change)="gerarRelatorio()" name="startDateInput">
+        </div>
+        <div class="control-group" *ngIf="reportType === 'financial'">
+          <label for="endDate">Data Fim:</label>
+          <input type="date" id="endDate" [(ngModel)]="endDate" (change)="gerarRelatorio()" name="endDateInput">
         </div>
       </div>
-      <div class="action-buttons">
-          <button class="btn-generate-report" (click)="gerarRelatorio()">
-            <i class="fas fa-chart-bar"></i> Gerar Relatório
-          </button>
-          <button class="btn-export-pdf" (click)="exportarRelatorioPDF()">
-            <i class="fas fa-file-pdf"></i> Exportar PDF
-          </button>
-      </div>
 
+      <div class="chart-area">
+        <canvas #reportChartCanvas id="reportChartCanvas"></canvas>
+      </div>
     </div>
-  </main>
+    <div class="action-buttons">
+      <button class="btn-generate-report" (click)="gerarRelatorio()">
+        <i class="fas fa-chart-bar"></i> Gerar Relatório
+      </button>
+      <button class="btn-export-pdf" (click)="exportarRelatorioPDF()">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </button>
+    </div>
+
+  </div>
+</main>

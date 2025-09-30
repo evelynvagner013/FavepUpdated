@@ -1,15 +1,15 @@
 <nav class="main-menu" [class.open]="menuAberto">
     <a routerLink="/home" routerLinkActive="active">
-    <span class="material-symbols-outlined">home</span> Home
+        <span class="material-symbols-outlined">home</span> Home
     </a>
     <a routerLink="/gerenciamento" routerLinkActive="active">
-    <span class="material-symbols-outlined">dashboard</span> Gerenciamento
+        <span class="material-symbols-outlined">dashboard</span> Gerenciamento
     </a>
     <a routerLink="/estatistica" routerLinkActive="active">
-    <span class="material-symbols-outlined">monitoring</span> Estatística
+        <span class="material-symbols-outlined">monitoring</span> Estatística
     </a>
     <a routerLink="/relatorio" routerLinkActive="active">
-    <span class="material-symbols-outlined">overview</span> Relatório geral
+        <span class="material-symbols-outlined">overview</span> Relatório geral
     </a>
     <div class="menu-item-dropdown" [class.open]="submenuAberto">
         <a (click)="toggleSubmenu()" [class.active]="isConfigActive()">
@@ -17,7 +17,6 @@
             Configuração
             <span class="material-symbols-outlined dropdown-icon">expand_more</span>
         </a>
-
         <ul class="submenu">
             <li>
                 <a routerLink="/usuario" routerLinkActive="active">
@@ -39,4 +38,7 @@
             </li>
         </ul>
     </div>
-</nav>  
+    <a (click)="logout()" class="logout-link">
+        <span class="material-symbols-outlined">logout</span> Sair
+    </a>
+</nav>
