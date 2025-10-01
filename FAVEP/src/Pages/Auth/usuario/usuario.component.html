@@ -1,3 +1,4 @@
+
 <app-menu-central></app-menu-central>
 <app-menu-lateral></app-menu-lateral>
 
@@ -13,7 +14,7 @@
                 </div>
                 <div class="profile-details">
                     <div class="profile-photo">
-                        <img [src]="usuario.fotoperfil || 'assets/img/usuario.jpg'" [alt]="'Foto de ' + usuario.nome">
+                        <img [src]="usuario.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User'" [alt]="'Foto de ' + usuario.nome">
                     </div>
                     <div class="info-list">
                         <p><strong>Nome:</strong> <span>{{ usuario.nome }}</span></p>
@@ -47,7 +48,7 @@
             <div class="modal-body">
 
                 <div class="profile-photo-preview-container">
-                    <img [src]="usuarioEditavel.fotoperfil || 'assets/img/usuario.jpg'" alt="Pré-visualização da foto" class="profile-photo-preview">
+                    <img [src]="usuarioEditavel.fotoperfil || 'https://placehold.co/40x40/aabbcc/ffffff?text=User'" alt="Pré-visualização da foto" class="profile-photo-preview">
                 </div>
 
                 <div class="form-group file-upload-group">

@@ -2,8 +2,8 @@
     position: fixed;
     top: 12%;
     left: 0;
-    width: 15%;
-    height: 100vh;
+    width: 250px; /* largura fixa para desktop */
+    height: 1600px;
     background-color: #34495e;
     color: white;
     padding: 20px 0;
@@ -12,6 +12,7 @@
     z-index: 1000;
 }
 
+/* Links */
 .main-menu a {
     display: flex;
     align-items: center;
@@ -33,71 +34,99 @@
     margin-right: 5px;
 }
 
-/* --- Estilo para o item de menu com Dropdown --- */
+/* --- Dropdown --- */
 .menu-item-dropdown {
-    position: relative; /* Necessário para posicionar o submenu */
+    position: relative;
     width: 100%;
 }
-
-/* Estilo para o link principal que abre o dropdown */
 .menu-item-dropdown > a {
     display: flex;
-    justify-content: space-between; /* Alinha o ícone da seta à direita */
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     cursor: pointer;
 }
-
-/* Ícone da seta (expand_more) */
 .menu-item-dropdown .dropdown-icon {
-    transition: transform 0.3s ease; /* Animação de rotação */
+    transition: transform 0.3s ease;
 }
-
-/* Rotaciona a seta quando o menu está aberto */
 .menu-item-dropdown.open .dropdown-icon {
     transform: rotate(180deg);
 }
-
-/* --- Estilo para o Submenu (a lista <ul>) --- */
 .submenu {
     list-style: none;
     padding: 0;
     margin: 0;
-    /* Animação de "slide down" */
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease-in-out;
-    background-color: rgba(0, 0, 0, 0.1); /* Fundo levemente mais escuro */
+    background-color: rgba(0, 0, 0, 0.1);
 }
-
-/* Mostra o submenu quando a classe .open é adicionada */
 .menu-item-dropdown.open .submenu {
-    max-height: 200px; /* Um valor maior que a altura real do submenu */
+    max-height: 200px;
 }
-
-/* Estilo para os links dentro do submenu */
 .submenu li a {
     display: flex;
     align-items: center;
-    padding: 12px 20px 12px 45px; /* Adiciona um recuo à esquerda */
+    padding: 12px 20px 12px 45px;
     color: #f0f0f0;
     text-decoration: none;
     font-size: 0.9em;
     transition: background-color 0.2s ease;
 }
-
 .submenu li a:hover,
 .submenu li a.active {
     background-color: rgba(255, 255, 255, 0.1);
     color: #ffffff;
 }
-
 .submenu li a .material-symbols-outlined {
     margin-right: 15px;
     font-size: 1.2em;
 }
 
-
 .logout-link {
-    margin-top:115%; /* Adicionado para mover o link para o final */
+    margin-top: 40px;
+}
+
+/* --- Conteúdo principal --- */
+.main-content {
+    margin-left: 220px; /* mesma largura do menu */
+    padding: 20px;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* --- Mobile --- */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    background-color: #34495e;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .main-menu {
+        width: 70%;
+        left: -70%;
+        top: 0;
+        height: 100vh;
+        padding-top: 60px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .main-menu.open {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0; 
+    }
 }
