@@ -107,9 +107,9 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
       const selectedId = this.selectedPropertyId;
       console.log('Filtrando dados para o ID:', selectedId);
       
-      producoesFiltradas = this.todasProducoes.filter(p => p.propriedadeId == selectedId);
-      movimentacoesFiltradas = this.todasMovimentacoes.filter(m => m.propriedadeId == selectedId);
-      propriedadesFiltradas = this.propriedades.filter(p => p.id == selectedId);
+      producoesFiltradas = this.todasProducoes.filter(p => p.propriedadeId === selectedId);
+      movimentacoesFiltradas = this.todasMovimentacoes.filter(m => m.propriedadeId === selectedId);
+      propriedadesFiltradas = this.propriedades.filter(p => p.id === selectedId);
     }
     
     this.totalPropriedades = propriedadesFiltradas.length;

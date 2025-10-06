@@ -1,39 +1,49 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subscription, lastValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { Usuario } from '../../models/api.models';
 import { MenuCentralComponent } from "../menu-central/menu-central.component";
 import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
+import { MercadoPagoService } from '../../services/mercadopago.service';
+
+// Interfaces para tipagem
+interface MercadoPagoResponse {
+  init_point: string;
+}
+
+interface Plan {
+  tipo: string;
+  valor: number;
+}
 
 @Component({
   selector: 'app-plano-assinatura',
   standalone: true,
-  imports: [CommonModule, RouterLink, MenuCentralComponent, MenuLateralComponent],
+  imports: [CommonModule, MenuCentralComponent, MenuLateralComponent],
   templateUrl: './plano-assinatura.component.html',
   styleUrls: ['./plano-assinatura.component.css']
 })
 export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
-  // Propriedade para armazenar o plano atual do usuário
-  planoAtual: any;
   
+  planoAtual: any;
+  isLoading = false;
   private userSubscription: Subscription | undefined;
 
   constructor(
-    private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private mercadoPagoService: MercadoPagoService // Injete o serviço do Mercado Pago
   ) { }
 
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe((user: Usuario | null) => {
-      // Lógica aqui se necessário, por exemplo, carregar o plano do usuário logado
       if (user) {
-        // ... carregar plano com base no user.id
+        // Aqui você pode adicionar a lógica para buscar o plano atual do usuário na sua API
       }
     });
 
-    // Simulação do carregamento do plano atual
+    // Simulação do carregamento do plano atual do usuário
     this.loadCurrentPlan();
   }
 
@@ -41,24 +51,49 @@ export class PlanoAssinaturaComponent implements OnInit, OnDestroy {
     this.userSubscription?.unsubscribe();
   }
 
-  /**
-   * Simula a chamada de uma API para obter o plano atual do usuário.
-   */
   loadCurrentPlan(): void {
+    // Apenas uma simulação. O ideal é buscar essa informação do seu backend.
     setTimeout(() => {
       this.planoAtual = {
-        nome: 'Plano Básico',
-        preco: 'R$ 49,90/mês',
+        nome: 'Mensal',
+        preco: 'R$ 500,00/mês',
         descricao: 'Acesso a recursos de gerenciamento e relatórios básicos.'
       };
-    }, 1000); // Simula um atraso de 1 segundo para o carregamento
+    }, 500); 
   }
 
-  /**
-   * Lógica para iniciar o processo de troca de plano.
-   */
-  trocarDePlano(): void {
-    console.log('Iniciando processo de troca de plano...');
-    alert('Processo de troca de plano iniciado!');
+  // ESTA É A FUNÇÃO QUE ESTAVA FALTANDO
+  async handleSubscription(plan: Plan, event: MouseEvent) {
+    if (plan.valor === 0) {
+      alert('Troca para o plano gratuito concluída!');
+      // Aqui você chamaria um serviço para atualizar o plano do usuário no seu backend
+      return;
+    }
+
+    this.isLoading = true;
+    const button = event.target as HTMLButtonElement;
+    const originalText = button.textContent;
+    button.textContent = 'Aguarde...';
+    button.disabled = true;
+
+    try {
+      const request$ = this.mercadoPagoService.criarAssinatura(plan.tipo, plan.valor);
+      const data: MercadoPagoResponse = await lastValueFrom(request$);
+
+      if (data && data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        alert('Ocorreu um erro ao gerar o link de pagamento. Tente novamente.');
+        button.textContent = originalText;
+        button.disabled = false;
+      }
+    } catch (error) {
+      console.error('Falha ao processar a troca de assinatura:', error);
+      alert('Não foi possível iniciar o processo de troca.');
+      button.textContent = originalText;
+      button.disabled = false;
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

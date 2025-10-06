@@ -193,7 +193,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   filtrarProducoes(): void {
     this.producoesFiltradas = this.producoes.filter(prod => {
       const filtroCultura = this.filtroAtivo === 'todos' || prod.cultura === this.filtroAtivo;
-      const filtroProp = this.filtroPropriedade === 'todos' || prod.propriedadeId == this.filtroPropriedade;
+      const filtroProp = this.filtroPropriedade === 'todos' || prod.propriedadeId === this.filtroPropriedade;
       return filtroCultura && filtroProp;
     });
     this.paginaAtualProducao = 1;
@@ -208,7 +208,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
     this.financeirosFiltrados = this.financeiros.filter(fin => {
       const periodo = this.filtroPeriodo === 'todos' || new Date(fin.data as string) >= dataLimite;
-      const filtroProp = this.filtroPropriedade === 'todos' || fin.propriedadeId == this.filtroPropriedade;
+      const filtroProp = this.filtroPropriedade === 'todos' || fin.propriedadeId === this.filtroPropriedade;
       return periodo && filtroProp;
     });
     this.paginaAtualFinanceiro = 1;

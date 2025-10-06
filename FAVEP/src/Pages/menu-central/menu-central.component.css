@@ -59,3 +59,105 @@
     padding: 0.5rem;
     display: none;
 }
+
+/* NOVO: Estilos para o sistema de notificação */
+.notification-container {
+    position: fixed;
+    top: 100px; /* Abaixo do cabeçalho */
+    right: 20px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Permite clicar através do container */
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+    font-size: 0.9rem;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    pointer-events: auto; /* Permite que o usuário clique na notificação para fechá-la */
+    cursor: pointer;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #dc3545;
+}
+
+.notification.warning {
+    background-color: #ffc107;
+}
+
+.notification.info {
+    background-color: #007bff;
+}
+
+.notification i {
+    font-size: 1.2rem;
+    margin-right: 15px;
+}
+
+/* Animação de entrada */
+.notification:first-child {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* MEDIA QUERIES PARA RESPONSIVIDADE */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .header-logo-img {
+    height: 2.5rem;
+  }
+  
+  .header-text {
+    display: none;
+  }
+
+  .user-info {
+    gap: 10px;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .user-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .notification-container {
+    top: 80px; /* Ajusta a posição para o novo tamanho do cabeçalho */
+    right: 10px;
+    width: calc(100% - 20px);
+  }
+
+  .notification {
+    font-size: 0.8rem;
+    padding: 12px 15px;
+  }
+}

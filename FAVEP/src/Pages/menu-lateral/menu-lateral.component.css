@@ -2,7 +2,7 @@
     position: fixed;
     top: 12%;
     left: 0;
-    width: 250px; /* largura fixa para desktop */
+    width: 250px; /* Largura definitiva para desktop */
     height: 1600px;
     background-color: #34495e;
     color: white;
@@ -87,11 +87,15 @@
     margin-top: 40px;
 }
 
-/* --- Conteúdo principal --- */
-.main-content {
-    margin-left: 220px; /* mesma largura do menu */
-    padding: 20px;
+/* --- Conteúdo principal (NOVA FONTE DA VERDADE) --- */
+.main-content, .main-content-perfil {
+    margin-left: 250px; /* Mesma largura do menu */
+    padding: 2rem;
+    background-color: #f4f7f6;
     transition: margin-left 0.3s ease-in-out;
+    /* Adicionado para garantir que o conteúdo não defina seu próprio grid */
+    grid-column: unset;
+    grid-row: unset;
 }
 
 /* --- Mobile --- */
@@ -108,25 +112,27 @@
     border-radius: 5px;
 }
 
-@media (max-width: 768px) {
+/* --- RESPONSIVIDADE UNIFICADA --- */
+@media (max-width: 992px) {
     .menu-toggle {
         display: block;
     }
 
     .main-menu {
         width: 70%;
-        left: -70%;
+        left: -70%; /* Começa fora da tela */
         top: 0;
         height: 100vh;
         padding-top: 60px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        transition: left 0.3s ease-in-out; /* Adicionado para animar a entrada */
     }
 
     .main-menu.open {
-        left: 0;
+        left: 0; /* Entra na tela */
     }
 
-    .main-content {
-        margin-left: 0; 
+    .main-content, .main-content-perfil {
+        margin-left: 0; /* Remove a margem em telas menores */
     }
 }
