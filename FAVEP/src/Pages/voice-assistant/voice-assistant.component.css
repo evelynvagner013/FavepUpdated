@@ -1,9 +1,4 @@
-/* Adicione esta nova classe ao seu voice-assistant.component.css */
-
-.mic-btn.waiting {
-  background-color: #ffc107; /* Um amarelo para indicar atenção */
-  animation: pulse-mic 2s infinite; /* Reutiliza a animação existente */
-}
+/* Estilos relacionados ao microfone (.mic-btn, .mic-btn.waiting, .mic-btn.listening, @keyframes pulse-mic) foram removidos */
 
 /* Janela do Chat - Agora com posicionamento fixo independente */
 .chat-widget {
@@ -185,8 +180,8 @@
   font-size: 1rem;
 }
 
-/* Botões de Ação no Rodapé */
-.send-btn, .mic-btn {
+/* Botão de Enviar no Rodapé */
+.send-btn {
   background-color: #004d40;
   color: white;
   border: none;
@@ -201,7 +196,7 @@
   flex-shrink: 0;
 }
 
-.send-btn:hover:not(:disabled), .mic-btn:hover {
+.send-btn:hover:not(:disabled) {
   background-color: #00332b;
 }
 
@@ -210,13 +205,8 @@
   cursor: not-allowed;
 }
 
-.send-btn i, .mic-btn i {
+.send-btn i {
   font-size: 1.2rem;
-}
-
-.mic-btn.listening {
-  background-color: #dc3545;
-  animation: pulse-mic 1.5s infinite;
 }
 
 /* Botão Flutuante (FAB) - Fixo e independente */
@@ -243,12 +233,6 @@
 .voice-assistant-fab i {
   color: white;
   font-size: 24px;
-}
-
-@keyframes pulse-mic {
-  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
 }
 
 /* Responsividade */

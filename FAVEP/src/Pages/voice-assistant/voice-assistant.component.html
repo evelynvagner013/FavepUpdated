@@ -6,10 +6,7 @@
         <div class="header-text">
           <h3>Sementinha</h3>
           <p [ngSwitch]="status">
-            <span *ngSwitchCase="'listening'">Ouvindo...</span>
             <span *ngSwitchCase="'processing'">Processando...</span>
-            <span *ngSwitchCase="'speaking'">Falando...</span>
-            <span *ngSwitchCase="'waiting'">Aguardando sua fala...</span>
             <span *ngSwitchDefault>Sua assistente virtual</span>
           </p>
         </div>
@@ -43,12 +40,6 @@
     <footer class="chat-footer">
       <form (ngSubmit)="sendTextMessage()" class="chat-input-form">
         <input type="text" [(ngModel)]="currentMessage" name="currentMessage" placeholder="Digite sua pergunta..." aria-label="Campo de texto para pergunta">
-        <button *ngIf="!currentMessage" type="button" class="mic-btn" 
-                (click)="toggleConversationMode()" 
-                [ngClass]="{ 'listening': status === 'listening', 'waiting': status === 'waiting' }" 
-                aria-label="Iniciar ou parar conversa por voz">
-          <i class="fas fa-microphone"></i>
-        </button>
         <button *ngIf="currentMessage" type="submit" class="send-btn" [disabled]="!currentMessage.trim()" aria-label="Enviar mensagem">
           <i class="fas fa-paper-plane"></i>
         </button>
