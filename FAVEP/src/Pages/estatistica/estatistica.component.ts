@@ -14,6 +14,7 @@ import { Propriedade, Producao, Financeiro, Usuario } from '../../models/api.mod
 import { UsuarioService } from '../../services/usuario.service';
 import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
 import { MenuCentralComponent } from "../menu-central/menu-central.component";
+import { WeatherService, WeatherData } from '../../services/weather.service';
 
 registerLocaleData(localePt);
 
@@ -36,8 +37,9 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   @ViewChild('produtividadeChart') produtividadeChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('financeiroChart') financeiroChart!: ElementRef<HTMLCanvasElement>;
 
-  clima: any = null;
+  clima: WeatherData | null = null;
   climaErro: string = '';
+  cidadeBusca: string = '';
   
  
   // --- Listas de Dados (Brutos e Filtrados) ---
@@ -68,13 +70,15 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
     private dashboardDataService: DashboardDataService,
     private authService: AuthService,
     private router: Router,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private weatherService: WeatherService
   ) {
     Chart.register(...registerables);
   }
 
   ngOnInit(): void {
     this.carregarDadosIniciais();
+    this.carregarClima();
   }
  
 
@@ -83,6 +87,38 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
       this.userSubscription.unsubscribe();
     }
   }
+
+ carregarClima(): void {
+    this.weatherService.getWeather().subscribe({
+      next: (data) => {
+        this.clima = data;
+        this.climaErro = '';
+      },
+      error: (err) => {
+        console.error('Erro ao carregar clima:', err);
+        this.climaErro = 'Não foi possível carregar o clima.';
+      }
+    });
+  }
+
+  buscarClima(): void {
+    if (!this.cidadeBusca.trim()) {
+      this.climaErro = 'Digite o nome de uma cidade.';
+      return;
+    }
+
+    this.weatherService.getWeather(undefined, undefined, this.cidadeBusca).subscribe({
+      next: (data) => {
+        this.clima = data;
+        this.climaErro = '';
+      },
+      error: (err) => {
+        console.error('Erro ao buscar clima:', err);
+        this.climaErro = 'Cidade não encontrada.';
+      }
+    });
+  }
+
   
   carregarDadosIniciais(): void {
     this.dashboardDataService.carregarDadosDashboard().subscribe({

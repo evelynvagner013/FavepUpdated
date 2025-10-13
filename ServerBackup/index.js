@@ -9,6 +9,7 @@ const financesRoutes = require('./src/routes/routeFinance');
 const mercadoPagoRoutes = require('./src/routes/routeMercadoPago');
 const contactRoutes = require('./src/routes/routeContact');
 const agentRoutes = require('./src/routes/routeAgent');
+const weatherRoutes = require('./src/routes/routeWeather');
 
 
 app.use(express.json({ limit: '50mb' }));
@@ -24,6 +25,7 @@ app.use('/finance', financesRoutes);
 app.use('/mercado-pago', mercadoPagoRoutes);
 app.use('/contato', contactRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/clima', weatherRoutes);
 
 
 app.get('/', (req, res) => {

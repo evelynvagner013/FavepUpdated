@@ -15,6 +15,8 @@
   </div>
   
   <div class="resumo-cards">
+  
+
     <div class="resumo-card">
       <h3>Propriedades</h3>
       <p class="valor">{{totalPropriedades}}</p>
@@ -33,6 +35,7 @@
       </p>
     </div>
   </div>
+
   <div class="graficos-container">
     <div class="grafico-card">
       <h3>Produtividade por Cultura</h3>
@@ -59,4 +62,28 @@
       </ng-template>
     </div>
   </div>
+  
+    <div class="clima-section">
+  <h2>☁️ Clima</h2>
+
+  <div class="clima-busca">
+    <input 
+      type="text" 
+      placeholder="Digite uma cidade..." 
+      [(ngModel)]="cidadeBusca"
+      class="input-cidade"
+    />
+    <button (click)="buscarClima()">Buscar</button>
+  </div>
+
+  <div *ngIf="clima" class="clima-card">
+    <h3>{{ clima.cidade }}</h3>
+    <img [src]="clima.icone" alt="Ícone do clima" />
+    <p>{{ clima.descricao | titlecase }}</p>
+    <h2>{{ clima.temperatura | number:'1.0-0' }}°C</h2>
+    <p>Sensação térmica: {{ clima.sensacaoTermica | number:'1.0-0' }}°C</p>
+  </div>
+
+  <p *ngIf="climaErro" class="erro">{{ climaErro }}</p>
+</div>
 </main>
