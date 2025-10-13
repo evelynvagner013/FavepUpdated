@@ -757,8 +757,6 @@
     }
     .modal-content {
         padding: 20px;
-        max-height: 80vh; /* Adicionado */
-        overflow-y: auto;  /* Adicionado */
     }
     .modal-footer {
         flex-direction: column-reverse;

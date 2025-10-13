@@ -228,16 +228,20 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return this.getPropriedadesAtivas().reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
+  // --- ALTERAÇÃO APLICADA AQUI ---
   calcularProducaoTotal(): number {
     const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
-    const producoesAtivas = this.producoes.filter(prod => idsPropriedadesAtivas.has(prod.propriedadeId));
-    return producoesAtivas.reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.quantidade || 0)), 0);
+    return this.producoesFiltradas
+      .filter(p => idsPropriedadesAtivas.has(p.propriedadeId))
+      .reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.quantidade || 0)), 0);
   }
   
+  // --- ALTERAÇÃO APLICADA AQUI ---
   calcularAreaPlantada(): number {
     const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
-    const producoesAtivas = this.producoes.filter(prod => idsPropriedadesAtivas.has(prod.propriedadeId));
-    return producoesAtivas.reduce((total, prod) => total + (prod.areaproducao || 0), 0);
+    return this.producoesFiltradas
+      .filter(p => idsPropriedadesAtivas.has(p.propriedadeId))
+      .reduce((total, prod) => total + (prod.areaproducao || 0), 0);
   }
 
   calcularProdutividadeMedia(): number {
@@ -402,10 +406,12 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return titulos[this.abaAtiva] || 'Item';
   }
 
+  // --- ALTERAÇÃO APLICADA AQUI ---
   getNomePropriedade(id: string): string {
     if (!id) return 'Geral';
     const prop = this.propriedades.find((p) => p.id === id);
-    return prop ? prop.nomepropriedade : 'Propriedade não encontrada';
+    if (!prop) return 'Propriedade não encontrada';
+    return prop.status === 'inativo' ? `${prop.nomepropriedade} (Desativada)` : prop.nomepropriedade;
   }
 
   trackById(index: number, item: { id: any }): any {

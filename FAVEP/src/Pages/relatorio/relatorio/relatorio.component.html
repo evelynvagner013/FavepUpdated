@@ -20,8 +20,10 @@
         <div class="control-group">
           <label for="propertyFilter">Propriedade:</label>
           <select id="propertyFilter" [(ngModel)]="selectedPropertyId" (change)="gerarRelatorio()" name="propertyFilterSelect">
-            <option value="todos">Todas as Propriedades</option>
-            <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
+            <option value="todos">Todas as Propriedades (Ativas)</option>
+            <option *ngFor="let prop of propriedades" [value]="prop.id">
+              {{prop.nomepropriedade}} {{prop.status === 'inativo' ? '(Desativada)' : ''}}
+            </option>
           </select>
         </div>
 
@@ -44,14 +46,22 @@
       </div>
 
       <div class="chart-area">
-        <canvas #reportChartCanvas id="reportChartCanvas"></canvas>
+        <div *ngIf="hasChartData; else noDataTemplate" class="chart-wrapper">
+            <canvas #reportChartCanvas id="reportChartCanvas"></canvas>
+        </div>
+        <ng-template #noDataTemplate>
+            <div class="no-data-message">
+                <i class="fas fa-info-circle"></i>
+                <p>Não há dados disponíveis para os filtros selecionados.</p>
+            </div>
+        </ng-template>
       </div>
     </div>
     <div class="action-buttons">
       <button class="btn-generate-report" (click)="gerarRelatorio()">
-        <i class="fas fa-chart-bar"></i> Gerar Relatório
+        <i class="fas fa-sync-alt"></i> Atualizar Relatório
       </button>
-      <button class="btn-export-pdf" (click)="exportarRelatorioPDF()">
+      <button class="btn-export-pdf" (click)="exportarRelatorioPDF()" [disabled]="!hasChartData">
         <i class="fas fa-file-pdf"></i> Exportar PDF
       </button>
     </div>

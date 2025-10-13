@@ -33,8 +33,8 @@ registerLocaleData(localePt);
 export class EstatisticaComponent implements OnInit, OnDestroy {
 
 
-  @ViewChild('produtividadeChart', { static: true }) produtividadeChart!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('financeiroChart', { static: true }) financeiroChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('produtividadeChart') produtividadeChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('financeiroChart') financeiroChart!: ElementRef<HTMLCanvasElement>;
 
   clima: any = null;
   climaErro: string = '';
@@ -57,6 +57,10 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   meses: string[] = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   dadosReceitasMensais: number[] = new Array(12).fill(0);
   dadosDespesasMensais: number[] = new Array(12).fill(0);
+
+  // --- Indicadores de dados para exibição dos gráficos ---
+  hasProdutividadeData: boolean = false;
+  hasFinanceiroData: boolean = false;
 
   private userSubscription: Subscription | undefined;
 
@@ -97,23 +101,28 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
   }
 
   processarDadosEstatisticos(): void {
-    console.log('Filtro selecionado:', this.selectedPropertyId);
+    let producoesFiltradas: Producao[];
+    let movimentacoesFiltradas: Financeiro[];
+    let propriedadesFiltradas: Propriedade[];
 
-    let producoesFiltradas = this.todasProducoes;
-    let movimentacoesFiltradas = this.todasMovimentacoes;
-    let propriedadesFiltradas = this.propriedades;
-
-    if (this.selectedPropertyId !== 'todos') {
-      const selectedId = this.selectedPropertyId;
-      console.log('Filtrando dados para o ID:', selectedId);
+    // --- LÓGICA DE FILTRO CORRIGIDA ---
+    if (this.selectedPropertyId === 'todos') {
+      // Para "Todas", considera apenas propriedades ATIVAS
+      propriedadesFiltradas = this.propriedades.filter(p => p.status === 'ativo');
+      const idsPropriedadesAtivas = new Set(propriedadesFiltradas.map(p => p.id));
       
+      producoesFiltradas = this.todasProducoes.filter(p => idsPropriedadesAtivas.has(p.propriedadeId));
+      movimentacoesFiltradas = this.todasMovimentacoes.filter(m => idsPropriedadesAtivas.has(m.propriedadeId));
+    } else {
+      // Para uma propriedade específica, exibe seus dados independentemente do status
+      const selectedId = this.selectedPropertyId;
+      propriedadesFiltradas = this.propriedades.filter(p => p.id === selectedId);
       producoesFiltradas = this.todasProducoes.filter(p => p.propriedadeId === selectedId);
       movimentacoesFiltradas = this.todasMovimentacoes.filter(m => m.propriedadeId === selectedId);
-      propriedadesFiltradas = this.propriedades.filter(p => p.id === selectedId);
     }
     
     this.totalPropriedades = propriedadesFiltradas.length;
-    this.areaTotal = propriedadesFiltradas.reduce((sum, prop) => sum + prop.area_ha, 0);
+    this.areaTotal = propriedadesFiltradas.reduce((sum, prop) => sum + (prop.area_ha || 0), 0);
 
     const producaoPorCultura: { [key: string]: number } = {};
     this.producaoAtual = producoesFiltradas.reduce((sum, prod) => {
@@ -141,11 +150,16 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
       }
     });
     
-    this.criarGraficos();
+    // --- ATUALIZAÇÃO DOS INDICADORES DE DADOS ---
+    this.hasProdutividadeData = this.dadosProdutividade.length > 0 && this.dadosProdutividade.some(d => d > 0);
+    this.hasFinanceiroData = this.dadosReceitasMensais.some(r => r > 0) || this.dadosDespesasMensais.some(d => d > 0);
+
+    // Adiciona um pequeno delay para garantir que a view seja atualizada antes de criar os gráficos
+    setTimeout(() => this.criarGraficos(), 0);
   }
 
   criarGraficos(): void {
-    if (this.produtividadeChart && this.produtividadeChart.nativeElement) {
+    if (this.hasProdutividadeData && this.produtividadeChart && this.produtividadeChart.nativeElement) {
       Chart.getChart(this.produtividadeChart.nativeElement)?.destroy();
       new Chart(this.produtividadeChart.nativeElement, {
         type: 'bar',
@@ -166,7 +180,7 @@ export class EstatisticaComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.financeiroChart && this.financeiroChart.nativeElement) {
+    if (this.hasFinanceiroData && this.financeiroChart && this.financeiroChart.nativeElement) {
       Chart.getChart(this.financeiroChart.nativeElement)?.destroy();
       new Chart(this.financeiroChart.nativeElement, {
         type: 'bar',

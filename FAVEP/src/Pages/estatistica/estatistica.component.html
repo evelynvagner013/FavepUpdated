@@ -1,4 +1,3 @@
-
 <app-menu-central></app-menu-central>
 <app-menu-lateral></app-menu-lateral>
 
@@ -7,8 +6,10 @@
     <div class="filtro-group">
       <label for="filtro-propriedade">Filtrar por Propriedade:</label>
       <select id="filtro-propriedade" [(ngModel)]="selectedPropertyId" (change)="processarDadosEstatisticos()">
-        <option *ngFor="let prop of propriedades" [value]="prop.id">{{ prop.nomepropriedade }}</option>
-        <option value="todos">Todas as Propriedades</option>
+        <option value="todos">Todas as Propriedades (Ativas)</option>
+        <option *ngFor="let prop of propriedades" [value]="prop.id">
+          {{ prop.nomepropriedade }} {{ prop.status === 'inativo' ? '(Desativada)' : '' }}
+        </option>
       </select>
     </div>
   </div>
@@ -35,11 +36,27 @@
   <div class="graficos-container">
     <div class="grafico-card">
       <h3>Produtividade por Cultura</h3>
-      <canvas #produtividadeChart></canvas>
+      <div *ngIf="hasProdutividadeData; else noProdutividadeData" class="chart-wrapper">
+        <canvas #produtividadeChart></canvas>
+      </div>
+      <ng-template #noProdutividadeData>
+        <div class="no-data-message">
+          <i class="fas fa-chart-bar"></i>
+          <p>Não há dados de produção para exibir.</p>
+        </div>
+      </ng-template>
     </div>
     <div class="grafico-card">
       <h3>Receitas x Despesas</h3>
-      <canvas #financeiroChart></canvas>
+      <div *ngIf="hasFinanceiroData; else noFinanceiroData" class="chart-wrapper">
+        <canvas #financeiroChart></canvas>
+      </div>
+      <ng-template #noFinanceiroData>
+        <div class="no-data-message">
+          <i class="fas fa-dollar-sign"></i>
+          <p>Não há dados financeiros para exibir.</p>
+        </div>
+      </ng-template>
     </div>
   </div>
 </main>
