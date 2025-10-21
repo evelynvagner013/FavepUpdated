@@ -2,17 +2,30 @@
 <app-menu-lateral></app-menu-lateral>
 
 <main class="main-content">
-  <div class="container-principal">
 
-    <div id="report-content">
-      <h1 class="titulo">Gerar Relatórios</h1>
+  <div class="report-header">
+    <h2 class="header-title">Painel de Análise de Dados</h2>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="gerarRelatorio()">
+        <i class="fas fa-chart-line"></i> Analisar Dados
+      </button>
+      <button class="btn btn-secondary" (click)="exportarRelatorioPDF()" [disabled]="!hasChartData">
+        <i class="fas fa-file-export"></i> Exportar
+      </button>
+    </div>
+  </div>
 
+  <div id="report-export-area">
+  
+    <div class="container-principal filter-box">
+      <h3 class="filter-title">Filtros do Relatório</h3>
+      
       <div class="report-controls">
         <div class="control-group">
           <label for="reportType">Tipo de Relatório:</label>
           <select id="reportType" [(ngModel)]="reportType" (change)="gerarRelatorio()" name="reportTypeSelect">
-            <option value="productivity">Produtividade por Cultura</option>
-            <option value="financial">Resultado Financeiro</option>
+            <option value="productivity">Produtividade (sc/ha)</option>
+            <option value="financial">Resultado (R$) por Mês</option>
             <option value="crop_production">Produção por Cultura</option>
           </select>
         </div>
@@ -20,7 +33,7 @@
         <div class="control-group">
           <label for="propertyFilter">Propriedade:</label>
           <select id="propertyFilter" [(ngModel)]="selectedPropertyId" (change)="gerarRelatorio()" name="propertyFilterSelect">
-            <option value="todos">Todas as Propriedades (Ativas)</option>
+            <option value="todos">Todas as Propriedades</option>
             <option *ngFor="let prop of propriedades" [value]="prop.id">
               {{prop.nomepropriedade}} {{prop.status === 'inativo' ? '(Desativada)' : ''}}
             </option>
@@ -35,16 +48,15 @@
           </select>
         </div>
 
-        <div class="control-group" *ngIf="reportType === 'financial'">
-          <label for="startDate">Data Início:</label>
-          <input type="date" id="startDate" [(ngModel)]="startDate" (change)="gerarRelatorio()" name="startDateInput">
-        </div>
-        <div class="control-group" *ngIf="reportType === 'financial'">
-          <label for="endDate">Data Fim:</label>
-          <input type="date" id="endDate" [(ngModel)]="endDate" (change)="gerarRelatorio()" name="endDateInput">
+        <div class="control-group date-range" *ngIf="reportType === 'financial'">
+          <label for="startDate">Período:</label>
+          <input type="date" id="startDate" [(ngModel)]="startDate" (change)="gerarRelatorio()" name="startDateInput" placeholder="Data Início">
+          <span>até</span>
+          <input type="date" id="endDate" [(ngModel)]="endDate" (change)="gerarRelatorio()" name="endDateInput" placeholder="Data Fim">
         </div>
       </div>
-
+    </div> 
+    <div class="container-principal chart-box">
       <div class="chart-area">
         <div *ngIf="hasChartData; else noDataTemplate" class="chart-wrapper">
             <canvas #reportChartCanvas id="reportChartCanvas"></canvas>
@@ -53,18 +65,94 @@
             <div class="no-data-message">
                 <i class="fas fa-info-circle"></i>
                 <p>Não há dados disponíveis para os filtros selecionados.</p>
+                <p class="subtle-text">Ajuste os filtros e clique em "Analisar Dados".</p>
             </div>
         </ng-template>
       </div>
-    </div>
-    <div class="action-buttons">
-      <button class="btn-generate-report" (click)="gerarRelatorio()">
-        <i class="fas fa-sync-alt"></i> Atualizar Relatório
-      </button>
-      <button class="btn-export-pdf" (click)="exportarRelatorioPDF()" [disabled]="!hasChartData">
-        <i class="fas fa-file-pdf"></i> Exportar PDF
-      </button>
-    </div>
+    </div> 
+    <div class="container-principal movimentacoes-box" 
+         *ngIf="reportType === 'financial' && movimentacoesFiltradas.length > 0">
+      
+      <h3 class="movimentacoes-title">
+        <i class="fas fa-book"></i> Detalhamento Financeiro
+      </h3>
+      
+      <div class="movimentacoes-header">
+        <span>Transação</span>
+        <span>Valor</span>
+      </div>
 
-  </div>
-</main>
+      <ul class="movimentacoes-list">
+        <li *ngFor="let fin of movimentacoesFiltradas">
+          <div class="transacao-info">
+            <span class="descricao">{{ fin.descricao }}</span>
+            <span class="metadata">
+              <span>
+                <i class="fas fa-calendar-alt"></i> {{ fin.data | date:'dd/MM/yyyy' }}
+              </span>
+              <span>
+                <i class="fas fa-home"></i> {{ getNomePropriedade(fin.propriedadeId) }}
+              </span>
+            </span>
+          </div>
+          
+          <div class="transacao-status">
+            <span class="badge" [class.entrada]="fin.tipo === 'receita'" [class.saida]="fin.tipo === 'despesa'">
+              <i class="fas" [class.fa-arrow-up]="fin.tipo === 'receita'" [class.fa-arrow-down]="fin.tipo === 'despesa'"></i>
+              {{ fin.tipo === 'receita' ? 'Entrada' : 'Saída' }}
+            </span>
+          </div>
+
+          <div class="transacao-valor">
+            <span [class.positivo]="fin.tipo === 'receita'" [class.negativo]="fin.tipo === 'despesa'">
+              {{ (fin.tipo === 'despesa' ? '-' : '') + (fin.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR') }}
+            </span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="container-principal producao-box" 
+         *ngIf="(reportType === 'productivity' || reportType === 'crop_production') && producoesFiltradas.length > 0">
+      
+      <h3 class="movimentacoes-title">
+        <i class="fas fa-wheat-awn"></i> 
+        {{ reportType === 'productivity' ? 'Detalhamento de Produtividade' : 'Detalhamento de Produção' }}
+      </h3>
+      
+      <div class="producao-header">
+        <span>Cultura / Propriedade</span>
+        <span>Área (ha)</span>
+        <span>Produtividade (kg/ha)</span>
+        <span>Produção Total (kg)</span>
+      </div>
+
+      <ul class="movimentacoes-list">
+        <li *ngFor="let prod of producoesFiltradas" class="producao-item">
+          
+          <div class="transacao-info">
+            <span class="descricao">{{ prod.cultura }} <span class="safra">({{ prod.safra }})</span></span>
+            <span class="metadata">
+              <span>
+                <i class="fas fa-calendar-alt"></i> {{ prod.data | date:'dd/MM/yyyy' }}
+              </span>
+              <span>
+                <i class="fas fa-home"></i> {{ getNomePropriedade(prod.propriedadeId) }}
+              </span>
+            </span>
+          </div>
+          
+          <div class="producao-stats">
+            <span>{{ prod.areaproducao | number:'1.2-2':'pt-BR' }} <small>ha</small></span>
+          </div>
+          <div class="producao-stats">
+            <span>{{ prod.quantidade | number:'1.2-2':'pt-BR' }} <small>kg/ha</small></span>
+          </div>
+          <div class="producao-stats total">
+            <span>{{ (prod.areaproducao * prod.quantidade) | number:'1.2-2':'pt-BR' }} <small>kg</small></span>
+          </div>
+
+        </li>
+      </ul>
+    </div>
+    </div> </main>
