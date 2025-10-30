@@ -1,3 +1,5 @@
+// Conteúdo completo do arquivo: src/services/auth.service.ts
+
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -9,7 +11,7 @@ import { Usuario } from '../models/api.models';
   providedIn: 'root'
 })
 export class AuthService {
-  private authUrl = 'http://localhost:5050/auth';
+  private authUrl = 'http://localhost:5050/auth'; // Seu URL
   private isBrowser: boolean;
 
   private currentUserSubject: BehaviorSubject<Usuario | null>;
@@ -28,10 +30,13 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  // --- MODIFICADO ---
+  // Apenas o 'dadosUsuario' agora deve conter a senha
   register(dadosUsuario: any): Observable<any> {
     return this.http.post(`${this.authUrl}/register`, dadosUsuario);
   }
 
+  // --- SEM MUDANÇAS ---
   login(email: string, senha: string): Observable<any> {
     return this.http.post<{ token: string; user: Usuario }>(`${this.authUrl}/login`, { email, senha }).pipe(
       tap(response => {
@@ -43,20 +48,30 @@ export class AuthService {
     );
   }
 
+  // --- SEM MUDANÇAS ---
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/forgot-password`, { email });
   }
 
-  // NOVO: Método para verificar e-mail e definir a senha
+  // --- NOVO MÉTODO ---
+  /**
+   * Envia o e-mail e o código de 6 dígitos para verificação.
+   */
+  verifyEmailCode(email: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/verify-email-code`, { email, code });
+  }
+
+  // --- MÉTODO ANTIGO (Não é mais usado pelo fluxo de registro) ---
   verifyAndSetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/verify-and-set-password`, { token, senha, confirmarSenha });
   }
-
-  // NOVO: Método para redefinir a senha
+  
+  // --- SEM MUDANÇAS ---
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
 
+  // --- MÉTODOS AUXILIARES (sem alteração) ---
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('user');

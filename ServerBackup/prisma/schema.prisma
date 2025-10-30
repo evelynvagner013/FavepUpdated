@@ -8,18 +8,21 @@ datasource db {
 }
 
 model usuario {
-  id                   String              @id @default(uuid())
-  nome                 String
-  email                String              @unique
-  telefone             String              @unique
-  fotoperfil           String?
-  senha                String
-  emailVerified        Boolean?            @default(false)
-  verificationToken    String?             @unique
-  resetPasswordToken   String?             @unique
-  resetPasswordExpires DateTime?
-  planos               PlanosMercadoPago[]
-  propriedades         propriedade[]
+  id                        String              @id @default(uuid())
+  nome                      String
+  email                     String              @unique
+  telefone                  String              @unique
+  fotoperfil                String?
+  senha                     String
+  emailVerified             Boolean?            @default(false)
+  verificationToken         String?             
+  resetPasswordToken        String?             @unique
+  resetPasswordExpires      DateTime?
+  verificationTokenExpires  DateTime?       @map("verification_token_expires_at")
+  authCode                  String?             @map("auth_code")
+  authCodeExpires           DateTime?           @map("auth_code_expires_at")
+  planos                    PlanosMercadoPago[]
+  propriedades              propriedade[]
 }
 
 model propriedade {

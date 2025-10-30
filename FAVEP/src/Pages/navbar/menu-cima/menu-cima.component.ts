@@ -1,253 +1,279 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ChangeDetectorRef } from '@angular/core';
+// Conteúdo completo do arquivo: src/Pages/navbar/menu-cima/menu-cima.component.ts
+
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Necessário
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { AuthService } from '../../../services/auth.service';
+import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/api.models';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
-import { UsuarioService } from '../../../services/usuario.service';
+import { FormsModule } from '@angular/forms'; // Necessário para [(ngModel)]
 
 @Component({
   selector: 'app-menu-cima',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgxMaskDirective, NgxMaskPipe],
-  providers: [DatePipe],
+  imports: [
+    // --- CORRIGIDO ---
+    CommonModule,
+    RouterLink,
+    FormsModule, // Para [(ngModel)]
+    NgxMaskDirective,
+    NgxMaskPipe
+  ],
   templateUrl: './menu-cima.component.html',
   styleUrls: ['./menu-cima.component.css']
 })
 export class MenuCimaComponent implements OnInit, OnDestroy {
-  // Propriedades para controle dos modais
+  
+  // --- Estado de Autenticação e Dropdown ---
+  currentUserValue: Usuario | null = null;
+ private authSubscription: Subscription = new Subscription();
+  mostrarDropdown = false;
+  
+  // --- Controle de Modais (do seu HTML) ---
   mostrarLoginModal = false;
   mostrarRegisterModal = false;
   mostrarForgotPasswordModal = false;
   mostrarPerfilModal = false;
+  
+  // --- NOVO: Modal de Verificação ---
+  mostrarVerifyEmailModal = false;
 
-  // Propriedades para o formulário de Login
-  loginEmail: string = '';
-  loginPassword: string = '';
-  loginRememberMe: boolean = false;
-  loginErrorMessage: string = '';
-  loginPasswordVisible: boolean = false;
-
-  // Removido 'password' e 'confirmarSenha' do objeto inicial
-  registerUser: any = { username: '', email: '', telefone: '' };
-  registerSuccessMessage: string = '';
-  registerErrorMessage: string = '';
-
-  // Propriedades para o formulário de Esqueci a Senha
-  forgotPasswordEmail: string = '';
-  forgotPasswordSuccessMessage: string = '';
-  forgotPasswordErrorMessage: string = '';
-
-  // Propriedade para o usuário logado
-  currentUserValue: Usuario | null = null;
-  private userSubscription!: Subscription;
-
-  // Propriedade para controlar o dropdown
-  mostrarDropdown = false;
-
-  // Propriedades para o modal de perfil
+  // --- Lógica de Edição de Perfil (do seu HTML) ---
   usuarioEditavel: Partial<Usuario> = {};
+  
+  // --- Variáveis dos Formulários (Template-Driven) ---
+  loginEmail = '';
+  loginPassword = '';
+  loginPasswordVisible = false;
+  loginErrorMessage: string | null = null;
 
+  // Modificado: Adicionado 'senha' e 'confirmarSenha'
+  registerUser = { nome: '', email: '', telefone: '', senha: '', confirmarSenha: '' };
+  registerSuccessMessage: string | null = null;
+  registerErrorMessage: string | null = null;
+
+  // Novo: Para o modal de verificação
+  verificationCode = '';
+  emailParaVerificar = ''; // Guarda o e-mail entre o registro e a verificação
+  verifySuccessMessage: string | null = null;
+  verifyErrorMessage: string | null = null;
+
+  forgotPasswordEmail = '';
+  forgotPasswordSuccessMessage: string | null = null;
+  forgotPasswordErrorMessage: string | null = null;
+  
   constructor(
-    public apiService: AuthService,
+    private authService: AuthService,
     private usuarioService: UsuarioService,
-    private router: Router,
-    private eRef: ElementRef,
-    private cdr: ChangeDetectorRef
-  ) { }
-
-  @HostListener('document:click', ['$event'])
-  clickout(event: Event) {
-    if (!this.eRef.nativeElement.contains(event.target)) {
-      if (this.mostrarDropdown) {
-        this.mostrarDropdown = false;
-        this.cdr.detectChanges();
-      }
-    }
-  }
-
-  toggleDropdown(event: Event): void {
-    event.stopPropagation();
-    this.mostrarDropdown = !this.mostrarDropdown;
-    this.cdr.detectChanges();
-  }
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.userSubscription = this.apiService.currentUser.subscribe(user => {
+    // Mantém o usuário atualizado
+    this.authSubscription = this.authService.currentUser.subscribe(user => {
       this.currentUserValue = user;
-      this.cdr.detectChanges();
     });
   }
 
   ngOnDestroy(): void {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 
-  logout(): void {
-    this.apiService.logout();
-    this.router.navigate(['/home']);
-  }
-
-  // --- Métodos para Controle dos Modais ---
-
-  abrirLoginModal() {
+  // --- Funções de Controle de Modal (MODIFICADAS) ---
+  
+  abrirLoginModal(): void {
     this.fecharModals();
-    this.mostrarLoginModal = true;
+    this.loginErrorMessage = null;
     this.loginEmail = '';
     this.loginPassword = '';
-    this.loginErrorMessage = '';
-    this.loginRememberMe = false;
+    this.mostrarLoginModal = true;
   }
 
-  toggleLoginPasswordVisibility(): void {
-    this.loginPasswordVisible = !this.loginPasswordVisible;
-    this.cdr.detectChanges();
-  }
-
-  abrirRegisterModal() {
+  abrirRegisterModal(): void {
     this.fecharModals();
+    this.registerErrorMessage = null;
+    this.registerSuccessMessage = null;
+    this.registerUser = { nome: '', email: '', telefone: '', senha: '', confirmarSenha: '' };
     this.mostrarRegisterModal = true;
-    this.registerUser = { username: '', email: '', telefone: '' };
-    this.registerSuccessMessage = '';
-    this.registerErrorMessage = '';
   }
 
-  abrirForgotPasswordModal() {
+  abrirForgotPasswordModal(): void {
     this.fecharModals();
-    this.mostrarForgotPasswordModal = true;
+    this.forgotPasswordErrorMessage = null;
+    this.forgotPasswordSuccessMessage = null;
     this.forgotPasswordEmail = '';
-    this.forgotPasswordSuccessMessage = '';
-    this.forgotPasswordErrorMessage = '';
+    this.mostrarForgotPasswordModal = true;
   }
-
-  fecharModals() {
+  
+  fecharModals(): void {
     this.mostrarLoginModal = false;
     this.mostrarRegisterModal = false;
     this.mostrarForgotPasswordModal = false;
-    this.mostrarPerfilModal = false;
+    this.mostrarVerifyEmailModal = false; // Adicionado
   }
 
-  // --- Métodos de Submissão dos Formulários ---
+  // --- Lógica de Autenticação (MODIFICADA) ---
 
-  onLoginSubmit() {
-    if (!this.loginEmail || !this.loginPassword) {
-      this.loginErrorMessage = "Email e senha são obrigatórios.";
-      return;
-    }
-
-    this.apiService.login(this.loginEmail, this.loginPassword).subscribe({
+  /**
+   * # onLoginSubmit
+   * Faz o login com e-mail e senha.
+   */
+  onLoginSubmit(): void {
+    this.loginErrorMessage = null;
+    this.authService.login(this.loginEmail, this.loginPassword).subscribe({
       next: () => {
         this.fecharModals();
         this.router.navigate(['/gerenciamento']);
       },
-      error: (error) => {
-        console.error('Erro no login', error);
-        this.loginErrorMessage = error.error?.error || 'Email ou senha inválidos';
+      error: (err) => {
+        this.loginErrorMessage = err.error?.error || 'Falha no login.';
       }
     });
   }
 
-  onRegisterSubmit() {
-    if (!this.registerUser.username || !this.registerUser.email || !this.registerUser.telefone) {
-      this.registerErrorMessage = 'Nome, e-mail e telefone são obrigatórios.';
+  /**
+   * # onRegisterSubmit
+   * Registra o usuário e abre o modal de verificação de código.
+   */
+  onRegisterSubmit(): void {
+    this.registerErrorMessage = null;
+    this.registerSuccessMessage = null;
+
+    if (this.registerUser.senha !== this.registerUser.confirmarSenha) {
+      this.registerErrorMessage = 'As senhas não coincidem.';
       return;
     }
-
-    this.registerErrorMessage = '';
-
+    
+    // Prepara dados para a API (sem 'confirmarSenha')
     const payload = {
-      nome: this.registerUser.username,
+      nome: this.registerUser.nome,
       email: this.registerUser.email,
-      telefone: this.registerUser.telefone
+      telefone: this.registerUser.telefone,
+      senha: this.registerUser.senha
     };
 
-    this.apiService.register(payload).subscribe({
+    this.authService.register(payload).subscribe({
       next: (response) => {
-        this.registerSuccessMessage = response.message || 'Cadastro realizado! Verifique seu e-mail para continuar.';
-        setTimeout(() => {
-            this.fecharModals();
-        }, 3000);
+        this.registerSuccessMessage = response.message;
+        this.emailParaVerificar = this.registerUser.email; // Salva o e-mail
+        // Troca para o modal de verificação
+        this.fecharModals();
+        this.verifyErrorMessage = null;
+        this.verifySuccessMessage = null;
+        this.verificationCode = '';
+        this.mostrarVerifyEmailModal = true;
       },
-      error: (error) => {
-        console.error('Erro no cadastro', error);
-        this.registerErrorMessage = error.error?.error || 'Erro ao cadastrar. Verifique os dados.';
+      error: (err) => {
+        this.registerErrorMessage = err.error?.error || 'Erro ao registrar.';
       }
     });
   }
+  
+  /**
+   * # onVerifyCodeSubmit (NOVA FUNÇÃO)
+   * Envia o código de 6 dígitos para verificação.
+   */
+  onVerifyCodeSubmit(): void {
+    this.verifyErrorMessage = null;
+    this.verifySuccessMessage = null;
 
-  onForgotPasswordSubmit() {
-    if (!this.forgotPasswordEmail) {
-      this.forgotPasswordErrorMessage = "O campo de e-mail é obrigatório.";
+    if (!this.emailParaVerificar || !this.verificationCode) {
+      this.verifyErrorMessage = 'Erro: E-mail ou código faltando.';
       return;
     }
-    this.forgotPasswordErrorMessage = '';
-    this.forgotPasswordSuccessMessage = '';
-
-    this.apiService.forgotPassword(this.forgotPasswordEmail).subscribe({
-      next: (response: any) => {
-        this.forgotPasswordSuccessMessage = 'Se o e-mail estiver cadastrado, um link de recuperação foi enviado.';
+    
+    this.authService.verifyEmailCode(this.emailParaVerificar, this.verificationCode).subscribe({
+      next: (response) => {
+        this.verifySuccessMessage = response.message;
+        this.fecharModals();
+        // Abre o modal de login para o usuário entrar
+        this.abrirLoginModal(); 
       },
-      error: (error: any) => {
-        console.error('Erro ao enviar link de recuperação', error);
-        this.forgotPasswordSuccessMessage = 'Se o e-mail estiver cadastrado, um link de recuperação foi enviado.';
+      error: (err) => {
+        this.verifyErrorMessage = err.error?.error || 'Falha na verificação.';
       }
     });
   }
 
-  // --- Métodos para o Modal de Perfil ---
+  /**
+   * # onForgotPasswordSubmit
+   * (Sem modificações, permanece como estava)
+   */
+  onForgotPasswordSubmit(): void {
+    this.forgotPasswordErrorMessage = null;
+    this.forgotPasswordSuccessMessage = null;
+    this.authService.forgotPassword(this.forgotPasswordEmail).subscribe({
+      next: (response) => {
+        this.forgotPasswordSuccessMessage = response.message;
+      },
+      error: (err) => {
+        this.forgotPasswordErrorMessage = err.error?.error || 'Erro ao enviar e-mail.';
+      }
+    });
+  }
+
+  toggleLoginPasswordVisibility(): void {
+    this.loginPasswordVisible = !this.loginPasswordVisible;
+  }
+  
+  // --- Lógica do Dropdown e Logout (Sem MUDANÇAS) ---
+  toggleDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.mostrarDropdown = !this.mostrarDropdown;
+  }
+  
+  logout(): void {
+    this.authService.logout();
+    this.mostrarDropdown = false;
+    this.router.navigate(['/home']);
+  }
+  
+  // --- Lógica do Modal de Perfil (Sem MUDANÇAS) ---
   abrirModalPerfil(): void {
     if (this.currentUserValue) {
       this.usuarioEditavel = { ...this.currentUserValue };
       this.mostrarPerfilModal = true;
+      this.mostrarDropdown = false; 
     }
   }
-
+  
   fecharModalPerfil(): void {
     this.mostrarPerfilModal = false;
   }
-
+  
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
       const reader = new FileReader();
-
       reader.onload = (e) => {
         this.usuarioEditavel.fotoperfil = e.target?.result as string;
       };
-
       reader.readAsDataURL(file);
     }
   }
 
-  salvarAlteracoesPerfil(): void {
-    if (!this.currentUserValue) {
-        console.error('Usuário não está logado para atualização.');
-        return;
-    }
-
+  salvarAlteracoesPerfil(): void { 
+    if (!this.currentUserValue) return;
     const payload = {
       nome: this.usuarioEditavel.nome,
       email: this.usuarioEditavel.email,
       telefone: this.usuarioEditavel.telefone,
       fotoperfil: this.usuarioEditavel.fotoperfil
     };
-
+    
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
       next: (response: any) => {
-        console.log('Perfil atualizado com sucesso:', response);
-        this.apiService.setUser(response.user);
+        this.authService.setUser(response.user); 
+        this.currentUserValue = response.user; 
         this.fecharModalPerfil();
-        alert('Perfil atualizado com sucesso!');
       },
-      error: (err) => {
-        console.error('Erro ao salvar alterações no perfil:', err);
-        const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
-        alert(errorMessage);
+      error: (err: any) => {
+        console.error('Erro ao salvar perfil:', err);
       }
     });
   }

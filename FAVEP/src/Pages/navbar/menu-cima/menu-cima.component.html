@@ -13,23 +13,22 @@
 
   <div *ngIf="currentUserValue" class="user-info">
     <span class="welcome-user">Seja bem vindo, {{ currentUserValue.nome }}!</span>
-
     <div class="user-menu">
-    <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
-    <div class="dropdown-menu" *ngIf="mostrarDropdown">
-      <a routerLink="/gerenciamento" class="painel-controle">Gerenciar</a>
-      <a  routerLink="/usuario" class="modal-perfil">Perfil</a>
-      <a (click)="logout()" class="logout-link">Sair</a>
+      <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
+      <div class="dropdown-menu" *ngIf="mostrarDropdown">
+        <a routerLink="/gerenciamento" class="painel-controle">Gerenciar</a>
+        <a (click)="abrirModalPerfil()" class="modal-perfil">Perfil</a>
+        <a (click)="logout()" class="logout-link">Sair</a>
+      </div>
     </div>
-  </div>
   </div>
 </header>
 
 <div class="auth-modal-overlay"
-     [style.display]="(mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal) ? 'flex' : 'none'"
-     [class.active]="mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal">
+     [style.display]="(mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal || mostrarVerifyEmailModal) ? 'flex' : 'none'"
+     [class.active]="mostrarLoginModal || mostrarRegisterModal || mostrarForgotPasswordModal || mostrarVerifyEmailModal">
 
-  <div class="auth-modal-container login-form-container" *ngIf="mostrarLoginModal">
+  <div class="auth-modal-container login-form-container" *ngIf="mostrarLoginModal" (click)="$event.stopPropagation()">
     <h2 class="auth-modal-title">Logar</h2>
     <button (click)="fecharModals()" class="auth-modal-close-button">
       <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -42,20 +41,20 @@
           <input type="email" id="loginEmail" name="loginEmail" [(ngModel)]="loginEmail" placeholder="Insira seu e-mail" required />
         </div>
         <div class="inputs-container password-container">
-        <input
-          [type]="loginPasswordVisible ? 'text' : 'password'"
-          id="loginPassword"
-          name="loginPassword"
-          [(ngModel)]="loginPassword"
-          placeholder="Insira sua senha"
-          required
-        />
-        <i
-          class="password-toggle-icon"
-          [ngClass]="loginPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
-          (click)="toggleLoginPasswordVisibility()"
-        ></i>
-      </div>
+          <input
+            [type]="loginPasswordVisible ? 'text' : 'password'"
+            id="loginPassword"
+            name="loginPassword"
+            [(ngModel)]="loginPassword"
+            placeholder="Insira sua senha"
+            required
+          />
+          <i
+            class="password-toggle-icon"
+            [ngClass]="loginPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
+            (click)="toggleLoginPasswordVisibility()"
+          ></i>
+        </div>
       </div>
       <div class="botões">
         <div class="lembre-me">
@@ -70,13 +69,13 @@
         <a (click)="abrirRegisterModal()" class="auth-link">Não tem conta? Cadastrar-se</a>
       </div>
       <div class="confirmarBotao">
-        <input class="confirmar" type="submit" value="Confirmar" />
+        <input class="confirmar" type="submit" value="Confirmar" [disabled]="!loginNgForm.form.valid" />
       </div>
       <div class="message error" *ngIf="loginErrorMessage">{{ loginErrorMessage }}</div>
     </form>
   </div>
 
-  <div class="auth-modal-container registration-form-container" *ngIf="mostrarRegisterModal">
+  <div class="auth-modal-container registration-form-container" *ngIf="mostrarRegisterModal" (click)="$event.stopPropagation()">
     <button (click)="fecharModals()" class="auth-modal-close-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
@@ -87,7 +86,7 @@
     </div>
     <form (ngSubmit)="onRegisterSubmit()" #registerNgForm="ngForm" class="registration-actual-form">
       <div class="form-line">
-        <input type="text" name="regUsername" placeholder="Digite seu nome" [(ngModel)]="registerUser.username" required>
+        <input type="text" name="regUsername" placeholder="Digite seu nome" [(ngModel)]="registerUser.nome" required>
       </div>
       <div class="form-line">
         <input type="email" name="regEmail" placeholder="Digite seu e-mail" [(ngModel)]="registerUser.email" required>
@@ -101,22 +100,61 @@
           mask="(00) 00000-0000"
           required>
       </div>
-
+      
+      <div class="form-line">
+        <input type="password" name="regSenha" placeholder="Digite sua senha" [(ngModel)]="registerUser.senha" required minlength="6">
+      </div>
+      <div class="form-line">
+        <input type="password" name="regConfirmarSenha" placeholder="Confirme sua senha" [(ngModel)]="registerUser.confirmarSenha" required>
+      </div>
       <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px;">
-        <strong>Atenção:</strong> Confira seu e-mail para definir a senha e acesar nosso site.<br>
-        <strong>Atenção:</strong> Use um e-mail real ao qual você tenha acesso.
+        <strong>Atenção:</strong> Use um e-mail real. Você receberá um código de 6 dígitos para verificação.
       </div>
 
       <div class="auth-actions">
         <a (click)="abrirLoginModal()" class="auth-link">Já tem uma conta? Entrar</a>
       </div>
-      <button type="submit" class="register-submit-button">Cadastrar</button>
+      <button type="submit" class="register-submit-button" [disabled]="!registerNgForm.form.valid">Cadastrar</button>
       <div class="message success" *ngIf="registerSuccessMessage">{{ registerSuccessMessage }}</div>
       <div class="message error" *ngIf="registerErrorMessage">{{ registerErrorMessage }}</div>
     </form>
   </div>
+  
+  <div class="auth-modal-container verification-form-container" *ngIf="mostrarVerifyEmailModal" (click)="$event.stopPropagation()">
+    <h2 class="auth-modal-title">Verificar E-mail</h2>
+    <button (click)="fecharModals()" class="auth-modal-close-button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+      </svg>
+    </button>
+    <form (ngSubmit)="onVerifyCodeSubmit()" #verifyCodeNgForm="ngForm">
+      <div style="padding: 15px; background-color: #e2f3ff; border: 1px solid #b8daff; color: #0c5460; border-radius: 5px;">
+        Enviamos um código de 6 dígitos para <strong>{{ emailParaVerificar }}</strong>.
+        <br>Por favor, verifique sua caixa de entrada (e spam).
+      </div>
+      <div class="inputs" style="margin-top: 15px;">
+        <div class="inputs-container">
+          <input 
+            type="text" 
+            id="verificationCode" 
+            name="verificationCode" 
+            [(ngModel)]="verificationCode" 
+            placeholder="Insira o código de 6 dígitos" 
+            required 
+            maxlength="6"
+            style="text-align: center; font-size: 1.2rem; letter-spacing: 3px;"
+            />
+        </div>
+      </div>
+      <div class="confirmarBotao">
+        <input class="confirmar" type="submit" value="Verificar" [disabled]="!verifyCodeNgForm.form.valid" />
+      </div>
+      <div class="message success" *ngIf="verifySuccessMessage">{{ verifySuccessMessage }}</div>
+      <div class="message error" *ngIf="verifyErrorMessage">{{ verifyErrorMessage }}</div>
+    </form>
+  </div>
 
-  <div class="auth-modal-container forgot-password-form-container" *ngIf="mostrarForgotPasswordModal">
+  <div class="auth-modal-container forgot-password-form-container" *ngIf="mostrarForgotPasswordModal" (click)="$event.stopPropagation()">
     <h2 class="auth-modal-title">Recuperar Senha</h2>
     <button (click)="fecharModals()" class="auth-modal-close-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -136,34 +174,30 @@
             <a (click)="abrirLoginModal()" class="auth-link">Lembrou a senha? Voltar para o Login</a>
         </div>
         <div class="confirmarBotao">
-            <input class="confirmar" type="submit" value="Enviar Link" />
+            <input class="confirmar" type="submit" value="Enviar Link" [disabled]="!forgotPasswordNgForm.form.valid" />
         </div>
         <div class="message success" *ngIf="forgotPasswordSuccessMessage">{{ forgotPasswordSuccessMessage }}</div>
         <div class="message error" *ngIf="forgotPasswordErrorMessage">{{ forgotPasswordErrorMessage }}</div>
     </form>
   </div>
 </div>
-
-<div class="modal-overlay" [class.active]="mostrarPerfilModal" *ngIf="mostrarPerfilModal">
-    <div class="modal-content">
-        <div class="modal-header">
+<div class="modal-overlay" [class.active]="mostrarPerfilModal" *ngIf="mostrarPerfilModal" (click)="fecharModalPerfil()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
             <h3>Editar Perfil</h3>
             <button class="close-btn" (click)="fecharModalPerfil()" aria-label="Fechar modal">&times;</button>
         </div>
         <form (ngSubmit)="salvarAlteracoesPerfil()" #perfilForm="ngForm">
             <div class="modal-body">
-
                 <div class="profile-photo-preview-container">
                     <img [src]="usuarioEditavel.fotoperfil || 'assets/img/usuario.jpg'" alt="Pré-visualização da foto" class="profile-photo-preview">
                 </div>
-
                 <div class="form-group file-upload-group">
                     <label for="file-upload" class="file-upload-label">
                         <i class="fas fa-upload"></i> Escolher Nova Foto
                     </label>
                     <input id="file-upload" type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif">
                 </div>
-                
                 <div class="form-group">
                     <label for="edit-nome">Nome:</label>
                     <input type="text" id="edit-nome" name="nome" [(ngModel)]="usuarioEditavel.nome" required #nomeInput="ngModel">
