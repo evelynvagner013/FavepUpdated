@@ -3,8 +3,8 @@
 
 <main class="main-content">
   <div class="filtros-container">
+    <h2 class="titulo">📊 Estatísticas Gerais</h2>
     <div class="filtro-group">
-      <label for="filtro-propriedade">Filtrar por Propriedade:</label>
       <select id="filtro-propriedade" [(ngModel)]="selectedPropertyId" (change)="processarDadosEstatisticos()">
         <option value="todos">Todas as Propriedades (Ativas)</option>
         <option *ngFor="let prop of propriedades" [value]="prop.id">
@@ -15,33 +15,42 @@
   </div>
   
   <div class="resumo-cards">
-  
-
     <div class="resumo-card">
+      <i class="fa-solid fa-leaf"></i>
       <h3>Propriedades</h3>
       <p class="valor">{{totalPropriedades}}</p>
       <p class="info">Área Total: {{areaTotal | number:'1.0-0':'pt-BR'}} ha</p>
     </div>
 
     <div class="resumo-card">
+      <i class="fa-solid fa-spa"></i>
       <h3>Produção Total</h3>
       <p class="valor">{{producaoAtual | number:'1.0-0':'pt-BR'}} kg</p>
+      <p class="info">Total de todas as culturas</p>
     </div>
 
     <div class="resumo-card">
+      <i class="fa-solid fa-coins"></i>
       <h3>Resultado Financeiro</h3>
       <p class="valor" [class.positivo]="resultadoFinanceiro >= 0" [class.negativo]="resultadoFinanceiro < 0">
         {{resultadoFinanceiro | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}
       </p>
+      <p class="info">Receitas - Despesas</p>
+    </div>
+
+    <div class="resumo-card">
+      <i class="fa-solid fa-temperature-high"></i>
+      <h3>Temperatura Média</h3>
+      <p class="valor">{{ clima?.temperatura | number:'1.0-0' }}°C</p>
+      <p class="info">{{ clima?.cidade }}</p>
     </div>
   </div>
 
   <div class="graficos-container">
+    
     <div class="grafico-card">
       <h3>Produtividade por Cultura</h3>
-      <div *ngIf="hasProdutividadeData; else noProdutividadeData" class="chart-wrapper">
-        <canvas #produtividadeChart></canvas>
-      </div>
+      <canvas *ngIf="hasProdutividadeData; else noProdutividadeData" #produtividadeChart></canvas>
       <ng-template #noProdutividadeData>
         <div class="no-data-message">
           <i class="fas fa-chart-bar"></i>
@@ -49,41 +58,44 @@
         </div>
       </ng-template>
     </div>
-    <div class="grafico-card">
-      <h3>Receitas x Despesas</h3>
-      <div *ngIf="hasFinanceiroData; else noFinanceiroData" class="chart-wrapper">
-        <canvas #financeiroChart></canvas>
+
+    <div class="clima-section">
+      <h2>☀️ Clima</h2>
+    
+      <div class="clima-busca">
+        <input 
+          type="text" 
+          placeholder="Digite uma cidade..." 
+          [(ngModel)]="cidadeBusca"
+          class="input-cidade"
+          (keyup.enter)="buscarClima()"
+        />
+        <button (click)="buscarClima()">Buscar</button>
       </div>
-      <ng-template #noFinanceiroData>
-        <div class="no-data-message">
-          <i class="fas fa-dollar-sign"></i>
-          <p>Não há dados financeiros para exibir.</p>
-        </div>
+    
+      <div *ngIf="clima; else noClima" class="clima-card">
+        <h3>{{ clima.cidade }}</h3>
+        <img [src]="clima.icone" alt="Ícone do clima" />
+        <p>{{ clima.descricao | titlecase }}</p>
+        <p class="temperatura-clima">{{ clima.temperatura | number:'1.0-0' }}°C</p>
+        <p>Sensação: {{ clima.sensacaoTermica | number:'1.0-0' }}°C</p>
+      </div>
+
+      <ng-template #noClima>
+         <p *ngIf="climaErro" class="erro">{{ climaErro }}</p>
+         <p *ngIf="!climaErro" class="info">Buscando dados do clima...</p>
       </ng-template>
     </div>
   </div>
   
-    <div class="clima-section">
-  <h2>☁️ Clima</h2>
-
-  <div class="clima-busca">
-    <input 
-      type="text" 
-      placeholder="Digite uma cidade..." 
-      [(ngModel)]="cidadeBusca"
-      class="input-cidade"
-    />
-    <button (click)="buscarClima()">Buscar</button>
+  <div class="grafico-card">
+    <h3>Receitas x Despesas (últimos meses)</h3>
+    <canvas *ngIf="hasFinanceiroData; else noFinanceiroData" #financeiroChart></canvas>
+    <ng-template #noFinanceiroData>
+      <div class="no-data-message">
+        <i class="fas fa-dollar-sign"></i>
+        <p>Não há dados financeiros para exibir.</p>
+      </div>
+    </ng-template>
   </div>
-
-  <div *ngIf="clima" class="clima-card">
-    <h3>{{ clima.cidade }}</h3>
-    <img [src]="clima.icone" alt="Ícone do clima" />
-    <p>{{ clima.descricao | titlecase }}</p>
-    <h2>{{ clima.temperatura | number:'1.0-0' }}°C</h2>
-    <p>Sensação térmica: {{ clima.sensacaoTermica | number:'1.0-0' }}°C</p>
-  </div>
-
-  <p *ngIf="climaErro" class="erro">{{ climaErro }}</p>
-</div>
 </main>

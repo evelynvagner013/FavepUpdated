@@ -1,168 +1,262 @@
 /* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
 .main-content {
     padding: 2rem;
-    background-color: #f4f7f6;
+    background-color: #f4f7f6; /* Fundo cinza claro */
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.5rem; /* Espaço entre os elementos (cabeçalho, filtros, gráfico) */
     transition: margin-left 0.3s ease-in-out;
 }
 
-/* ESTILOS DA TELA DE ESTATÍSTICAS */
+.titulo {
+    font-size: 1.5rem; /* Ajustado para caber melhor no mobile */
+    font-weight: 600;
+    color: #1a202c;
+    text-align: left; /* SEMPRE à esquerda */
+    white-space: nowrap; /* Impede que o título quebre linha */
+  }
+  
+
+/* --- Filtros (Layout Padrão aplicado a TODAS as telas) --- */
 .filtros-container {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 30px;
-}
-
-.filtro-group {
+    flex-direction: row; /* SEMPRE em linha */
+    justify-content: space-between; /* SEMPRE Título à esquerda, Filtro à direita */
+    align-items: center; /* SEMPRE alinhado ao centro */
+    gap: 15px;
+  }
+  
+ 
+  .filtro-group {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.filtro-group label {
-    font-size: 0.95rem;
-    color: #4a5568;
+    justify-content: flex-end;
+    gap: 5px; /* Gap menor para caber no mobile */
+  }
+  
+  .filtro-group label {
+    font-size: 0.9rem;
+    color: #666;
     font-weight: 500;
-}
-
-.filtro-group select {
-    padding: 10px 15px;
-    border: 1px solid #ced4da;
-    border-radius: 8px;
-    background-color: #fff;
-    font-size: 1rem;
-    color: #212121;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.filtro-group select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    outline: none;
-}
-
-.resumo-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 40px;
-}
-
-.resumo-card {
-    background-color: white;
+    white-space: nowrap;
+    display: none; /* Esconde o "Filtrar:" no mobile para economizar espaço */
+  }
+  
+  .filtro-group select {
+    padding: 10px 14px;
     border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 0.9rem; /* Fonte menor para caber no mobile */
+    background: white;
+    transition: 0.3s;
+    flex-grow: 1; /* O select ocupa o espaço disponível */
+    max-width: 200px; /* Limita o tamanho no mobile */
+  }
+  
+  .filtro-group select:hover {
+    border-color: #007aff;
+  }
+  
+  /* --- Cards de Resumo (Mobile) --- */
+  .resumo-cards {
+    display: grid;
+    grid-template-columns: 1fr; /* Coluna única no mobile */
+    gap: 1.5rem;
+  }
+  
+  .resumo-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
     padding: 25px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: left;
-}
-
-.resumo-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    transition: 0.3s;
+  }
+  
+  .resumo-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-}
-
-.resumo-card h3 {
-    margin-top: 0;
-    color: #7f8c8d;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  }
+  
+  .resumo-card i {
+    font-size: 2rem;
+    color: #007aff;
+  }
+  
+  .resumo-card h3 {
     font-size: 1rem;
+    color: #666;
+    margin: 0;
+  }
+  
+  .resumo-card .valor {
+    font-size: 2rem; /* Fonte menor no mobile */
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+  }
+  
+  .resumo-card .info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 2px;
+  }
+  
+  .positivo {
+    color: #10b981;
+  }
+  
+  .negativo {
+    color: #ef4444;
+  }
+  
+  /* --- Gráficos (Mobile) --- */
+  .graficos-container {
+    display: grid;
+    grid-template-columns: 1fr; /* Coluna única no mobile */
+    gap: 2rem;
+  }
+  
+  .grafico-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 400px; /* Altura mobile/tablet */
+  }
+  
+  .grafico-card h3 {
+    font-size: 1.1rem;
+    color: #222;
     font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.resumo-card .valor {
+    margin: 0;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  
+  .grafico-card canvas {
+    flex-grow: 1;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 350px;
+  }
+  
+  /* --- Clima (Mobile) --- */
+  .clima-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    min-height: 400px; /* Altura mobile/tablet */
+    justify-content: center;
+  }
+  
+  .clima-section h2 {
+    color: #007aff;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+  }
+  
+  .clima-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .clima-card img {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .clima-card h3 {
+    margin: 10px 0 5px;
+    font-size: 1.2rem;
+    color: #222;
+  }
+  
+  .clima-card p {
+    margin: 2px 0;
+    color: #666;
+  }
+  
+  .clima-card .temperatura-clima {
     font-size: 2.5rem;
     font-weight: 700;
-    margin: 0;
-    color: #212121;
-}
-
-.resumo-card .info {
-    color: #95a3a6;
-    font-size: 0.95rem;
-    margin-top: 5px;
-}
-
-.positivo {
-    color: #28a745;
-}
-
-.negativo {
-    color: #dc3545;
-}
-
-.graficos-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
-}
-
-.clima-section {
-  background: #f9f9f9;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-top: 20px;
-}
-
-.clima-busca {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.input-cidade {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-}
-
-button {
-  background-color: #2b6cb0;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #1a4b80;
-}
-
-.clima-card {
-  text-align: center;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.clima-card img {
-  width: 80px;
-  height: 80px;
-}
-
-.clima-card h3 {
-  margin: 0;
-  font-size: 1.2em;
-}
-
-.clima-card h2 {
-  font-size: 2.5em;
-  margin: 10px 0;
-}
-
-.erro {
-  color: red;
-  text-align: center;
-}
+    margin: 10px 0;
+    color: #222;
+  }
+  
+  .clima-busca {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+    gap: 10px;
+  }
+  
+  .input-cidade {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  
+  button {
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  button:hover {
+    background: #005fcb;
+  }
+  
+  .erro {
+    color: #ef4444;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  /* --- Mensagem de "Sem Dados" --- */
+  .no-data-message {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    background-color: rgba(240, 240, 240, 0.5);
+    border-radius: 16px;
+    color: #666;
+    font-size: 1.1rem;
+    min-height: 300px;
+  }
+  
+  .no-data-message i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #ccc;
+  }
 
 @media (min-width: 1200px) {
     .graficos-container {
