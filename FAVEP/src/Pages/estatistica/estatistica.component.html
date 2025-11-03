@@ -1,9 +1,10 @@
-<app-menu-central></app-menu-central>
+
 <app-menu-lateral></app-menu-lateral>
 
 <main class="main-content">
-  <div class="filtros-container">
-    <h2 class="titulo">📊 Estatísticas Gerais</h2>
+
+  <div class="report-header">
+    <h2 class="header-title">Estatísticas Gerais</h2>
     <div class="filtro-group">
       <select id="filtro-propriedade" [(ngModel)]="selectedPropertyId" (change)="processarDadosEstatisticos()">
         <option value="todos">Todas as Propriedades (Ativas)</option>
@@ -13,6 +14,8 @@
       </select>
     </div>
   </div>
+
+
   
   <div class="resumo-cards">
     <div class="resumo-card">

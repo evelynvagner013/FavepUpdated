@@ -1,22 +1,8 @@
-<app-menu-central></app-menu-central>
 <app-menu-lateral></app-menu-lateral>
- 
    <main class="main-content">
-     <div class="content-header">
-       <nav class="main-nav">
-         <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
-           <i class="fas fa-map-marked"></i> Propriedades
-         </button>
-         <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
-           <i class="fas fa-wheat-awn"></i> Produção
-         </button>
-         <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
-           <i class="fas fa-money-bill-wave"></i> Financeiro
-         </button>
-       </nav>
- 
-       <div class="toolbar">
-         <div class="filtros">
+    <div class="report-header">
+    <h2 class="header-title">Painel de Gerenciamento</h2>
+    <div class="filtros">
            <div class="filtro-group" *ngIf="abaAtiva === 'propriedades'">
              <label for="filtro-status">Exibir:</label>
              <select id="filtro-status" [(ngModel)]="filtroStatus" (change)="aplicarFiltros()" name="filtroStatus">
@@ -56,11 +42,28 @@
              <button class="btn-search" (click)="aplicarFiltros()" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
            </div>
          </div>
- 
+     </div>
+
+    
          <button class="btn-add" (click)="abrirModalAdicionar()">
            <i class="fas fa-plus"></i> Adicionar
          </button>
-       </div>
+     
+    
+     <div class="content-header">
+       <nav class="main-nav">
+         <button [class.active]="abaAtiva === 'propriedades'" (click)="selecionarAba('propriedades')">
+           <i class="fas fa-map-marked"></i> Propriedades
+         </button>
+         <button [class.active]="abaAtiva === 'producao'" (click)="selecionarAba('producao')">
+           <i class="fa-solid fa-spa"></i> Produção
+         </button>
+         <button [class.active]="abaAtiva === 'financeiro'" (click)="selecionarAba('financeiro')">
+           <i class="fas fa-money-bill-wave"></i> Financeiro
+         </button>
+       </nav>
+ 
+    
      </div>
      <section *ngIf="abaAtiva === 'propriedades'" class="content-section">
        <div class="summary-cards">

@@ -4,200 +4,93 @@
     <p>Todos os planos são projetados para o seu sucesso. Encontre o que melhor se adapta à sua necessidade.</p>
   </div>
 
-  <div class="table-container">
-    <table class="pricing-table">
-            <thead>
-        <tr>
-          <th class="feature-header">Recursos</th>
-          <th>
-            <h3>Semanal</h3>
-            <div class="price">Free</div>
-            <span class="period">por semana</span>
-            <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Semanal', valor: 0 }, $event)">Assinar Agora</button>
-          </th>
-          <th>
-            <h3>Mensal</h3>
-            <div class="price">R$ 500,00</div>
-            <span class="period">por mês</span>
-            <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Mensal', valor: 500 }, $event)">Assinar Agora</button>
-          </th>
-          <th>
-            <h3>Trimestral</h3>
-            <div class="price">R$ 1.350,00</div>
-            <span class="period">3 meses</span>
-            <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Trimestral', valor: 1350 }, $event)">Assinar Agora</button>
-          </th>
-          <th>
-            <h3>Semestral</h3>
-            <div class="price">R$ 2.400,00</div>
-            <span class="period">6 meses</span>
-            <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Semestral', valor: 2400 }, $event)">Assinar Agora</button>
-          </th>
-          <th>
-            <h3>Anual</h3>
-            <div class="price">R$ 4.200,00</div>
-            <span class="period">12 meses</span>
-            <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Anual', valor: 4200 }, $event)">Assinar Agora</button>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="feature-name">Acesso completo à plataforma</td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-        <tr>
-          <td class="feature-name">Planilhas de gerenciamento</td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-        <tr>
-          <td class="feature-name">Estatísticas detalhadas</td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-        <tr>
-          <td class="feature-name">Relatórios personalizados</td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-         <tr>
-          <td class="feature-name">Suporte prioritário</td>
-          <td><i class="fas fa-minus no-check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-        <tr>
-          <td class="feature-name">Suporte 24/7</td>
-          <td><i class="fas fa-minus no-check"></i></td>
-          <td><i class="fas fa-minus no-check"></i></td>
-          <td><i class="fas fa-minus no-check"></i></td>
-          <td><i class="fas fa-check check"></i></td>
-          <td class="featured"><i class="fas fa-check check"></i></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
   <div class="cards-container">
 
-    <div class="pricing-card">
+    <div class="pricing-card card-base">
       <div class="card-header">
-        <h3>Semanal</h3>
-        <div class="price">Free</div>
-        <span class="period">por semana</span>
+        <h3>PLANO BASE</h3>
+        <div class="price">R$ 150 /Mês</div>
       </div>
       <div class="card-body">
         <ul class="features-list">
-          <li><i class="fas fa-check check"></i> Acesso completo à plataforma</li>
-          <li><i class="fas fa-check check"></i> Planilhas de gerenciamento</li>
-          <li><i class="fas fa-check check"></i> Estatísticas detalhadas</li>
-          <li><i class="fas fa-check check"></i> Relatórios personalizados</li>
-          <li><i class="fas fa-minus no-check"></i> Suporte prioritário</li>
-          <li><i class="fas fa-minus no-check"></i> Suporte 24/7</li>
+          <li>
+            <i class="fas fa-house feature-icon"></i>
+            <span class="feature-text">1 MEMBRO</span>
+            <span class="feature-subtext">Limite de 1 membro</span>
+          </li>
+          <li class="disabled">
+            <i class="fas fa-lock feature-icon"></i>
+            <span class="feature-text">Convidar Usuário</span>
+            <span class="feature-subtext">Recurso desabilitado</span>
+          </li>
+          <li>
+            <i class="fas fa-film feature-icon"></i>
+            <span class="feature-text">5 PRODUÇÕES</span>
+          </li>
+           <li>
+            <span class="feature-text">Sem Acesso a Relatório</span>
+          </li>
         </ul>
       </div>
       <div class="card-footer">
-        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Semanal', valor: 0 }, $event)">Assinar Agora</button>
+        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Base', valor: 150 }, $event)">Assinar Agora</button>
       </div>
     </div>
 
-    <div class="pricing-card">
+    <div class="pricing-card card-gold">
       <div class="card-header">
-        <h3>Mensal</h3>
-        <div class="price">R$ 500,00</div>
-        <span class="period">por mês</span>
+        <h3>PLANO GOLD</h3>
+        <div class="price">R$ 300 /Mês</div>
       </div>
       <div class="card-body">
         <ul class="features-list">
-          <li><i class="fas fa-check check"></i> Acesso completo à plataforma</li>
-          <li><i class="fas fa-check check"></i> Planilhas de gerenciamento</li>
-          <li><i class="fas fa-check check"></i> Estatísticas detalhadas</li>
-          <li><i class="fas fa-check check"></i> Relatórios personalizados</li>
-          <li><i class="fas fa-check check"></i> Suporte prioritário</li>
-          <li><i class="fas fa-minus no-check"></i> Suporte 24/7</li>
+           <li>
+            <i class="fas fa-globe feature-icon"></i>
+            <span class="feature-text">Acesso Total ao Sistema</span>
+          </li>
+          <li>
+            <i class="fas fa-chart-pie feature-icon"></i> 
+            <span class="feature-text">Relatórios de todo o sistema</span>
+          </li>
+          <li>
+            <i class="fas fa-seedling feature-icon"></i> 
+            <span class="feature-text">Produções ilimitadas</span>
+          <li>
+            <i class="fas fa-user feature-icon"></i>
+            <span class="feature-text">Membros Ilimitados</span>
+          </li>
         </ul>
       </div>
       <div class="card-footer">
-        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Mensal', valor: 200 }, $event)">Assinar Agora</button>
+        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Gold', valor: 300 }, $event)">Assinar Agora</button>
       </div>
     </div>
 
-    <div class="pricing-card">
+    <div class="pricing-card card-trial">
       <div class="card-header">
-        <h3>Trimestral</h3>
-        <div class="price">R$ 1.350,00</div>
-        <span class="period">3 meses</span>
+        <h3>TESTE (7 DIAS)</h3>
+        <div class="price">GRÁTIS!</div>
       </div>
       <div class="card-body">
-        <ul class="features-list">
-          <li><i class="fas fa-check check"></i> Acesso completo à plataforma</li>
-          <li><i class="fas fa-check check"></i> Planilhas de gerenciamento</li>
-          <li><i class="fas fa-check check"></i> Estatísticas detalhadas</li>
-          <li><i class="fas fa-check check"></i> Relatórios personalizados</li>
-          <li><i class="fas fa-check check"></i> Suporte prioritário</li>
-          <li><i class="fas fa-minus no-check"></i> Suporte 24/7</li>
+         <ul class="features-list">
+          <li>
+            <i class="fas fa-house feature-icon"></i>
+            <span class="feature-text">1 MEMBRO</span>
+            <span class="feature-subtext">Limite de 1 membro</span>
+          </li>
+          <li>
+            <i class="fas fa-clock feature-icon"></i>
+            <span class="feature-text">Período de Teste</span>
+            <span class="feature-subtext">1 Semana</span>
+          </li>
+          <li>
+            <i class="fas fa-globe feature-icon"></i>
+            <span class="feature-text">Acesso Total ao Sistema</span>
+          </li>
         </ul>
       </div>
       <div class="card-footer">
-        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Trimestral', valor: 350 }, $event)">Assinar Agora</button>
-      </div>
-    </div>
-
-    <div class="pricing-card">
-      <div class="card-header">
-        <h3>Semestral</h3>
-        <div class="price">R$ 2.400,00</div>
-        <span class="period">6 meses</span>
-      </div>
-      <div class="card-body">
-        <ul class="features-list">
-          <li><i class="fas fa-check check"></i> Acesso completo à plataforma</li>
-          <li><i class="fas fa-check check"></i> Planilhas de gerenciamento</li>
-          <li><i class="fas fa-check check"></i> Estatísticas detalhadas</li>
-          <li><i class="fas fa-check check"></i> Relatórios personalizados</li>
-          <li><i class="fas fa-check check"></i> Suporte prioritário</li>
-          <li><i class="fas fa-check check"></i> Suporte 24/7</li>
-        </ul>
-      </div>
-      <div class="card-footer">
-        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Semestral', valor: 400 }, $event)">Assinar Agora</button>
-      </div>
-    </div>
-
-    <div class="pricing-card">
-      <div class="card-header">
-        <h3>Anual</h3>
-        <div class="price">R$ 4.200,00</div>
-        <span class="period">12 meses</span>
-      </div>
-      <div class="card-body">
-        <ul class="features-list">
-          <li><i class="fas fa-check check"></i> Acesso completo à plataforma</li>
-          <li><i class="fas fa-check check"></i> Planilhas de gerenciamento</li>
-          <li><i class="fas fa-check check"></i> Estatísticas detalhadas</li>
-          <li><i class="fas fa-check check"></i> Relatórios personalizados</li>
-          <li><i class="fas fa-check check"></i> Suporte prioritário</li>
-          <li><i class="fas fa-check check"></i> Suporte 24/7</li>
-        </ul>
-      </div>
-      <div class="card-footer">
-        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Anual', valor: 700 }, $event)">Assinar Agora</button>
+        <button class="btn-assinar" (click)="handleSubscription({ tipo: 'Trial', valor: 0 }, $event)">Testar Agora</button>
       </div>
     </div>
 

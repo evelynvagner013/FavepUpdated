@@ -5,7 +5,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* Espaço entre os elementos (cabeçalho, filtros, gráfico) */
+    gap: 2rem; /* AUMENTADO: Espaço entre os elementos (cabeçalho, filtros, gráfico) */
     transition: margin-left 0.3s ease-in-out;
 }
 
@@ -81,6 +81,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem; /* Espaço interno */
+    margin-bottom: 40px;
 }
 
 /* --- CAIXA DE FILTROS --- */
@@ -203,6 +204,7 @@
 /* ============================================= */
 .movimentacoes-box {
     padding-top: 1.5rem;
+    
 }
 
 .movimentacoes-title {
@@ -365,15 +367,12 @@
 /* ============================================= */
 /* --- MEDIA QUERIES --- */
 /* ============================================= */
-@media (min-width: 993px) {
-    .main-content {
-        margin-left: 250px;
-    }
-}
 
+/* Telas Pequenas (Mobile) */
 @media (max-width: 768px) {
     .main-content {
         padding: 1rem;
+        margin-left: 80px; /* ADICIONADO: Corrige a sobreposição no mobile */
     }
     .container-principal {
         padding: 1.5rem;
@@ -466,3 +465,18 @@
          font-size: 1.1rem;
     }
 }
+
+/* Telas Médias (Tablet) - Ajuste para o menu RECOLHIDO */
+@media (min-width: 769px) and (max-width: 992px) {
+    .main-content {
+        margin-left: 40px; /* (Ajuste) Espaço para o menu de ícones recolhido */
+    }
+}
+
+/* Telas Médias/Grandes (Desktop) - Ajuste para o menu ABERTO */
+@media (min-width: 993px) {
+    .main-content {
+        margin-left: 250px;
+    }
+}
+
