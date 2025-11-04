@@ -46,7 +46,7 @@ export class AssinaturaComponent {
       const request$ = this.mercadoPagoService.criarAssinatura(plan.tipo, plan.valor);
       const data: MercadoPagoResponse = await lastValueFrom(request$);
 
- 
+
       if (data && data.init_point) {
         window.location.href = data.init_point;
       } else {

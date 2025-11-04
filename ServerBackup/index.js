@@ -22,7 +22,7 @@ app.use('/auth', authRoutes);
 app.use('/property', propertyRoutes);
 app.use('/production', productionsRoutes);
 app.use('/finance', financesRoutes);
-app.use('/mercado-pago', mercadoPagoRoutes);
+app.use('/api/mercado-pago', mercadoPagoRoutes);
 app.use('/contato', contactRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/clima', weatherRoutes);

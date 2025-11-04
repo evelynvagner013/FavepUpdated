@@ -1,4 +1,4 @@
-// api.models.ts
+// Planos front/models/api.models.ts
 
 export interface Usuario {
   id: string;
@@ -54,4 +54,5 @@ export interface PlanosMercadoPago {
   metodoPagamento: string;
   usuarioId: string;
   idAssinaturaExterna?: string;
+  idPagamentoExterno?: string; // <-- MODIFICAÇÃO: Adicionado para espelhar o schema.prisma
 }

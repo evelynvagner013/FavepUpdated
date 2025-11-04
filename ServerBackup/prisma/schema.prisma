@@ -72,7 +72,8 @@ model PlanosMercadoPago {
   dataAssinatura      DateTime @default(now())
   metodoPagamento     String
   usuarioId           String
-  idAssinaturaExterna String?  @unique
+  idAssinaturaExterna String?  @unique 
+  idPagamentoExterno  String?  @unique @map("id_pagamento_externo")
   usuario             usuario  @relation(fields: [usuarioId], references: [id])
 
   @@map("planos_mercado_pago")
