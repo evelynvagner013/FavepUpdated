@@ -1,88 +1,71 @@
-
 <app-menu-lateral></app-menu-lateral>
 
 <main class="main-content">
-  <div class="subscription-section card-perfil">
-      <div class="card-header">
-          <h2>Plano de Assinatura</h2>
+  <div class="container-assinatura" [class.loading]="isLoading">
+
+    <div *ngIf="isLoading" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Gerando link de pagamento...</p>
+    </div>
+
+    <div *ngIf="statusMessage" class="feedback-container">
+      <div class="feedback-box" [ngClass]="{
+        'feedback-success': paymentStatus === 'success',
+        'feedback-failure': paymentStatus === 'failure',
+        'feedback-pending': paymentStatus === 'pending'
+      }">
+        <p>{{ statusMessage }}</p>
       </div>
+    </div>
+    <div class="secao-plano-atual" *ngIf="planoAtualDisplay">
+      <h2>Seu Plano Atual</h2>
       
-      <div class="subscription-details">
-          <div *ngIf="planoAtual; else loadingTemplate" class="current-plan-card">
-              <h3>Seu plano atual é: <span class="plan-name">{{ planoAtual.nome }}</span></h3>
-              <p class="plan-price">{{ planoAtual.preco }}</p>
-              <p>{{ planoAtual.descricao }}</p>
-          </div>
-          <ng-template #loadingTemplate>
-              <div class="loading-message">Carregando detalhes do plano...</div>
-          </ng-template>
+      <div class="card-plano card-plano-atual" [ngClass]="'card-' + planoAtualDisplay.id">
+        <div class="card-header">
+          <h3>{{ planoAtualDisplay.nome }}</h3>
+          <span class="badge-atual">Plano Ativo</span>
+        </div>
+        <div class="card-body">
+          <p class="preco">{{ planoAtualDisplay.preco }}</p>
+          <p class="descricao">{{ planoAtualDisplay.descricao }}</p>
+          <ul class="features-list">
+            <li *ngFor="let feature of planoAtualDisplay.features">{{ feature }}</li>
+          </ul>
+        </div>
       </div>
+    </div>
+
+    <div class="secao-outros-planos" *ngIf="planosDisponiveis.length > 0">
+      <h2>Mude seu Plano</h2>
       
-      <div class="plan-comparison-section">
-          <h4>Outros Planos Disponíveis</h4>
-          <div class="plan-grid">
-              
-              <div class="plan-card" [class.current-card]="planoAtual?.nome === 'Semanal'">
-                  <h5>Semanal</h5>
-                  <p class="plan-price">Free</p>
-                  <ul>
-                      <li><i class="fas fa-check-circle"></i> Acesso completo</li>
-                      <li><i class="fas fa-check-circle"></i> Relatórios básicos</li>
-                  </ul>
-                  <button class="select-plan-btn" [disabled]="planoAtual?.nome === 'Semanal'" (click)="handleSubscription({ tipo: 'Semanal', valor: 0 }, $event)">
-                    {{ planoAtual?.nome === 'Semanal' ? 'Plano Atual' : 'Selecionar' }}
-                  </button>
-              </div>
-
-              <div class="plan-card" [class.current-card]="planoAtual?.nome === 'Mensal'">
-                  <h5>Mensal</h5>
-                  <p class="plan-price">R$ 500,00/mês</p>
-                  <ul>
-                      <li><i class="fas fa-check-circle"></i> Todos os recursos do Semanal</li>
-                      <li><i class="fas fa-check-circle"></i> Suporte prioritário</li>
-                  </ul>
-                  <button class="select-plan-btn" [disabled]="planoAtual?.nome === 'Mensal'" (click)="handleSubscription({ tipo: 'Mensal', valor: 500 }, $event)">
-                    {{ planoAtual?.nome === 'Mensal' ? 'Plano Atual' : 'Selecionar' }}
-                  </button>
-              </div>
-
-              <div class="plan-card" [class.current-card]="planoAtual?.nome === 'Trimestral'">
-                  <h5>Trimestral</h5>
-                  <p class="plan-price">R$ 1.350,00/trimestre</p>
-                  <ul>
-                      <li><i class="fas fa-check-circle"></i> Todos os recursos do Mensal</li>
-                      <li><i class="fas fa-check-circle"></i> Desconto de 10%</li>
-                  </ul>
-                   <button class="select-plan-btn" [disabled]="planoAtual?.nome === 'Trimestral'" (click)="handleSubscription({ tipo: 'Trimestral', valor: 1350 }, $event)">
-                    {{ planoAtual?.nome === 'Trimestral' ? 'Plano Atual' : 'Selecionar' }}
-                  </button>
-              </div>
-
-              <div class="plan-card" [class.current-card]="planoAtual?.nome === 'Semestral'">
-                  <h5>Semestral</h5>
-                  <p class="plan-price">R$ 2.400,00/semestre</p>
-                  <ul>
-                      <li><i class="fas fa-check-circle"></i> Todos os recursos do Trimestral</li>
-                      <li><i class="fas fa-check-circle"></i> Suporte 24/7</li>
-                  </ul>
-                   <button class="select-plan-btn" [disabled]="planoAtual?.nome === 'Semestral'" (click)="handleSubscription({ tipo: 'Semestral', valor: 2400 }, $event)">
-                    {{ planoAtual?.nome === 'Semestral' ? 'Plano Atual' : 'Selecionar' }}
-                  </button>
-              </div>
-
-              <div class="plan-card" [class.current-card]="planoAtual?.nome === 'Anual'">
-                  <h5>Anual</h5>
-                  <p class="plan-price">R$ 4.200,00/ano</p>
-                  <ul>
-                      <li><i class="fas fa-check-circle"></i> Todos os recursos do Semestral</li>
-                      <li><i class="fas fa-check-circle"></i> Acesso antecipado a recursos</li>
-                  </ul>
-                  <button class="select-plan-btn" [disabled]="planoAtual?.nome === 'Anual'" (click)="handleSubscription({ tipo: 'Anual', valor: 4200 }, $event)">
-                    {{ planoAtual?.nome === 'Anual' ? 'Plano Atual' : 'Selecionar' }}
-                  </button>
-              </div>
-
+      <div class="cards-container">
+        <div class="card-plano" 
+             *ngFor="let plano of planosDisponiveis" 
+             [ngClass]="'card-' + plano.id">
+          
+          <div class="card-header">
+            <h3>{{ plano.nome }}</h3>
           </div>
+          <div class="card-body">
+            <p class="preco">{{ plano.preco }}</p>
+            <p class="descricao">{{ plano.descricao }}</p>
+            <ul class="features-list">
+              <li *ngFor="let feature of plano.features">{{ feature }}</li>
+            </ul>
+          </div>
+          <div class="card-footer">
+            <button (click)="assinarPlano(plano)" [disabled]="isLoading">
+              {{ (planoAtualId === 'gold' && plano.id === 'base') ? 'Fazer Downgrade' : 'Assinar Agora' }}
+            </button>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="secao-sem-planos" *ngIf="planoAtualId === 'gold' && planosDisponiveis.length === 1">
+       <p>Você já possui o nosso melhor plano. Obrigado por ser um membro Gold!</p>
+       <p>Se desejar, você pode retornar ao Plano Base clicando no card acima.</p>
+    </div>
+
   </div>
 </main>

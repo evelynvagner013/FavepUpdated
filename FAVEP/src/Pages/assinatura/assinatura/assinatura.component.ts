@@ -1,11 +1,13 @@
-// assinatura/assinatura.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { lastValueFrom, Subscription } from 'rxjs';
+// ATUALIZADO: Nome do serviço
+import { MercadoPagoService } from '../../../services/mercadopago.service'; 
+import { MenuLateralComponent } from "../../menu-lateral/menu-lateral.component";
+import { AuthService } from '../../../services/auth.service';
+import { UsuarioService } from '../../../services/usuario.service';
+import { Usuario } from '../../../models/api.models';
 
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { lastValueFrom } from 'rxjs';
-import { MercadoPagoService } from '../../../services/mercadopago.service'; // Importe o service
-
-// Interfaces para tipagem
 interface MercadoPagoResponse {
   init_point: string;
 }
@@ -16,22 +18,56 @@ interface Plan {
 }
 
 @Component({
-  selector: 'app-assinatura',
+  selector: 'app-assinatura', // O seletor deste componente
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MenuLateralComponent, DatePipe],
   templateUrl: './assinatura.component.html',
   styleUrls: ['./assinatura.component.css']
 })
-export class AssinaturaComponent {
+export class AssinaturaComponent implements OnInit, OnDestroy { // Nome do componente
 
   isLoading = false;
+  isLoadingPlan = true;
 
-  // Injete o MercadoPagoService
-  constructor(private mercadoPagoService: MercadoPagoService) {}
+  planoAtual: string | null = null;
+  dataContratacao: Date | null = null;
+
+  private userSubscription?: Subscription;
+  private currentUser: Usuario | null = null;
+
+  constructor(
+    private mercadoPagoService: MercadoPagoService, // Serviço injetado
+    private authService: AuthService,
+    private usuarioService: UsuarioService
+  ) {}
+
+  ngOnInit(): void {
+    this.isLoadingPlan = true;
+
+    this.userSubscription = this.authService.currentUser.subscribe(user => {
+      this.currentUser = user;
+
+      // 🔹 Mantido o comportamento original (sem alterar valores)
+      if (user) {
+        this.planoAtual = null;
+        this.dataContratacao = null;
+      } else {
+        this.planoAtual = null;
+        this.dataContratacao = null;
+      }
+
+      this.isLoadingPlan = false;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
+  }
 
   async handleSubscription(plan: Plan, event: MouseEvent) {
     if (plan.valor === 0) {
-      this.handleFreeSubscription();
+      // É o plano gratuito (Trial)
+      await this.handleFreeSubscription(plan);
       return;
     }
 
@@ -42,22 +78,27 @@ export class AssinaturaComponent {
     button.disabled = true;
 
     try {
-      console.log(`Iniciando assinatura para o plano:`, plan);
-      const request$ = this.mercadoPagoService.criarAssinatura(plan.tipo, plan.valor);
-      const data: MercadoPagoResponse = await lastValueFrom(request$);
+      // --- CORREÇÃO AQUI ---
+      // 1. O método agora é 'createPreference'
+      // 2. Ele espera um objeto { descricao, valor }
+      const dadosPagamento = {
+        descricao: plan.tipo, // O backend espera 'descricao'
+        valor: plan.valor
+      };
+      const request$ = this.mercadoPagoService.createPreference(dadosPagamento);
+      // --- FIM DA CORREÇÃO ---
 
+      const data: MercadoPagoResponse = await lastValueFrom(request$);
 
       if (data && data.init_point) {
         window.location.href = data.init_point;
       } else {
-        console.error('Erro: A resposta da API não continha um "init_point".', data);
         alert('Ocorreu um erro ao gerar o link de pagamento. Tente novamente.');
         button.textContent = originalText;
         button.disabled = false;
       }
     } catch (error) {
-      console.error('Falha ao processar a assinatura:', error);
-      alert('Não foi possível iniciar o processo de assinatura. Verifique o console para mais detalhes.');
+      alert('Não foi possível iniciar o processo de assinatura.');
       button.textContent = originalText;
       button.disabled = false;
     } finally {
@@ -65,8 +106,23 @@ export class AssinaturaComponent {
     }
   }
 
-  handleFreeSubscription() {
-    console.log('Usuário selecionou o plano gratuito.');
-    alert('Plano gratuito ativado com sucesso!');
+  async handleFreeSubscription(plan: Plan) {
+    if (!this.currentUser) {
+      alert("Você precisa estar logado para selecionar um plano.");
+      return;
+    }
+
+    this.isLoading = true;
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      this.planoAtual = plan.tipo;
+      this.dataContratacao = new Date();
+      alert('Plano gratuito ativado com sucesso!');
+    } catch {
+      alert('Não foi possível ativar o plano gratuito.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

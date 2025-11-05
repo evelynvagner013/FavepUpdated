@@ -2,7 +2,6 @@ const prisma = require('../lib/prisma');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const { sendPaymentStatusEmail } = require('../service/mailService');
 
-// 🔹 Inicializa o cliente do Mercado Pago com o Access Token do .env
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
 });
@@ -25,6 +24,11 @@ module.exports = {
       return res.status(400).json({ error: 'Campos obrigatórios: descricao e valor.' });
     }
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
+    if (!process.env.FRONTEND_URL) {
+      console.warn('⚠️ AVISO: FRONTEND_URL não definida no .env, usando "http://localhost:4200" como padrão.');
+    }
+
     try {
       const usuario = await prisma.usuario.findUnique({
         where: { id: authenticatedUserId },
@@ -34,10 +38,8 @@ module.exports = {
         return res.status(404).json({ error: 'Usuário não encontrado.' });
       }
 
-      // 1. Criamos a referência externa primeiro
       const externalReference = `USER-${authenticatedUserId}-${Date.now()}`;
 
-      // 🔹 Monta os dados da preferência (Checkout Pro)
       const preferenceData = {
         items: [
           {
@@ -48,19 +50,25 @@ module.exports = {
           },
         ],
         payer: { email: usuario.email },
+        
+        // --- CORREÇÃO DE REDIRECIONAMENTO ---
+        // 'success' agora aponta para /gerenciamento
+        // 'failure' e 'pending' apontam para /assinatura (a página de planos)
         back_urls: {
-          success: 'https://www.google.com',
-          failure: 'https://www.google.com',
-          pending: 'https://www.google.com',
+          success: `${frontendUrl}/gerenciamento?status=success&pref_id=${externalReference}`,
+          failure: `${frontendUrl}/assinatura?status=failure&pref_id=${externalReference}`,
+          pending: `${frontendUrl}/assinatura?status=pending&pref_id=${externalReference}`,
         },
-        auto_return: 'approved',
+        // --- FIM DA CORREÇÃO ---
+        
         notification_url: process.env.MERCADOPAGO_NOTIFICATION_URL,
-        external_reference: externalReference, // 2. Usamos a referência aqui
+        external_reference: externalReference, 
       };
 
       const response = await preference.create({ body: preferenceData });
 
-      // 🔹 Registra o pagamento no banco (status inicial: Pendente)
+      // ... (o resto da função de criação continua igual) ...
+
       const novoPagamento = await prisma.planosMercadoPago.create({
         data: {
           status: 'Pendente',
@@ -68,7 +76,6 @@ module.exports = {
           valor: Number(valor),
           metodoPagamento: 'MercadoPago',
           usuarioId: authenticatedUserId,
-          // 3. Salvamos a external_reference como nossa chave de ligação
           idAssinaturaExterna: externalReference, 
         },
       });
@@ -81,7 +88,7 @@ module.exports = {
           'Pendente', 
           novoPagamento.tipo, 
           novoPagamento.valor, 
-          response.id, // Podemos enviar o ID da Preferência (response.id) para o usuário ver
+          response.id,
           null
         );
       } catch (emailError) {
@@ -116,9 +123,6 @@ module.exports = {
 
         const paymentData = await payment.get({ id: paymentId });
         
-        // --- Linha de LOG de DEBUG removida מכאן ---
-
-        // 4. Mudamos a verificação: agora procuramos 'external_reference'
         if (!paymentData || !paymentData.status || !paymentData.external_reference) {
           console.warn(`⚠️ Pagamento ${paymentId} não encontrado ou não possui 'status' ou 'external_reference'.`);
           return res.status(200).send('Pagamento não encontrado ou dados incompletos.');
@@ -139,7 +143,6 @@ module.exports = {
             novoStatus = 'Pendente';
         }
 
-        // 5. Buscamos o plano no DB usando a 'external_reference'
         const plano = await prisma.planosMercadoPago.findUnique({
           where: {
             idAssinaturaExterna: paymentData.external_reference,
@@ -161,6 +164,7 @@ module.exports = {
            return res.status(200).send('Status já atualizado.');
         }
 
+        // 1. Atualiza a tabela de Planos
         await prisma.planosMercadoPago.update({
           where: {
             id: plano.id,
@@ -171,23 +175,48 @@ module.exports = {
           },
         });
 
+        // ==========================================================
+        // === INÍCIO DA CORREÇÃO: Atualizar a tabela 'Usuario' ===
+        // ==========================================================
+        
+        // 2. Se o pagamento foi aprovado, atualiza a tabela principal do usuário
+        if (novoStatus === 'Pago/Ativo') {
+          
+          await prisma.usuario.update({
+            where: {
+              id: plano.usuarioId // Usa o ID do usuário guardado no plano
+            },
+            data: {
+              planoAtivo: true
+              // Opcional: pode querer guardar o tipo de plano aqui também
+              // tipoPlano: plano.tipo 
+            }
+          });
+          
+          console.log(`✅ Tabela 'Usuario' (ID: ${plano.usuarioId}) atualizada para planoAtivo: true.`);
+        }
+        
+        // ==========================================================
+        // === FIM DA CORREÇÃO ======================================
+        // ==========================================================
+
         console.log(
           `✅ Pagamento ${paymentId} (Ref Externa: ${paymentData.external_reference}) atualizado no banco (Status: ${novoStatus}).`
         );
         
         try {
+          // Envia o e-mail de status (Aprovado, Recusado, etc.)
           await sendPaymentStatusEmail(
             plano.usuario.email,
             novoStatus,
             plano.tipo,
             plano.valor,
-            plano.idAssinaturaExterna, // (que é a external_reference)
+            plano.idAssinaturaExterna, 
             paymentId.toString()
           );
         } catch (emailError) {
           console.error("❌ Erro ao enviar e-mail de status no webhook:", emailError);
         }
-
       }
 
       res.status(200).send('Webhook processado com sucesso.');

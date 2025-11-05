@@ -1,5 +1,19 @@
 // Planos front/models/api.models.ts
 
+// --- MODIFICAÇÃO AQUI ---
+// Interface 'PlanosMercadoPago' movida para cima para ser usada em 'Usuario'
+export interface PlanosMercadoPago {
+  id: string;
+  status: string;
+  tipo: string; // Ex: "Plano Base", "Plano Gold"
+  valor: number;
+  dataAssinatura: Date | string;
+  metodoPagamento: string;
+  usuarioId: string;
+  idAssinaturaExterna?: string;
+  idPagamentoExterno?: string;
+}
+
 export interface Usuario {
   id: string;
   nome: string;
@@ -11,8 +25,9 @@ export interface Usuario {
   verificationToken?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
-  //planos?: PlanosMercadoPago[];
+  planos?: PlanosMercadoPago[]; // <-- CAMPO ADICIONADO
 }
+// --- FIM DA MODIFICAÇÃO ---
 
 export interface Propriedade {
   id: string; // Chave primária REAL
@@ -45,14 +60,14 @@ export interface Financeiro { // Renomeado de Movimentacao
   propriedade?: Propriedade; // Opcional para dados aninhados
 }
 
-export interface PlanosMercadoPago {
-  id: string;
-  status: string;
-  tipo: string;
-  valor: number;
-  dataAssinatura: Date | string;
-  metodoPagamento: string;
-  usuarioId: string;
-  idAssinaturaExterna?: string;
-  idPagamentoExterno?: string; // <-- MODIFICAÇÃO: Adicionado para espelhar o schema.prisma
+// Interface de resposta do Auth
+export interface AuthResponse {
+  user: Usuario;
+  token: string;
+}
+
+// Interface de requisição de Login
+export interface LoginRequest {
+  email: string;
+  senha: string;
 }

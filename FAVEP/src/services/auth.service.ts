@@ -1,17 +1,20 @@
 // Conteúdo completo do arquivo: src/services/auth.service.ts
+// MODIFICADO: Adicionado 'getPlanoAtivo()' e 'updateUser'
 
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Usuario } from '../models/api.models';
+import { Usuario, AuthResponse, PlanosMercadoPago } from '../models/api.models'; // Importado AuthResponse
+import { environment } from '../environments/environment'; // Importando environment
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private authUrl = 'http://localhost:5050/auth'; // Seu URL
+  // Usando a URL do environment
+  private authUrl = `${environment.apiUrl}/auth`; 
   private isBrowser: boolean;
 
   private currentUserSubject: BehaviorSubject<Usuario | null>;
@@ -22,6 +25,7 @@ export class AuthService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    // Tenta carregar o usuário do localStorage ao iniciar
     this.currentUserSubject = new BehaviorSubject<Usuario | null>(this.getUser());
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -30,48 +34,66 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  // --- MODIFICADO ---
-  // Apenas o 'dadosUsuario' agora deve conter a senha
   register(dadosUsuario: any): Observable<any> {
     return this.http.post(`${this.authUrl}/register`, dadosUsuario);
   }
 
-  // --- SEM MUDANÇAS ---
-  login(email: string, senha: string): Observable<any> {
-    return this.http.post<{ token: string; user: Usuario }>(`${this.authUrl}/login`, { email, senha }).pipe(
+  login(email: string, senha: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.authUrl}/login`, { email, senha }).pipe(
       tap(response => {
         if (response.token && response.user) {
           this.setToken(response.token);
-          this.setUser(response.user);
+          this.setUser(response.user); // Salva o usuário com os planos
         }
       })
     );
   }
 
-  // --- SEM MUDANÇAS ---
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/forgot-password`, { email });
   }
 
-  // --- NOVO MÉTODO ---
-  /**
-   * Envia o e-mail e o código de 6 dígitos para verificação.
-   */
   verifyEmailCode(email: string, code: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/verify-email-code`, { email, code });
   }
 
-  // --- MÉTODO ANTIGO (Não é mais usado pelo fluxo de registro) ---
-  verifyAndSetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
-    return this.http.post<any>(`${this.authUrl}/verify-and-set-password`, { token, senha, confirmarSenha });
-  }
-  
-  // --- SEM MUDANÇAS ---
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
 
-  // --- MÉTODOS AUXILIARES (sem alteração) ---
+  // --- NOVO MÉTODO ---
+  /**
+   * Retorna o ID do plano ativo do usuário logado.
+   * 'gratis' é o padrão se não houver plano "Pago/Ativo".
+   */
+  public getPlanoAtivo(): 'gratis' | 'base' | 'gold' {
+    const usuario = this.currentUserValue; // Usa o BehaviorSubject
+
+    if (usuario && usuario.planos && usuario.planos.length > 0) {
+      // O backend já filtrou por 'Pago/Ativo'
+      const planoAtivo = usuario.planos[0]; // Pega o mais recente
+
+      if (planoAtivo) {
+        const tipoNormalizado = planoAtivo.tipo.toLowerCase();
+        if (tipoNormalizado.includes('gold')) {
+          return 'gold';
+        }
+        if (tipoNormalizado.includes('base')) {
+          return 'base';
+        }
+        // Se tiver um plano "Gratis" ou "Trial" registrado no DB
+        if (tipoNormalizado.includes('gratis') || tipoNormalizado.includes('trial')) {
+           // TODO: Adicionar lógica de expiração de 7 dias
+          return 'gratis';
+        }
+      }
+    }
+
+    // Se não tem plano pago, é 'gratis' (ou trial expirado)
+    return 'gratis';
+  }
+
+  // --- MÉTODOS AUXILIARES ---
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('user');
@@ -105,5 +127,14 @@ export class AuthService {
       return json ? JSON.parse(json) : null;
     }
     return null;
+  }
+
+  // --- NOVO MÉTODO AUXILIAR ---
+  /**
+   * Atualiza o usuário no localStorage e no BehaviorSubject.
+   * Útil após um update de perfil, por exemplo.
+   */
+  public updateUser(usuario: Usuario): void {
+    this.setUser(usuario);
   }
 }

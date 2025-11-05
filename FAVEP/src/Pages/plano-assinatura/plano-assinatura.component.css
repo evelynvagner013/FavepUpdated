@@ -1,4 +1,4 @@
-/* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
+/* --- ESTILOS DE LAYOUT PRINCIPAL (Do seu arquivo) --- */
 .main-content {
   padding: 2rem;
   background-color: #f4f7f6;
@@ -7,511 +7,282 @@
   flex-direction: column;
   gap: 1.5rem;
   transition: margin-left 0.3s ease-in-out;
+  min-height: 100vh; /* Garante altura total */
 }
 
-.subscription-section.card-perfil {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  padding: 0;
-  font-family: 'Montserrat', sans-serif;
-  overflow: hidden;
-  box-sizing: border-box;
+@media (min-width: 993px) {
+  .main-content {
+      margin-left: 250px;
+  }
 }
+
+/* --- (NOVO) Container principal da lógica de assinatura --- */
+.container-assinatura {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+  text-align: center;
+  box-sizing: border-box;
+  position: relative; /* Para o overlay */
+}
+
+/* --- (NOVO) Loading Overlay --- */
+.loading .loading-overlay {
+  display: flex; /* Mostra o overlay quando .loading está ativo */
+}
+
+.loading-overlay {
+  display: none; /* Escondido por padrão */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 100;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007bff; /* Azul (pode mudar para seu verde) */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+.loading-overlay p {
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- (NOVO) Seções e Títulos --- */
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.secao-plano-atual {
+  margin-bottom: 3.5rem;
+}
+
+.secao-outros-planos {
+  margin-bottom: 2rem;
+}
+
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* --- (NOVO) Estilo dos Cards (Baseado no seu CSS) --- */
+.card-plano {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  text-align: left; /* Alinha o texto do card à esquerda */
+  flex: 1;
+  min-width: 300px;
+  max-width: 340px;
+  border-top: 5px solid transparent;
+  transition: transform 0.3s, box-shadow 0.3s;
+  overflow: hidden; /* Para o header */
+}
+
+.card-plano:hover {
+   transform: translateY(-5px);
+   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+}
+
+/* Card do Plano Atual (Destaque) */
+.card-plano-atual {
+  border: 2px solid #046b4a; /* Seu verde principal */
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 8px 20px rgba(4, 107, 74, 0.15);
+  max-width: 450px; /* Um pouco maior */
+  min-width: 300px;
+  text-align: center; /* Centraliza o card de plano atual */
+}
+
+/* Cores específicas por plano (usando suas cores) */
+.card-gold { border-top-color: #ca8a04; }
+.card-base { border-top-color: #046b4a; }
+.card-gratis { border-top-color: #059669; }
 
 .card-header {
-  padding: 20px 25px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 1.5rem;
+  position: relative;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.card-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2c3e50;
+.card-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-atual {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #046b4a; /* Seu verde */
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.card-body {
+  padding: 1.5rem;
+  flex-grow: 1; /* Faz o corpo crescer e empurra o footer para baixo */
+}
+
+.preco {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+.card-plano-atual .preco {
+  text-align: center;
+}
+
+.descricao {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+  min-height: 40px; /* Altura mínima para alinhar */
+}
+.card-plano-atual .descricao {
+  text-align: center;
+}
+
+
+.features-list {
+  list-style: none;
+  padding-left: 0;
   margin: 0;
 }
 
-.subscription-details {
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.current-plan-card {
-  width: 100%;
-  padding: 20px;
-  border: 2px solid #3498db;
-  border-radius: 10px;
-  background-color: #f7faff;
-  margin-bottom: 30px;
-}
-
-.current-plan-card h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin-top: 0;
-}
-
-.plan-name {
-  font-weight: 700;
-  color: #3498db;
-}
-
-.plan-price {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #27ae60;
-  margin: 10px 0;
-}
-
-.change-plan-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background-color: #3498db;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
+.features-list li {
+  padding-left: 5px;
+  margin-bottom: 0.85rem;
   font-size: 0.95rem;
-  font-weight: 600;
-  text-decoration: none;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.change-plan-btn:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-.change-plan-btn .fas {
-  font-size: 1em;
-}
-
-.loading-message {
-  font-style: italic;
-  color: #7f8c8d;
-}
-
-.plan-comparison-section {
-  padding: 30px;
-  border-top: 1px solid #e0e0e0;
-}
-
-.plan-comparison-section h4 {
-  text-align: center;
-  color: #2c3e50;
-  font-size: 1.2rem;
-  margin-bottom: 25px;
-}
-
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-}
-
-.plan-card {
-  background-color: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 25px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-}
-
-.plan-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.plan-card h5 {
-  font-size: 1.2rem;
-  color: #34495e;
-  margin-top: 0;
-}
-
-.plan-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-  text-align: left;
-}
-
-.plan-card ul li {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-  color: #4a5568;
 }
 
-.plan-card ul li .fas {
-  color: #27ae60;
+.features-list li::before {
+  content: '✓'; /* Checkmark */
+  color: #059669; /* Seu verde claro */
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-right: 10px;
+  min-width: 15px;
 }
 
-.select-plan-btn {
+.card-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  background: #fdfdfd;
+  margin-top: auto; /* Garante que o footer fique no fundo */
+}
+
+.card-footer button {
   width: 100%;
-  padding: 12px;
-  background-color: #27ae60;
-  color: #ffffff;
+  padding: 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1em;
-  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, opacity 0.3s;
 }
 
-.select-plan-btn:hover {
-  background-color: #229954;
+/* Cores dos Botões (usando suas cores) */
+.card-gold .card-footer button { background-color: #ca8a04; }
+.card-base .card-footer button { background-color: #046b4a; }
+
+.card-footer button:hover:not(:disabled) {
+  opacity: 0.85;
 }
 
-/* MEDIA QUERIES PARA RESPONSIVIDADE */
-@media (min-width: 993px) {
-  .main-content {
-      margin-left: 250px;
-  }
-}
-
-.subscription-section.card-perfil {
-background-color: #ffffff;
-border-radius: 12px;
-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-padding: 0;
-font-family: 'Montserrat', sans-serif;
-overflow: hidden;
-box-sizing: border-box;
-}
-
-.card-header {
-padding: 20px 25px;
-border-bottom: 1px solid #f0f0f0;
-}
-
-.card-header h2 {
-font-size: 1.25rem;
-font-weight: 600;
-color: #2c3e50;
-margin: 0;
-}
-
-.subscription-details {
-padding: 30px;
-display: flex;
-flex-direction: column;
-align-items: center;
-text-align: center;
-}
-
-.current-plan-card {
-width: 100%;
-padding: 20px;
-border: 2px solid #3498db;
-border-radius: 10px;
-background-color: #f7faff;
-margin-bottom: 30px;
-}
-
-.current-plan-card h3 {
-font-size: 1.5rem;
-color: #2c3e50;
-margin-top: 0;
-}
-
-.plan-name {
-font-weight: 700;
-color: #3498db;
-}
-
-.plan-price {
-font-size: 1.2rem;
-font-weight: 600;
-color: #27ae60;
-margin: 10px 0;
-}
-
-.change-plan-btn {
-display: inline-flex;
-align-items: center;
-gap: 10px;
-background-color: #3498db;
-color: #ffffff;
-border: none;
-border-radius: 8px;
-padding: 12px 24px;
-font-size: 0.95rem;
-font-weight: 600;
-text-decoration: none;
-text-transform: uppercase;
-cursor: pointer;
-transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.change-plan-btn:hover {
-background-color: #2980b9;
-transform: translateY(-2px);
-}
-
-.change-plan-btn .fas {
-font-size: 1em;
-}
-
-.loading-message {
-font-style: italic;
-color: #7f8c8d;
-}
-
-.plan-comparison-section {
-padding: 30px;
-border-top: 1px solid #e0e0e0;
-}
-
-.plan-comparison-section h4 {
-text-align: center;
-color: #2c3e50;
-font-size: 1.2rem;
-margin-bottom: 25px;
-}
-
-.plan-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-gap: 25px;
-}
-
-.plan-card {
-background-color: #f9f9f9;
-border: 1px solid #e0e0e0;
-border-radius: 10px;
-padding: 25px;
-text-align: center;
-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-transition: transform 0.3s ease;
-}
-
-.plan-card:hover {
-transform: translateY(-5px);
-box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.plan-card h5 {
-font-size: 1.2rem;
-color: #34495e;
-margin-top: 0;
-}
-
-.plan-card ul {
-list-style: none;
-padding: 0;
-margin: 20px 0;
-text-align: left;
-}
-
-.plan-card ul li {
-display: flex;
-align-items: center;
-gap: 10px;
-margin-bottom: 10px;
-font-size: 0.95rem;
-color: #4a5568;
-}
-
-.plan-card ul li .fas {
-color: #27ae60;
-}
-
-.select-plan-btn {
-width: 100%;
-padding: 12px;
-background-color: #27ae60;
-color: #ffffff;
-border: none;
-border-radius: 8px;
-font-size: 1em;
-font-weight: 600;
-cursor: pointer;
-transition: background-color 0.3s;
-}
-
-.select-plan-btn:hover {
-background-color: #229954;
-}
-
-/* MEDIA QUERIES PARA RESPONSIVIDADE */
-@media (min-width: 993px) {
-  .main-content {
-      margin-left: 250px;
-  }
-}
-
-.subscription-section.card-perfil {
-background-color: #ffffff;
-border-radius: 12px;
-box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-padding: 0;
-font-family: 'Montserrat', sans-serif;
-overflow: hidden;
-box-sizing: border-box;
-}
-
-.card-header {
-padding: 20px 25px;
-border-bottom: 1px solid #f0f0f0;
-}
-
-.card-header h2 {
-font-size: 1.25rem;
-font-weight: 600;
-color: #2c3e50;
-margin: 0;
-}
-
-.subscription-details {
-padding: 30px;
-display: flex;
-flex-direction: column;
-align-items: center;
-text-align: center;
-}
-
-.current-plan-card {
-width: 100%;
-padding: 20px;
-border: 2px solid #3498db;
-border-radius: 10px;
-background-color: #f7faff;
-margin-bottom: 30px;
-}
-
-.current-plan-card h3 {
-font-size: 1.5rem;
-color: #2c3e50;
-margin-top: 0;
-}
-
-.plan-name {
-font-weight: 700;
-color: #3498db;
-}
-
-.plan-price {
-font-size: 1.2rem;
-font-weight: 600;
-color: #27ae60;
-margin: 10px 0;
-}
-
-.loading-message {
-font-style: italic;
-color: #7f8c8d;
-}
-
-.plan-comparison-section {
-padding: 30px;
-border-top: 1px solid #e0e0e0;
-}
-
-.plan-comparison-section h4 {
-text-align: center;
-color: #2c3e50;
-font-size: 1.2rem;
-margin-bottom: 25px;
-}
-
-/* --- GRID ATUALIZADO PARA MELHOR ALINHAMENTO --- */
-.plan-grid {
-display: grid;
-/* Uma coluna em telas pequenas */
-grid-template-columns: 1fr;
-gap: 25px;
-}
-
-/* Duas colunas em telas de tablet */
-@media (min-width: 768px) {
-  .plan-grid {
-      grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Três colunas em telas de desktop */
-@media (min-width: 1200px) {
-  .plan-grid {
-      grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-
-.plan-card {
-background-color: #f9f9f9;
-border: 2px solid #e0e0e0;
-border-radius: 10px;
-padding: 25px;
-text-align: center;
-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.plan-card.current-card {
-border-color: #27ae60;
-}
-
-.plan-card:hover {
-transform: translateY(-5px);
-box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.plan-card h5 {
-font-size: 1.2rem;
-color: #34495e;
-margin-top: 0;
-}
-
-.plan-card ul {
-list-style: none;
-padding: 0;
-margin: 20px 0;
-text-align: left;
-flex-grow: 1; /* Faz a lista crescer para alinhar os botões */
-}
-
-.plan-card ul li {
-display: flex;
-align-items: center;
-gap: 10px;
-margin-bottom: 10px;
-font-size: 0.95rem;
-color: #4a5568;
-}
-
-.plan-card ul li .fas {
-color: #27ae60;
-}
-
-.select-plan-btn {
-width: 100%;
-padding: 12px;
-background-color: #3498db;
-color: #ffffff;
-border: none;
-border-radius: 8px;
-font-size: 1em;
-font-weight: 600;
-cursor: pointer;
-transition: background-color 0.3s;
-}
-
-.select-plan-btn:hover:not(:disabled) {
-background-color: #2980b9;
-}
-
-.select-plan-btn:disabled {
-  background-color: #27ae60;
+.card-footer button:disabled {
+  background-color: #ccc;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Mensagem final */
+.secao-sem-planos {
+  text-align: center;
+  margin-top: 3rem;
+  color: #555;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.feedback-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2.5rem auto; /* Centraliza e dá espaço abaixo */
+}
+
+.feedback-box {
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.feedback-box p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* Verde (Sucesso) */
+.feedback-success {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+/* Vermelho (Falha) */
+.feedback-failure {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* Amarelo (Pendente) */
+.feedback-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffeeba;
 }

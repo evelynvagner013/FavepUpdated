@@ -1,4 +1,5 @@
 // Conteúdo completo do arquivo: src/controllers/authController.js
+// MODIFICADO: Função 'login' atualizada para incluir os planos.
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -133,9 +134,9 @@ module.exports = {
     }
   },
 
-  // --- SEM MUDANÇAS ---
+  // --- MODIFICADO (Conforme solicitação anterior) ---
   // # login
-  // Esta função já verifica 'emailVerified', então está perfeita.
+  // Esta função agora inclui os planos do usuário na resposta.
   async login(req, res) {
     const { email, senha } = req.body;
 
@@ -143,7 +144,21 @@ module.exports = {
       return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     }
     try {
-      const user = await prisma.usuario.findUnique({ where: { email } });
+      // --- MODIFICAÇÃO AQUI ---
+      // Adicionado 'include' para buscar os planos do usuário
+      // Filtra apenas planos que estão "Pago/Ativo"
+      const user = await prisma.usuario.findUnique({
+        where: { email },
+        include: {
+          planos: {
+            where: {
+              status: 'Pago/Ativo'
+            }
+          }
+        }
+      });
+      // --- FIM DA MODIFICAÇÃO ---
+
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
