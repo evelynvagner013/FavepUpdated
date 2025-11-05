@@ -9,6 +9,10 @@ export interface Message {
   text: string;
 }
 
+// NOVO: Tipos para o Tema
+type ChatTheme = 'light' | 'dark';
+type ChatAccent = 'green' | 'blue' | 'purple' | 'orange' | 'teal';
+
 @Component({
   selector: 'app-voice-assistant',
   standalone: true,
@@ -26,6 +30,12 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   isChatOpen = false;
   readAloudEnabled = false;
   private isBrowser: boolean;
+
+  // --- NOVO: Controle de Tema e Configurações ---
+  isSettingsOpen = false;
+  currentTheme: ChatTheme = 'light';
+  currentAccent: ChatAccent = 'purple'; // Mudei o padrão para purple para combinar com a imagem
+  availableAccents: ChatAccent[] = ['green', 'blue', 'purple', 'orange', 'teal'];
 
   // --- Mensagens e Conversa ---
   messages: Message[] = [];
@@ -54,6 +64,11 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    if (this.isBrowser) {
+      // Carrega as preferências de tema salvas
+      this.currentTheme = (localStorage.getItem('chatTheme') as ChatTheme) || 'light';
+      this.currentAccent = (localStorage.getItem('chatAccent') as ChatAccent) || 'purple'; // Padrão 'purple'
+    }
   }
 
   ngAfterViewInit(): void {
@@ -62,17 +77,29 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // --- Lógica de Arrastar (sem alterações) ---
+  // --- Lógica de Arrastar (CORRIGIDA) ---
   onDragStart(event: MouseEvent | TouchEvent) {
     if (window.innerWidth <= 480) return;
-    if ((event.target as HTMLElement).closest('.header-btn')) return;
-    this.isDragging = true; this.dragMoved = false;
+    // Impede o arraste se clicar em botões ou no painel de config
+    if ((event.target as HTMLElement).closest('.header-btn, .chat-settings')) return;
+
+    this.isDragging = true;
+    this.dragMoved = false;
     this.renderer.addClass(this.chatWidget.nativeElement, 'dragging');
     const widgetRect = this.chatWidget.nativeElement.getBoundingClientRect();
+
+    // --- CORREÇÃO AQUI ---
+    // Se for MouseEvent, use event.clientX. Se for TouchEvent, use event.touches[0].clientX
     const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+
+    // --- E CORREÇÃO AQUI (Onde o seu erro foi reportado) ---
+    // Se for MouseEvent, use event.clientY. Se for TouchEvent, use event.touches[0].clientY
     const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
-    this.offsetX = clientX - widgetRect.left; this.offsetY = clientY - widgetRect.top;
+
+    this.offsetX = clientX - widgetRect.left;
+    this.offsetY = clientY - widgetRect.top;
   }
+
   @HostListener('document:mousemove', ['$event']) onDragMove(event: MouseEvent) { if (!this.isDragging) return; this.dragMoved = true; event.preventDefault(); this.setPosition(event.clientX - this.offsetX, event.clientY - this.offsetY); }
   @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) { if (!this.isDragging) return; this.dragMoved = true; event.preventDefault(); this.setPosition(event.touches[0].clientX - this.offsetX, event.touches[0].clientY - this.offsetY); }
   @HostListener('document:mouseup') @HostListener('document:touchend') onDragEnd() { if (this.isDragging) { this.isDragging = false; this.renderer.removeClass(this.chatWidget.nativeElement, 'dragging'); if (this.isBrowser && this.dragMoved) { const finalRect = this.chatWidget.nativeElement.getBoundingClientRect(); localStorage.setItem('chatWidgetPosition', JSON.stringify({ top: finalRect.top, left: finalRect.left })); } } }
@@ -80,12 +107,17 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
   private setPositionFromStorage() { if (this.isBrowser && this.chatWidget) { const pos = localStorage.getItem('chatWidgetPosition'); if (pos) { const { top, left } = JSON.parse(pos); this.setPosition(left, top); } else { const fabRight = 20; const fabBottom = 115; const widget = this.chatWidget.nativeElement; const initialX = window.innerWidth - widget.offsetWidth - fabRight; const initialY = window.innerHeight - widget.offsetHeight - fabBottom - 75; this.setPosition(initialX, initialY); } } }
 
   // --- Métodos de Controle da Interface ---
-  handleHeaderClick(event: MouseEvent, action: 'close' | 'readAloud') { if (this.dragMoved) { event.stopPropagation(); setTimeout(() => this.dragMoved = false, 0); return; } if (action === 'close') this.toggleChat(); if (action === 'readAloud') this.toggleReadAloud(); }
-  
+  handleHeaderClick(event: MouseEvent, action: 'close' | 'readAloud') {
+    if (this.dragMoved) { event.stopPropagation(); setTimeout(() => this.dragMoved = false, 0); return; }
+    if (action === 'close') this.toggleChat();
+    if (action === 'readAloud') this.toggleReadAloud();
+  }
+
   toggleChat(): void {
     this.isChatOpen = !this.isChatOpen;
     if (!this.isChatOpen) {
-        this.stopSpeaking(); // Garante que a fala pare ao fechar o chat
+        this.stopSpeaking();
+        this.isSettingsOpen = false; // Fecha as configs ao fechar o chat
     }
     if (this.isChatOpen && this.messages.length === 0) {
       const initialMessage = 'Olá! Sou a Sementinha. Como posso te ajudar hoje?';
@@ -95,26 +127,38 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /**
-   * CORREÇÃO: Lógica de Mute/Unmute.
-   * Agora, além de alternar a preferência para futuras mensagens,
-   * a função interrompe qualquer fala em andamento.
-   */
   toggleReadAloud(): void {
     this.readAloudEnabled = !this.readAloudEnabled;
-    
-    // Se estiver falando no momento do clique, para a fala imediatamente.
     if (this.status === 'speaking') {
       this.stopSpeaking();
       this.setStatus('idle');
     }
   }
-  
+
+  // --- NOVO: Métodos de Tema ---
+  toggleSettings(): void {
+    this.isSettingsOpen = !this.isSettingsOpen;
+  }
+
+  setTheme(theme: ChatTheme): void {
+    this.currentTheme = theme;
+    if (this.isBrowser) {
+      localStorage.setItem('chatTheme', theme);
+    }
+  }
+
+  setAccent(accent: ChatAccent): void {
+    this.currentAccent = accent;
+    if (this.isBrowser) {
+      localStorage.setItem('chatAccent', accent);
+    }
+  }
+
   private autoScrollToBottom(force: boolean = false): void { setTimeout(() => { try { const element = this.chatBody.nativeElement; const isScrolledToBottom = element.scrollHeight - element.clientHeight <= element.scrollTop + 40; if (force || isScrolledToBottom) { element.scrollTop = element.scrollHeight; } } catch (err) {} }, 50); }
 
-  // --- Métodos de Comunicação ---
+  // --- Métodos de Comunicação (sem alterações) ---
   sendTextMessage(): void { if (!this.currentMessage.trim()) return; this.messages.push({ sender: 'user', text: this.currentMessage }); this.autoScrollToBottom(true); this.sendQuestionToAgent(this.currentMessage); this.currentMessage = ''; }
-  
+
   private sendQuestionToAgent(question: string): void {
     this.setStatus('processing');
     this.autoScrollToBottom(true);
@@ -125,8 +169,7 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
         this.geminiHistory.push({ role: 'model', parts: [{ text: fullResponse }] });
         const paragraphs = fullResponse.split('\n').filter(p => p.trim() !== '');
         this.displayParagraphsSequentially(paragraphs);
-        
-        // A fala só é iniciada se o modo "readAloud" estiver ativo
+
         if (this.readAloudEnabled) {
           this.speak(fullResponse);
         }
@@ -143,7 +186,6 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
 
   private displayParagraphsSequentially(paragraphs: string[], index = 0) {
     if (index >= paragraphs.length) {
-      // Só muda o status para 'idle' se não houver uma fala em andamento.
       if (this.status !== 'speaking') {
         this.setStatus('idle');
       }
@@ -159,29 +201,29 @@ export class VoiceAssistantComponent implements OnInit, AfterViewInit {
     }, 800);
   }
 
-  // --- Lógica de Voz (Apenas Leitura) ---
+  // --- Lógica de Voz (sem alterações) ---
   private speak(text: string): void {
     if (!this.isBrowser) return;
     this.stopSpeaking();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
     if (this.ptBrVoice) utterance.voice = this.ptBrVoice;
-    
+
     utterance.onstart = () => this.ngZone.run(() => this.setStatus('speaking'));
-    
+
     utterance.onend = () => this.ngZone.run(() => {
       this.setStatus('idle');
     });
-    
+
     window.speechSynthesis.speak(utterance);
   }
-  
+
   private stopSpeaking(): void {
     if (this.isBrowser) window.speechSynthesis.cancel();
   }
-  
-  // --- Funções Auxiliares ---
+
+  // --- Funções Auxiliares (sem alterações) ---
   private loadVoices(): void {
     if (!this.isBrowser) return;
     const getVoices = () => {

@@ -1,19 +1,35 @@
 <div>
-  <div class="chat-widget" #chatWidget [class.open]="isChatOpen">
+  <div class="chat-widget"
+       #chatWidget
+       [class.open]="isChatOpen"
+       [attr.data-theme]="currentTheme"
+       [attr.data-accent]="currentAccent">
+
     <header class="chat-header" (mousedown)="onDragStart($event)" (touchstart)="onDragStart($event)">
       <div class="header-content">
-        <img src="assets/img/Sementinha.png" alt="Logo FAVEP" class="header-logo">
+        <div class="header-logo-bot">
+          <i class="fas fa-seedling"></i>
+        </div>
         <div class="header-text">
           <h3>Sementinha</h3>
           <p [ngSwitch]="status">
-            <span *ngSwitchCase="'processing'">Processando...</span>
-            <span *ngSwitchDefault>Sua assistente virtual</span>
+            <span *ngSwitchCase="'processing'">Online</span>
+            <span *ngSwitchCase="'speaking'">Estou falando...</span>
+            <span *ngSwitchDefault>Online</span>
           </p>
         </div>
       </div>
       <div class="header-actions">
-        <button 
-          class="header-btn" 
+        <button
+          class="header-btn"
+          (click)="toggleSettings()"
+          [ngClass]="{ 'active': isSettingsOpen }"
+          aria-label="Abrir configurações"
+          title="Abrir configurações de tema">
+          <i class="fas fa-cog"></i>
+        </button>
+        <button
+          class="header-btn"
           (click)="handleHeaderClick($event, 'readAloud')"
           [ngClass]="{ 'active': readAloudEnabled }"
           aria-label="Ativar leitura em voz alta"
@@ -25,14 +41,40 @@
     </header>
 
     <main class="chat-body" #chatBody>
-      <div *ngFor="let message of messages" class="message-wrapper" [ngClass]="{'user-message-wrapper': message.sender === 'user', 'agent-message-wrapper': message.sender === 'agent'}">
-        <div class="message-bubble">
-          <p>{{ message.text }}</p>
+      <div *ngFor="let message of messages"
+           class="message-wrapper"
+           [ngClass]="{'user-message-wrapper': message.sender === 'user', 'agent-message-wrapper': message.sender === 'agent'}">
+
+        <div *ngIf="message.sender === 'agent'" class="agent-message-content">
+          <div class="agent-avatar">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <div class="message-group">
+            <div class="agent-name">Sementinha</div>
+            <div class="message-bubble">
+              <p>{{ message.text }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="message.sender === 'user'" class="user-message-content">
+          <div class="message-bubble">
+            <p>{{ message.text }}</p>
+          </div>
         </div>
       </div>
+
       <div *ngIf="status === 'processing'" class="message-wrapper agent-message-wrapper">
-        <div class="message-bubble typing-indicator">
-          <span></span><span></span><span></span>
+        <div class="agent-message-content">
+          <div class="agent-avatar">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <div class="message-group">
+            <div class="agent-name">Sementinha</div>
+            <div class="message-bubble typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -45,12 +87,51 @@
         </button>
       </form>
     </footer>
-  </div>
 
-  <button
+    <div class="chat-settings" *ngIf="isSettingsOpen">
+      <div class="settings-header">
+        <button class="header-btn" (click)="toggleSettings()" title="Voltar para o chat">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h4>Configurações</h4>
+      </div>
+      <div class="settings-body">
+        <div class="settings-section">
+          <h5>Tema</h5>
+          <div class="theme-selector">
+            <button (click)="setTheme('light')" [class.active]="currentTheme === 'light'">
+              <i class="fas fa-sun"></i> Light
+            </button>
+            <button (click)="setTheme('dark')" [class.active]="currentTheme === 'dark'">
+              <i class="fas fa-moon"></i> Dark
+            </button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h5>Cor de Destaque</h5>
+          <div class="color-selector">
+            <button
+              *ngFor="let accent of availableAccents"
+              class="color-dot"
+              [ngClass]="accent + (currentAccent === accent ? ' active' : '')"
+              (click)="setAccent(accent)"
+              [title]="accent">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <button
     class="voice-assistant-fab"
     (click)="toggleChat()"
     [title]="isChatOpen ? 'Fechar Chat' : 'Abrir Chat com a Assistente'">
-    <i class="fas" [ngClass]="isChatOpen ? 'fa-times' : 'fa-comment-dots'"></i>
+    <div *ngIf="!isChatOpen" class="bot-face-fab">
+      <i class="fas fa-seedling"></i>
+    </div>
+    <div *ngIf="isChatOpen" class="close-icon-fab">
+      <span></span>
+      <span></span>
+    </div>
   </button>
 </div>

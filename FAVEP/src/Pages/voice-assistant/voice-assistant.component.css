@@ -1,150 +1,349 @@
-/* Estilos relacionados ao microfone (.mic-btn, .mic-btn.waiting, .mic-btn.listening, @keyframes pulse-mic) foram removidos */
+/* --- NOVO: Definição das Variáveis de Tema --- */
+:host {
+  /* Fontes */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
-/* Janela do Chat - Agora com posicionamento fixo independente */
+  /* Paleta de Cores Base (para o seletor) */
+  --color-green: #28a745;
+  --color-blue: #007bff;
+  --color-purple: #6f42c1;
+  --color-orange: #fd7e14;
+  --color-teal: #20c997;
+}
+
+/* --- Variáveis de Cor de Destaque (Accent) --- */
+[data-accent='green'] {
+  --accent-base: #28a745;
+  --accent-light: #4caf50; /* Ligeiramente mais claro para gradiente */
+  --accent-dark: #1e7e34;  /* Ligeiramente mais escuro para hover */
+}
+[data-accent='blue'] {
+  --accent-base: #007bff;
+  --accent-light: #2196f3;
+  --accent-dark: #0056b3;
+}
+[data-accent='purple'] {
+  --accent-base: #6f42c1;
+  --accent-light: #9c27b0;
+  --accent-dark: #563d7c;
+}
+[data-accent='orange'] {
+  --accent-base: #fd7e14;
+  --accent-light: #ff9800;
+  --accent-dark: #e06200;
+}
+[data-accent='teal'] {
+  --accent-base: #20c997;
+  --accent-light: #00bcd4;
+  --accent-dark: #1a9e7f;
+}
+
+
+/* --- Variáveis de Tema (Light/Dark) --- */
+/* Tema Padrão (Light) */
+[data-theme='light'] {
+  --theme-bg-widget: #ffffff;
+  --theme-bg-body: #f7f8fa; /* Fundo do chat body */
+  --theme-bg-header-start: #ffffff; /* Fundo do header */
+  --theme-bg-header-end: #ffffff;
+  --theme-bg-header-border: #e0e0e0;
+
+  --theme-text-header: #333333; /* Texto do header */
+  --theme-text-header-status: #666666; /* Status 'online' */
+  --theme-text-body: #333333; /* Texto geral do chat body */
+  --theme-text-agent-name: #666666; /* Nome do bot */
+
+  --theme-bg-bot-icon: var(--accent-base); /* Cor do ícone do bot no header e FAB */
+  --theme-bg-bot-head: #ffffff;
+  /* --theme-text-bot-eye: var(--accent-base); <-- REMOVIDO (não há mais olhos) */
+
+  --theme-bg-agent-bubble: #ffffff; /* Fundo da bolha do agente */
+  --theme-border-agent-bubble: #e0e0e0; /* Borda da bolha do agente */
+
+  --theme-bg-user-bubble: var(--accent-base); /* Fundo da bolha do usuário */
+  --theme-text-user-bubble: #ffffff;
+
+  --theme-bg-input: #ffffff; /* Fundo do campo de input */
+  --theme-border-input: #e0e0e0;
+  --theme-border-input-focus: var(--accent-base); /* Borda ao focar input */
+
+  --theme-bg-send-button: var(--accent-base); /* Botão de enviar */
+  --theme-bg-send-button-hover: var(--accent-dark);
+
+  --theme-bg-settings: #ffffff; /* Fundo do painel de settings */
+  --theme-bg-settings-header: #f7f8fa;
+  --theme-border-settings-header: #e0e0e0;
+  --theme-bg-settings-button: #f0f0f0;
+  --theme-border-settings-button: #e0e0e0;
+  --theme-text-settings-button: #333333; /* Cor do texto e ícone dos botões de tema */
+  --theme-text-settings-button-active: #ffffff; /* Cor do texto/ícone dos botões de tema ativos */
+
+  --theme-shadow-widget: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --theme-shadow-bubble: 0 1px 3px rgba(0,0,0,0.08);
+  --theme-shadow-input: 0 0 0 3px rgba(111, 66, 193, 0.1); /* Sombra de foco no input */
+  --theme-shadow-fab: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Tema Dark (Overrides) */
+[data-theme='dark'] {
+  --theme-bg-widget: #26272b;
+  --theme-bg-body: #35363b;
+  --theme-bg-header-start: #26272b;
+  --theme-bg-header-end: #26272b;
+  --theme-bg-header-border: #444444;
+
+  --theme-text-header: #ffffff;
+  --theme-text-header-status: #bbbbbb;
+  --theme-text-body: #e0e0e0;
+  --theme-text-agent-name: #bbbbbb;
+
+  --theme-bg-bot-icon: var(--accent-base);
+  --theme-bg-bot-head: #ffffff;
+  /* --theme-text-bot-eye: var(--accent-base); <-- REMOVIDO (não há mais olhos) */
+
+  --theme-bg-agent-bubble: #44454a;
+  --theme-border-agent-bubble: #555555;
+
+  --theme-bg-input: #44454a;
+  --theme-border-input: #555555;
+  --theme-border-input-focus: var(--accent-base);
+
+  --theme-bg-send-button: var(--accent-base);
+  --theme-bg-send-button-hover: var(--accent-light);
+
+  --theme-bg-settings: #26272b;
+  --theme-bg-settings-header: #35363b;
+  --theme-border-settings-header: #444444;
+  --theme-bg-settings-button: #44454a;
+  --theme-border-settings-button: #555555;
+  --theme-text-settings-button: #e0e0e0; /* Corrigido: texto e ícone para dark */
+  --theme-text-settings-button-active: #ffffff;
+
+  --theme-shadow-widget: 0 8px 30px rgba(0, 0, 0, 0.3);
+  --theme-shadow-bubble: 0 1px 3px rgba(0,0,0,0.2);
+  --theme-shadow-input: 0 0 0 3px rgba(111, 66, 193, 0.2);
+  --theme-shadow-fab: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* --- FIM: Definição das Variáveis de Tema --- */
+
+
+/* Janela do Chat (Sem alterações) */
 .chat-widget {
-  position: fixed; /* Essencial para o arraste */
+  position: fixed;
   z-index: 1000;
   width: 370px;
   height: 550px;
-  max-height: calc(100vh - 40px); /* Espaço de margem */
-  background-color: #ffffff;
+  max-height: calc(100vh - 40px);
+  background-color: var(--theme-bg-widget);
+  color: var(--theme-text-body);
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-widget);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   opacity: 0;
   transform: translateY(20px) scale(0.95);
   visibility: hidden;
-  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
 }
-
-.chat-widget.dragging {
-  user-select: none; /* Impede a seleção de texto durante o arraste */
-  transition: none; /* Desativa a transição durante o arraste para um movimento fluido */
-}
-
+.chat-widget.dragging { user-select: none; transition: none; }
 .chat-widget.open {
   opacity: 1;
   transform: translateY(0) scale(1);
   visibility: visible;
 }
 
-/* Cabeçalho */
+/* Cabeçalho (Atualizado) */
 .chat-header {
-  background-color: #004d40;
-  color: white;
+  background: linear-gradient(90deg, var(--theme-bg-header-start), var(--theme-bg-header-end));
+  color: var(--theme-text-header);
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-  cursor: move; /* Indica que o cabeçalho é móvel */
+  cursor: move;
+  border-bottom: 1px solid var(--theme-bg-header-border); /* Borda sutil */
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
-
-.header-content {
+.header-content { display: flex; align-items: center; gap: 12px; }
+.header-logo-bot {
+  width: 38px; /* Ligeiramente menor */
+  height: 38px;
+  background-color: var(--theme-bg-bot-icon); /* Usa o accent base */
+  border-radius: 50%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  flex-shrink: 0;
+  transition: background-color 0.3s;
 }
 
-.header-logo {
-  width: 40px;
-  height: 40px;
+/* NOVO: Estilo para o ícone de semente no header */
+.header-logo-bot .fa-seedling {
+  font-size: 1.2rem;
+  color: var(--theme-bg-bot-head); /* Cor branca (era a cor da cabeça) */
+  transition: color 0.3s;
 }
+
+/* REMOVIDO: .header-bot-head, .header-bot-eye (não são mais usados) */
 
 .header-text h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
+  color: var(--theme-text-header);
 }
-
 .header-text p {
   margin: 0;
   font-size: 0.8rem;
-  opacity: 0.8;
+  color: var(--theme-text-header-status); /* Cor para o status */
   min-height: 1.2em;
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
+.header-actions { display: flex; align-items: center; gap: 5px; }
 .header-btn {
   background: none;
   border: none;
-  color: white;
-  font-size: 1.5rem;
+  color: var(--theme-text-header);
+  font-size: 1.2rem;
   cursor: pointer;
-  opacity: 0.8;
-  transition: opacity 0.2s, color 0.2s;
+  opacity: 0.7; /* Menos opaco por padrão */
+  transition: opacity 0.2s, color 0.2s, transform 0.2s, background-color 0.2s;
   padding: 5px;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex; /* Para centralizar o ícone */
+  align-items: center;
+  justify-content: center;
 }
-
 .header-btn:hover {
   opacity: 1;
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.05); /* Um pouco de fundo no hover */
 }
-
 .header-btn.active {
-  color: #a7ffc3;
+  opacity: 1;
+  color: var(--accent-base); /* Cor de destaque quando ativo */
 }
+.close-chat-btn { font-size: 1.8rem; }
 
-.close-chat-btn {
-  font-size: 1.8rem;
-}
 
-/* Corpo do Chat (Mensagens) */
+/* Corpo do Chat (Atualizado) */
 .chat-body {
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #f4f7f6;
   scroll-behavior: smooth;
+  background-color: var(--theme-bg-body);
+  transition: background-color 0.3s;
 }
-
 .message-wrapper {
   display: flex;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.agent-message-content {
+  display: flex;
+  align-items: flex-start; /* Alinha o avatar e o grupo de mensagens */
+  gap: 10px;
+  width: 100%; /* Permite o flexbox */
+}
+
+.message-group {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 42px); /* Largura para acomodar avatar + gap */
+}
+
+.agent-name {
+  font-size: 0.78rem;
+  color: var(--theme-text-agent-name);
+  margin-bottom: 4px;
+  margin-left: 8px; /* Ajusta o alinhamento com a bolha */
+  font-weight: 500;
+  transition: color 0.3s;
 }
 
 .message-bubble {
-  max-width: 80%;
-  padding: 10px 15px;
-  border-radius: 18px;
-  line-height: 1.4;
+  max-width: 100%; /* Ajuste para caber dentro do message-group/user-message-content */
+  padding: 10px 14px; /* Mais compacto */
+  border-radius: 16px; /* Mais arredondado */
+  line-height: 1.45;
+  box-shadow: var(--theme-shadow-bubble);
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.message-bubble p { margin: 0; word-wrap: break-word; }
+
+.agent-avatar {
+  width: 32px;
+  height: 32px;
+  background-color: var(--theme-bg-bot-icon); /* Cor do accent */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  transition: background-color 0.3s;
 }
 
-.message-bubble p {
-  margin: 0;
-  word-wrap: break-word;
+/* NOVO: Estilo para o ícone de semente no avatar */
+.agent-avatar .fa-seedling {
+  font-size: 0.9rem; /* Um pouco menor que o header */
+  color: var(--theme-bg-bot-head); /* Cor branca */
+  transition: color 0.3s;
 }
 
-.agent-message-wrapper { justify-content: flex-start; }
+/* REMOVIDO: .agent-avatar-head, .agent-avatar-eye (não são mais usados) */
+
+.agent-message-wrapper {
+  justify-content: flex-start;
+}
 .agent-message-wrapper .message-bubble {
-  background-color: #e9ecef;
-  color: #343a40;
-  border-bottom-left-radius: 4px;
+  background-color: var(--theme-bg-agent-bubble);
+  color: var(--theme-text-body);
+  border: 1px solid var(--theme-border-agent-bubble); /* Borda suave */
+  border-top-left-radius: 8px; /* Mais arredondado */
 }
 
-.user-message-wrapper { justify-content: flex-end; }
+.user-message-content {
+  display: flex;
+  justify-content: flex-end; /* Alinha à direita */
+  width: 100%;
+}
+
+.user-message-wrapper {
+  justify-content: flex-end;
+}
 .user-message-wrapper .message-bubble {
-  background-color: #28a745;
-  color: white;
-  border-bottom-right-radius: 4px;
+  background: var(--theme-bg-user-bubble);
+  color: var(--theme-text-user-bubble);
+  border-top-right-radius: 8px; /* Mais arredondado */
+  margin-left: auto; /* Garante que fique à direita */
 }
 
 .typing-indicator {
-  padding: 15px;
+  padding: 10px 14px; /* Mesma padding da bolha normal */
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--theme-bg-agent-bubble);
+  border: 1px solid var(--theme-border-agent-bubble);
 }
 .typing-indicator span {
-  height: 8px; width: 8px; background-color: #6c757d;
+  height: 6px; width: 6px; /* Pontos menores */
+  background-color: var(--theme-text-typing);
   border-radius: 50%; display: inline-block; margin: 0 2px;
   animation: bounce 1.2s infinite ease-in-out;
+  transition: background-color 0.3s;
 }
 .typing-indicator span:nth-child(2) { animation-delay: -0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay: -0.4s; }
@@ -154,39 +353,44 @@
   40% { transform: scale(1.0); }
 }
 
-/* Rodapé e Input */
+/* Rodapé e Input (Sem alterações) */
 .chat-footer {
-  padding: 10px 15px;
-  border-top: 1px solid #e5e7eb;
-  background-color: #ffffff;
+  padding: 10px 15px; /* Mais compacto */
+  border-top: 1px solid var(--theme-border);
+  background-color: var(--theme-bg-widget);
   flex-shrink: 0;
+  box-shadow: var(--theme-shadow-footer);
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
-
 .chat-input-form {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background-color: #f4f7f6;
+  gap: 8px; /* Menor gap */
+  background-color: var(--theme-bg-input);
   border-radius: 25px;
-  padding: 5px;
+  padding: 4px; /* Padding interno menor */
+  border: 1px solid var(--theme-border-input);
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s;
 }
-
+.chat-input-form:focus-within {
+  border-color: var(--theme-border-input-focus);
+  box-shadow: var(--theme-shadow-input);
+}
 .chat-input-form input {
   flex-grow: 1;
   border: none;
   background: none;
-  padding: 10px 15px;
+  padding: 8px 12px; /* Padding menor */
   outline: none;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Fonte ligeiramente menor */
+  color: var(--theme-text-body);
 }
-
-/* Botão de Enviar no Rodapé */
 .send-btn {
-  background-color: #004d40;
+  background-color: var(--theme-bg-send-button);
   color: white;
   border: none;
-  width: 45px;
-  height: 45px;
+  width: 38px; /* Botão menor */
+  height: 38px;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
@@ -195,55 +399,224 @@
   justify-content: center;
   flex-shrink: 0;
 }
-
 .send-btn:hover:not(:disabled) {
-  background-color: #00332b;
+  background-color: var(--theme-bg-send-button-hover);
+  transform: scale(1.05); /* Efeito de hover mais suave */
+}
+.send-btn:disabled { background-color: #ced4da; cursor: not-allowed; transform: scale(1); }
+.send-btn i { font-size: 1.1rem; transition: transform 0.3s; }
+.send-btn:active:not(:disabled) i { transform: translateX(1px) scale(0.95); }
+
+
+/* --- Painel de Configurações (Sem alterações) --- */
+.chat-settings {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: var(--theme-bg-settings);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+  transition: background-color 0.3s;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-.send-btn:disabled {
-  background-color: #ced4da;
-  cursor: not-allowed;
+.settings-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 10px 15px 15px;
+  flex-shrink: 0;
+  background-color: var(--theme-bg-settings-header);
+  border-bottom: 1px solid var(--theme-border-settings-header);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.settings-header h4 {
+  margin: 0;
+  margin-left: 10px;
+  font-weight: 600;
+  color: var(--theme-text-body);
+  transition: color 0.3s;
+}
+.settings-header .header-btn {
+  color: var(--theme-text-body);
+  font-size: 1.4rem;
+}
+.settings-header .header-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.send-btn i {
-  font-size: 1.2rem;
+.settings-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+.settings-section {
+  margin-bottom: 25px;
+}
+.settings-section h5 {
+  margin: 0 0 15px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--theme-text-body);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  transition: color 0.3s;
 }
 
-/* Botão Flutuante (FAB) - Fixo e independente */
+.theme-selector {
+  display: flex;
+  gap: 10px;
+}
+.theme-selector button {
+  flex: 1;
+  padding: 10px; /* Menor padding */
+  border-radius: 8px;
+  border: 1px solid var(--theme-border-settings-button);
+  background-color: var(--theme-bg-settings-button);
+  color: var(--theme-text-settings-button); /* CORRIGIDO: usa a variável */
+  font-size: 0.9rem; /* Fonte menor */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.theme-selector button i {
+  /* CORRIGIDO: Cor do ícone seguindo o texto do botão */
+  color: var(--theme-text-settings-button);
+  margin-right: 8px;
+  transition: color 0.2s ease;
+}
+.theme-selector button:hover {
+  border-color: var(--accent-base); /* Hover no acento */
+}
+.theme-selector button.active {
+  background-color: var(--accent-base);
+  border-color: var(--accent-base);
+  color: var(--theme-text-settings-button-active); /* CORRIGIDO: usa variável de texto ativo */
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.theme-selector button.active i {
+  /* CORRIGIDO: Cor do ícone ativo */
+  color: var(--theme-text-settings-button-active);
+}
+
+.color-selector {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start; /* Alinha à esquerda */
+  flex-wrap: wrap;
+}
+.color-dot {
+  width: 32px; /* Pontos de cor menores */
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent; /* Borda menor */
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+/* --- CORREÇÃO ADICIONADA --- */
+.color-dot.green { background-color: var(--color-green); }
+.color-dot.blue { background-color: var(--color-blue); }
+.color-dot.purple { background-color: var(--color-purple); }
+.color-dot.orange { background-color: var(--color-orange); }
+.color-dot.teal { background-color: var(--color-teal); }
+
+.color-dot.active {
+  border-color: var(--theme-bg-settings); /* Borda da cor com a cor do fundo */
+  transform: scale(1.2); /* Escala mais notável */
+  box-shadow: 0 0 0 2px var(--accent-base), 0 2px 5px rgba(0,0,0,0.2); /* Anel externo do acento */
+}
+.color-dot:hover {
+  transform: scale(1.1);
+}
+
+
+/* --- Botão Flutuante (FAB) - ATUALIZADO --- */
 .voice-assistant-fab {
   position: fixed;
-  bottom: 10px; 
-  right: 10px;
-  z-index: 1001; /* Garante que o FAB fica por cima da janela do chat */
-  width: 50px; 
-  height:50px;
-  background-color: #28a745;
+  bottom: 10px; right: 10px;
+  z-index: 1001;
+  width: 55px; height: 55px;
+  /* CORREÇÃO: Fundo travado para --color-green */
+  background: var(--color-green);
   border-radius: 50%; border: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-fab);
   display: flex; justify-content: center; align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
-
 .voice-assistant-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--theme-shadow-fab);
 }
 
-.voice-assistant-fab i {
+/* REMOVIDO: @keyframes blink (não há mais olhos) */
+
+@keyframes tilt-bob {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-8deg); }
+  50% { transform: rotate(0); }
+  75% { transform: rotate(8deg); }
+}
+
+.bot-face-fab {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  animation: fadeIn 0.2s;
+  /* REMOVIDA: Animação 'tilt-bob' movida para o ícone */
+}
+
+/* NOVO: Estilo para o ícone de semente no FAB */
+.bot-face-fab .fa-seedling {
+  font-size: 1.6rem;
   color: white;
-  font-size: 24px;
+  transition: color 0.3s;
+  /* ADICIONADO: Animação 'tilt-bob' aplicada ao ícone */
+  animation: tilt-bob 6s ease-in-out 1s infinite;
 }
 
-/* Responsividade */
+/* REMOVIDO: .bot-face-fab-head, .bot-face-fab-eye (não são mais usados) */
+
+.close-icon-fab {
+  width: 24px; height: 24px;
+  position: absolute;
+  animation: fadeIn 0.2s;
+}
+.close-icon-fab span {
+  position: absolute;
+  top: 11px; left: 2px;
+  width: 20px; height: 3px;
+  background-color: white;
+  border-radius: 2px;
+}
+.close-icon-fab span:first-child { transform: rotate(45deg); }
+.close-icon-fab span:last-child { transform: rotate(-45deg); }
+
+/* ATUALIZADO: Seletor de hover para pausar a animação do ícone */
+.voice-assistant-fab:hover .bot-face-fab .fa-seedling {
+  animation-play-state: paused;
+}
+
+/* Responsividade (Sem alterações) */
 @media (max-width: 480px) {
-  .chat-header {
-    cursor: default; /* Desativa o cursor de movimento em ecrãs pequenos */
-  }
-  .chat-widget { 
+  .chat-header { cursor: default; }
+  .chat-widget {
     top: 0 !important; left: 0 !important;
-    width: 100%; height: 100%; max-height: 100vh; 
+    width: 100%; height: 100%; max-height: 100vh;
     border-radius: 0;
+    box-shadow: none;
   }
   .voice-assistant-fab { position: fixed; bottom: 20px; right: 20px; }
 }
