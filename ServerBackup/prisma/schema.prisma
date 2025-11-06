@@ -15,10 +15,10 @@ model usuario {
   fotoperfil                String?
   senha                     String
   emailVerified             Boolean?            @default(false)
-  verificationToken         String?             
+  verificationToken         String?
   resetPasswordToken        String?             @unique
   resetPasswordExpires      DateTime?
-  verificationTokenExpires  DateTime?       @map("verification_token_expires_at")
+  verificationTokenExpires  DateTime?           @map("verification_token_expires_at")
   authCode                  String?             @map("auth_code")
   authCodeExpires           DateTime?           @map("auth_code_expires_at")
   planos                    PlanosMercadoPago[]
@@ -65,16 +65,18 @@ model financeiro {
 }
 
 model PlanosMercadoPago {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   status              String
   tipo                String
   valor               Float
-  dataAssinatura      DateTime @default(now())
+  dataAssinatura      DateTime  @default(now())
   metodoPagamento     String
   usuarioId           String
-  idAssinaturaExterna String?  @unique 
-  idPagamentoExterno  String?  @unique @map("id_pagamento_externo")
-  usuario             usuario  @relation(fields: [usuarioId], references: [id])
+  idAssinaturaExterna String?   @unique
+  idPagamentoExterno  String?   @unique @map("id_pagamento_externo")
+  dataAtivacao        DateTime?
+  dataExpiracao       DateTime?
+  usuario             usuario   @relation(fields: [usuarioId], references: [id])
 
   @@map("planos_mercado_pago")
 }

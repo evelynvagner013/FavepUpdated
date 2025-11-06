@@ -1,36 +1,26 @@
-// Conteúdo completo do arquivo: src/controllers/authController.js
-// MODIFICADO: Função 'login' atualizada para incluir os planos.
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const authConfig = require('../config/auth.json');
-// O 'sendVerificationEmail' agora envia o CÓDIGO
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../service/mailService');
 
-// Gera um token JWT para autenticação
 function generateToken(params = {}) {
   return jwt.sign(params, authConfig.secret, { expiresIn: 86400 });
 }
 
-// Gera um token aleatório (para redefinição de senha)
 function generateCryptoToken() {
   return crypto.randomBytes(20).toString('hex');
 }
 
-// --- FUNÇÃO AUXILIAR ---
-// Gera um código de 6 dígitos
 function generateVerificationCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 module.exports = {
-  // --- MODIFICADO ---
   // # register
   async register(req, res) {
     console.log('➡️ Requisição recebida em /register');
-    // Agora aceita 'senha' (como na sua foto image_3eb77d.jpg)
     const { nome, email, telefone, senha } = req.body;
 
     if (!nome || !email || !telefone || !senha) {
@@ -42,7 +32,6 @@ module.exports = {
     try {
       const existingUser = await prisma.usuario.findUnique({ where: { email } });
       if (existingUser) {
-        // Se o usuário existir mas não estiver verificado, apenas atualizamos o código
         if (!existingUser.emailVerified) {
           const newCode = generateVerificationCode();
           const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
@@ -64,9 +53,7 @@ module.exports = {
         return res.status(400).json({ error: 'Usuário já existe com este email.' });
       }
 
-      // Hash da senha
       const hashedPassword = await bcrypt.hash(senha, 8);
-      // Gera código de 6 dígitos
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
       
@@ -75,10 +62,10 @@ module.exports = {
           nome,
           email,
           telefone,
-          senha: hashedPassword, // Salva a senha com hash
-          verificationToken: verificationCode, // Salva o código de 6 dígitos
-          verificationTokenExpires: expiresAt, // Salva a expiração
-          emailVerified: false // Inicia como não verificado
+          senha: hashedPassword,
+          verificationToken: verificationCode,
+          verificationTokenExpires: expiresAt,
+          emailVerified: false
         }
       });
 
@@ -94,9 +81,7 @@ module.exports = {
     }
   },
 
-  // --- RENOMEADO e MODIFICADO ---
   // # verifyEmailCode
-  // Esta função substitui 'verifyEmailAndSetPassword'
   async verifyEmailCode(req, res) {
     const { email, code } = req.body;
     
@@ -109,7 +94,7 @@ module.exports = {
         where: { 
           email: email,
           verificationToken: code,
-          verificationTokenExpires: { gt: new Date() } // gt = "greater than" (maior que agora)
+          verificationTokenExpires: { gt: new Date() }
         } 
       });
       
@@ -120,9 +105,9 @@ module.exports = {
       await prisma.usuario.update({
           where: { id: user.id },
           data: {
-              verificationToken: null, // Limpa o token
+              verificationToken: null,
               verificationTokenExpires: null,
-              emailVerified: true // VERIFICADO!
+              emailVerified: true
           }
       });
 
@@ -134,9 +119,7 @@ module.exports = {
     }
   },
 
-  // --- MODIFICADO (Conforme solicitação anterior) ---
   // # login
-  // Esta função agora inclui os planos do usuário na resposta.
   async login(req, res) {
     const { email, senha } = req.body;
 
@@ -144,26 +127,24 @@ module.exports = {
       return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     }
     try {
-      // --- MODIFICAÇÃO AQUI ---
-      // Adicionado 'include' para buscar os planos do usuário
-      // Filtra apenas planos que estão "Pago/Ativo"
       const user = await prisma.usuario.findUnique({
         where: { email },
         include: {
           planos: {
             where: {
-              status: 'Pago/Ativo'
+              status: 'Pago/Ativo',
+              dataExpiracao: {
+                gte: new Date()
+              }
             }
           }
         }
       });
-      // --- FIM DA MODIFICAÇÃO ---
 
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
       
-      // Esta verificação é crucial e já existia no seu código!
       if (!user.emailVerified) { 
         return res.status(401).json({ error: 'Por favor, confirme seu e-mail antes de fazer login.' });
       }
@@ -183,7 +164,6 @@ module.exports = {
     }
   },
   
-  // --- SEM MUDANÇAS (Pode manter para "Esqueceu a senha") ---
   // # forgotPassword
   async forgotPassword(req, res) {
     const { email } = req.body;
@@ -210,10 +190,8 @@ module.exports = {
     }
   },
 
-  // --- SEM MUDANÇAS ---
   // # resetPassword
   async resetPassword(req, res) {
-    // ... (seu código original)
     const { token, senha, confirmarSenha } = req.body;
     if (!token || !senha || !confirmarSenha) {
         return res.status(400).json({ error: 'Token e senhas são obrigatórios.' });
@@ -248,10 +226,8 @@ module.exports = {
     }
   },
 
-  // --- SEM MUDANÇAS ---
   // # update
   async update(req, res) {
-    // ... (seu código original)
     const authenticatedUserId = req.userId;
     const { nome, email, telefone, fotoperfil } = req.body; 
     try {

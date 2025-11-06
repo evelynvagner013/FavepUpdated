@@ -9,12 +9,40 @@ const client = new MercadoPagoConfig({
 const preference = new Preference(client);
 const payment = new Payment(client);
 
+// Função auxiliar para adicionar dias a uma data
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 module.exports = {
   /**
    * @desc Cria uma preferência de pagamento (Checkout Pro)
    * @route POST /mercado-pago/create-preference
    */
   async createPreference(req, res) {
+    // --- LÓGICA DE LIMPEZA (NOVO) ---
+    try {
+      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+      
+      // Esta rotina SÓ apaga registros PENDENTES.
+      // Registros 'Pago/Ativo' (mesmo que expirados) não são afetados.
+      const deleted = await prisma.planosMercadoPago.deleteMany({
+        where: {
+          status: 'Pendente',
+          dataAssinatura: { lt: twelveHoursAgo } // lt = less than (anterior a)
+        }
+      });
+      
+      if (deleted.count > 0) {
+        console.log(`🧹 Limpeza automática: ${deleted.count} pagamentos pendentes expirados foram removidos.`);
+      }
+    } catch (cleanupError) {
+      console.error("❌ Erro ao limpar pagamentos pendentes:", cleanupError);
+    }
+    // --- FIM DA LÓGICA DE LIMPEZA ---
+
     const { descricao, valor } = req.body;
     const authenticatedUserId = req.userId;
 
@@ -38,28 +66,64 @@ module.exports = {
         return res.status(404).json({ error: 'Usuário não encontrado.' });
       }
 
+      let valorFinal = Number(valor);
+      let aplicouDesconto = false;
+      let tituloDescricao = descricao;
+
+      const planoAtivo = await prisma.planosMercadoPago.findFirst({
+        where: {
+          usuarioId: authenticatedUserId,
+          status: 'Pago/Ativo',
+          dataExpiracao: {
+            gte: new Date()
+          }
+        },
+        orderBy: {
+          dataExpiracao: 'desc'
+        }
+      });
+
+      if (planoAtivo) {
+        if (planoAtivo.tipo === descricao) {
+          console.warn(`⚠️ Usuário ${authenticatedUserId} tentou comprar o mesmo plano [${descricao}] que já está ativo.`);
+          return res.status(403).json({ 
+            error: 'Você já possui este plano ativo. Aguarde a expiração para comprar novamente ou escolha um plano diferente.' 
+          });
+        }
+        
+        if (planoAtivo.dataAtivacao) {
+          const agora = new Date();
+          const dataAtivacaoPlano = new Date(planoAtivo.dataAtivacao);
+          const diffTime = Math.abs(agora.getTime() - dataAtivacaoPlano.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          if (diffDays <= 10) {
+            valorFinal = valorFinal * 0.89; // Aplicando 11% de desconto
+            aplicouDesconto = true;
+            tituloDescricao = `${descricao} (Troca c/ 11% Desconto)`;
+            console.log(`✅ Desconto de 11% aplicado para troca de plano. Novo valor: ${valorFinal}`);
+          }
+        }
+      }
+
       const externalReference = `USER-${authenticatedUserId}-${Date.now()}`;
 
       const preferenceData = {
         items: [
           {
-            title: descricao,
+            title: tituloDescricao,
             quantity: 1,
-            unit_price: Number(valor),
+            unit_price: Number(valorFinal.toFixed(2)),
             currency_id: 'BRL',
           },
         ],
         payer: { email: usuario.email },
         
-        // --- CORREÇÃO DE REDIRECIONAMENTO ---
-        // 'success' agora aponta para /gerenciamento
-        // 'failure' e 'pending' apontam para /assinatura (a página de planos)
         back_urls: {
           success: `${frontendUrl}/gerenciamento?status=success&pref_id=${externalReference}`,
           failure: `${frontendUrl}/assinatura?status=failure&pref_id=${externalReference}`,
           pending: `${frontendUrl}/assinatura?status=pending&pref_id=${externalReference}`,
         },
-        // --- FIM DA CORREÇÃO ---
         
         notification_url: process.env.MERCADOPAGO_NOTIFICATION_URL,
         external_reference: externalReference, 
@@ -67,13 +131,11 @@ module.exports = {
 
       const response = await preference.create({ body: preferenceData });
 
-      // ... (o resto da função de criação continua igual) ...
-
       const novoPagamento = await prisma.planosMercadoPago.create({
         data: {
           status: 'Pendente',
-          tipo: descricao,
-          valor: Number(valor),
+          tipo: tituloDescricao,
+          valor: Number(valorFinal.toFixed(2)),
           metodoPagamento: 'MercadoPago',
           usuarioId: authenticatedUserId,
           idAssinaturaExterna: externalReference, 
@@ -89,7 +151,8 @@ module.exports = {
           novoPagamento.tipo, 
           novoPagamento.valor, 
           response.id,
-          null
+          null,
+          response.init_point // URL de pagamento para o botão do e-mail
         );
       } catch (emailError) {
         console.error("❌ Erro ao enviar e-mail de 'Pendente' na criação da preferência:", emailError);
@@ -129,9 +192,15 @@ module.exports = {
         }
 
         let novoStatus;
+        let dataAtivacao = null;
+        let dataExpiracao = null;
+
         switch (paymentData.status) {
           case 'approved':
             novoStatus = 'Pago/Ativo';
+            dataAtivacao = new Date();
+            dataExpiracao = addDays(dataAtivacao, 30);
+            console.log(`🗓️ Plano será ativado em: ${dataAtivacao.toISOString()}, Expira em: ${dataExpiracao.toISOString()}`);
             break;
           case 'in_process':
             novoStatus = 'Em Análise';
@@ -149,7 +218,7 @@ module.exports = {
           },
           include: {
             usuario: {
-              select: { email: true }
+              select: { email: true, id: true }
             }
           }
         });
@@ -164,7 +233,24 @@ module.exports = {
            return res.status(200).send('Status já atualizado.');
         }
 
-        // 1. Atualiza a tabela de Planos
+        if (novoStatus === 'Pago/Ativo') {
+          console.log(`🔄 Inativando planos antigos (exceto ${plano.id}) para o usuário ${plano.usuario.id}...`);
+          
+          await prisma.planosMercadoPago.updateMany({
+            where: {
+              usuarioId: plano.usuario.id,
+              status: 'Pago/Ativo',
+              id: { not: plano.id }
+            },
+            data: {
+              status: 'Inativo/Trocado',
+              dataExpiracao: new Date()
+            }
+          });
+          
+          console.log('✅ Planos antigos inativados.');
+        }
+
         await prisma.planosMercadoPago.update({
           where: {
             id: plano.id,
@@ -172,40 +258,18 @@ module.exports = {
           data: {
             status: novoStatus,
             idPagamentoExterno: paymentId.toString(),
+            ...(novoStatus === 'Pago/Ativo' && {
+              dataAtivacao: dataAtivacao,
+              dataExpiracao: dataExpiracao
+            })
           },
         });
-
-        // ==========================================================
-        // === INÍCIO DA CORREÇÃO: Atualizar a tabela 'Usuario' ===
-        // ==========================================================
-        
-        // 2. Se o pagamento foi aprovado, atualiza a tabela principal do usuário
-        if (novoStatus === 'Pago/Ativo') {
-          
-          await prisma.usuario.update({
-            where: {
-              id: plano.usuarioId // Usa o ID do usuário guardado no plano
-            },
-            data: {
-              planoAtivo: true
-              // Opcional: pode querer guardar o tipo de plano aqui também
-              // tipoPlano: plano.tipo 
-            }
-          });
-          
-          console.log(`✅ Tabela 'Usuario' (ID: ${plano.usuarioId}) atualizada para planoAtivo: true.`);
-        }
-        
-        // ==========================================================
-        // === FIM DA CORREÇÃO ======================================
-        // ==========================================================
 
         console.log(
           `✅ Pagamento ${paymentId} (Ref Externa: ${paymentData.external_reference}) atualizado no banco (Status: ${novoStatus}).`
         );
         
         try {
-          // Envia o e-mail de status (Aprovado, Recusado, etc.)
           await sendPaymentStatusEmail(
             plano.usuario.email,
             novoStatus,
