@@ -40,14 +40,14 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   tipoEdicao: string = '';
   itemParaExcluir: any = null;
   tipoExclusao: string = '';
-  
+
   // --- Propriedades de Filtros ---
   filtroAtivo: string = 'todos'; // Para culturas
   filtroPeriodo: string = '30';
   termoBusca: string = '';
   filtroPropriedade: string = 'todos';
   filtroStatus: string = 'ativo'; // Filtro de status da propriedade
-  
+
   // --- Opções para os Filtros ---
   opcoesFiltro: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas' }];
   opcoesFiltroPropriedade: { valor: string; texto: string }[] = [{ valor: 'todos', texto: 'Todas as Propriedades' }];
@@ -145,7 +145,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
         const uniqueCrops = new Set<string>(this.producoes.map(p => p.cultura));
         this.opcoesFiltro = [{ valor: 'todos', texto: 'Todas' }, ...Array.from(uniqueCrops).sort().map(c => ({ valor: c, texto: c }))];
-        
+
         this.opcoesFiltroPropriedade = [
             { valor: 'todos', texto: 'Todas as Propriedades' },
             ...this.propriedades.map(p => ({ valor: p.id!, texto: p.nomepropriedade }))
@@ -178,7 +178,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
 
   filtrarPropriedades(): void {
     this.propriedadesFiltradas = this.propriedades.filter(prop => {
-      const buscaValida = !this.termoBusca || 
+      const buscaValida = !this.termoBusca ||
                          prop.nomepropriedade.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
                          (prop.localizacao && prop.localizacao.toLowerCase().includes(this.termoBusca.toLowerCase()));
 
@@ -235,7 +235,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
       .filter(p => idsPropriedadesAtivas.has(p.propriedadeId))
       .reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.quantidade || 0)), 0);
   }
-  
+
   // --- ALTERAÇÃO APLICADA AQUI ---
   calcularAreaPlantada(): number {
     const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
@@ -267,7 +267,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   calcularResultadoFinanceiro(): number {
     return this.calcularTotalReceitas() - this.calcularTotalDespesas();
   }
-  
+
   salvar(): void {
     switch (this.tipoEdicao) {
       case 'propriedades': this.salvarPropriedade(); break;

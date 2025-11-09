@@ -1,23 +1,22 @@
 // Conteúdo completo do arquivo: src/Pages/navbar/menu-cima/menu-cima.component.ts
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Necessário
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Usuario } from '../../../models/api.models';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
-import { FormsModule } from '@angular/forms'; // Necessário para [(ngModel)]
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-menu-cima',
   standalone: true,
   imports: [
-    // --- CORRIGIDO ---
     CommonModule,
     RouterLink,
-    FormsModule, // Para [(ngModel)]
+    FormsModule,
     NgxMaskDirective,
     NgxMaskPipe
   ],
@@ -25,53 +24,55 @@ import { FormsModule } from '@angular/forms'; // Necessário para [(ngModel)]
   styleUrls: ['./menu-cima.component.css']
 })
 export class MenuCimaComponent implements OnInit, OnDestroy {
-  
-  // --- Estado de Autenticação e Dropdown ---
+
   currentUserValue: Usuario | null = null;
- private authSubscription: Subscription = new Subscription();
+  private authSubscription: Subscription = new Subscription();
   mostrarDropdown = false;
-  
-  // --- Controle de Modais (do seu HTML) ---
+
   mostrarLoginModal = false;
   mostrarRegisterModal = false;
   mostrarForgotPasswordModal = false;
   mostrarPerfilModal = false;
-  
-  // --- NOVO: Modal de Verificação ---
+
   mostrarVerifyEmailModal = false;
 
-  // --- Lógica de Edição de Perfil (do seu HTML) ---
   usuarioEditavel: Partial<Usuario> = {};
-  
-  // --- Variáveis dos Formulários (Template-Driven) ---
+
   loginEmail = '';
   loginPassword = '';
   loginPasswordVisible = false;
   loginErrorMessage: string | null = null;
 
-  // Modificado: Adicionado 'senha' e 'confirmarSenha'
   registerUser = { nome: '', email: '', telefone: '', senha: '', confirmarSenha: '' };
   registerSuccessMessage: string | null = null;
   registerErrorMessage: string | null = null;
 
-  // Novo: Para o modal de verificação
   verificationCode = '';
-  emailParaVerificar = ''; // Guarda o e-mail entre o registro e a verificação
+  emailParaVerificar = '';
   verifySuccessMessage: string | null = null;
   verifyErrorMessage: string | null = null;
 
   forgotPasswordEmail = '';
   forgotPasswordSuccessMessage: string | null = null;
   forgotPasswordErrorMessage: string | null = null;
-  
+
   constructor(
     private authService: AuthService,
     private usuarioService: UsuarioService,
     private router: Router
-  ) {}
+  ) {
+    // --- ESTA É A CORREÇÃO ---
+    // O AuthService, ao ser construído, lê o localStorage e define
+    // o valor inicial do seu BehaviorSubject.
+    // Aqui, pegamos esse valor inicial de forma síncrona.
+    // Isso garante que o currentUserValue NUNCA seja nulo se o
+    // usuário já estiver logado (ex: deu F5 na página).
+    this.currentUserValue = this.authService.currentUserValue;
+  }
 
   ngOnInit(): void {
-    // Mantém o usuário atualizado
+    // Esta subscrição agora serve para "ouvir" MUDANÇAS futuras
+    // (como um login, logout, ou a atualização do plano)
     this.authSubscription = this.authService.currentUser.subscribe(user => {
       this.currentUserValue = user;
     });
@@ -84,7 +85,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   }
 
   // --- Funções de Controle de Modal (MODIFICADAS) ---
-  
+
   abrirLoginModal(): void {
     this.fecharModals();
     this.loginErrorMessage = null;
@@ -108,20 +109,16 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.forgotPasswordEmail = '';
     this.mostrarForgotPasswordModal = true;
   }
-  
+
   fecharModals(): void {
     this.mostrarLoginModal = false;
     this.mostrarRegisterModal = false;
     this.mostrarForgotPasswordModal = false;
-    this.mostrarVerifyEmailModal = false; // Adicionado
+    this.mostrarVerifyEmailModal = false;
   }
 
   // --- Lógica de Autenticação (MODIFICADA) ---
 
-  /**
-   * # onLoginSubmit
-   * Faz o login com e-mail e senha.
-   */
   onLoginSubmit(): void {
     this.loginErrorMessage = null;
     this.authService.login(this.loginEmail, this.loginPassword).subscribe({
@@ -135,10 +132,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * # onRegisterSubmit
-   * Registra o usuário e abre o modal de verificação de código.
-   */
   onRegisterSubmit(): void {
     this.registerErrorMessage = null;
     this.registerSuccessMessage = null;
@@ -147,8 +140,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       this.registerErrorMessage = 'As senhas não coincidem.';
       return;
     }
-    
-    // Prepara dados para a API (sem 'confirmarSenha')
+
     const payload = {
       nome: this.registerUser.nome,
       email: this.registerUser.email,
@@ -159,8 +151,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.authService.register(payload).subscribe({
       next: (response) => {
         this.registerSuccessMessage = response.message;
-        this.emailParaVerificar = this.registerUser.email; // Salva o e-mail
-        // Troca para o modal de verificação
+        this.emailParaVerificar = this.registerUser.email;
         this.fecharModals();
         this.verifyErrorMessage = null;
         this.verifySuccessMessage = null;
@@ -172,11 +163,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
-  /**
-   * # onVerifyCodeSubmit (NOVA FUNÇÃO)
-   * Envia o código de 6 dígitos para verificação.
-   */
+
   onVerifyCodeSubmit(): void {
     this.verifyErrorMessage = null;
     this.verifySuccessMessage = null;
@@ -185,13 +172,12 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       this.verifyErrorMessage = 'Erro: E-mail ou código faltando.';
       return;
     }
-    
+
     this.authService.verifyEmailCode(this.emailParaVerificar, this.verificationCode).subscribe({
       next: (response) => {
         this.verifySuccessMessage = response.message;
         this.fecharModals();
-        // Abre o modal de login para o usuário entrar
-        this.abrirLoginModal(); 
+        this.abrirLoginModal();
       },
       error: (err) => {
         this.verifyErrorMessage = err.error?.error || 'Falha na verificação.';
@@ -199,10 +185,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * # onForgotPasswordSubmit
-   * (Sem modificações, permanece como estava)
-   */
   onForgotPasswordSubmit(): void {
     this.forgotPasswordErrorMessage = null;
     this.forgotPasswordSuccessMessage = null;
@@ -219,32 +201,32 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   toggleLoginPasswordVisibility(): void {
     this.loginPasswordVisible = !this.loginPasswordVisible;
   }
-  
+
   // --- Lógica do Dropdown e Logout (Sem MUDANÇAS) ---
   toggleDropdown(event: MouseEvent): void {
     event.stopPropagation();
     this.mostrarDropdown = !this.mostrarDropdown;
   }
-  
+
   logout(): void {
     this.authService.logout();
     this.mostrarDropdown = false;
     this.router.navigate(['/home']);
   }
-  
+
   // --- Lógica do Modal de Perfil (Sem MUDANÇAS) ---
   abrirModalPerfil(): void {
     if (this.currentUserValue) {
       this.usuarioEditavel = { ...this.currentUserValue };
       this.mostrarPerfilModal = true;
-      this.mostrarDropdown = false; 
+      this.mostrarDropdown = false;
     }
   }
-  
+
   fecharModalPerfil(): void {
     this.mostrarPerfilModal = false;
   }
-  
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -257,7 +239,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     }
   }
 
-  salvarAlteracoesPerfil(): void { 
+  salvarAlteracoesPerfil(): void {
     if (!this.currentUserValue) return;
     const payload = {
       nome: this.usuarioEditavel.nome,
@@ -265,11 +247,11 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       telefone: this.usuarioEditavel.telefone,
       fotoperfil: this.usuarioEditavel.fotoperfil
     };
-    
+
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
       next: (response: any) => {
-        this.authService.setUser(response.user); 
-        this.currentUserValue = response.user; 
+        this.authService.setUser(response.user);
+        this.currentUserValue = response.user;
         this.fecharModalPerfil();
       },
       error: (err: any) => {

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { lastValueFrom, Subscription } from 'rxjs';
 // ATUALIZADO: Nome do serviço
-import { MercadoPagoService } from '../../../services/mercadopago.service'; 
+import { MercadoPagoService } from '../../../services/mercadopago.service';
 import { MenuLateralComponent } from "../../menu-lateral/menu-lateral.component";
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';

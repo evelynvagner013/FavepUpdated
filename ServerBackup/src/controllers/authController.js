@@ -18,7 +18,7 @@ function generateVerificationCode() {
 }
 
 module.exports = {
-  // # register
+  //#register-controller
   async register(req, res) {
     console.log('➡️ Requisição recebida em /register');
     const { nome, email, telefone, senha } = req.body;
@@ -35,7 +35,7 @@ module.exports = {
         if (!existingUser.emailVerified) {
           const newCode = generateVerificationCode();
           const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
-          
+
           await prisma.usuario.update({
             where: { email },
             data: {
@@ -43,7 +43,7 @@ module.exports = {
               verificationTokenExpires: expiresAt
             }
           });
-          
+
           await sendVerificationEmail(email, newCode);
           console.log(`✅ Código de verificação reenviado para ${email}`);
           return res.status(200).json({
@@ -56,7 +56,7 @@ module.exports = {
       const hashedPassword = await bcrypt.hash(senha, 8);
       const verificationCode = generateVerificationCode();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
-      
+
       const user = await prisma.usuario.create({
         data: {
           nome,
@@ -80,47 +80,47 @@ module.exports = {
       return res.status(500).json({ error: 'Erro ao registrar usuário.' });
     }
   },
-
-  // # verifyEmailCode
+  //#verify-email-code-controller
   async verifyEmailCode(req, res) {
+    console.log('➡️ Requisição recebida em /verifyEmailCode');
     const { email, code } = req.body;
-    
+
     if (!email || !code) {
-        return res.status(400).json({ error: 'E-mail e código são obrigatórios.' });
+      return res.status(400).json({ error: 'E-mail e código são obrigatórios.' });
     }
-    
+
     try {
-      const user = await prisma.usuario.findFirst({ 
-        where: { 
+      const user = await prisma.usuario.findFirst({
+        where: {
           email: email,
           verificationToken: code,
           verificationTokenExpires: { gt: new Date() }
-        } 
+        }
       });
-      
+
       if (!user) {
         return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
       }
-        
+
       await prisma.usuario.update({
-          where: { id: user.id },
-          data: {
-              verificationToken: null,
-              verificationTokenExpires: null,
-              emailVerified: true
-          }
+        where: { id: user.id },
+        data: {
+          verificationToken: null,
+          verificationTokenExpires: null,
+          emailVerified: true
+        }
       });
 
       console.log('✅ E-mail verificado com sucesso para:', user.email);
       return res.status(200).json({ message: 'E-mail verificado com sucesso! Agora você pode fazer login.' });
     } catch (error) {
-        console.error('❌ Erro ao verificar código:', error.message);
-        return res.status(500).json({ error: 'Erro ao verificar o código.' });
+      console.error('❌ Erro ao verificar código:', error.message);
+      return res.status(500).json({ error: 'Erro ao verificar o código.' });
     }
   },
-
-  // # login
+  //#login-controller
   async login(req, res) {
+    console.log('➡️ Requisição recebida em /login');
     const { email, senha } = req.body;
 
     if (!email || !senha) {
@@ -144,15 +144,17 @@ module.exports = {
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
-      
-      if (!user.emailVerified) { 
+
+      if (!user.emailVerified) {
         return res.status(401).json({ error: 'Por favor, confirme seu e-mail antes de fazer login.' });
       }
-      
+
       const isMatch = await bcrypt.compare(senha, user.senha);
       if (!isMatch) {
         return res.status(400).json({ error: 'Senha inválida.' });
       }
+
+      console.log(`✅ Login bem-sucedido para ${user.email}`);
       user.senha = undefined;
       return res.status(200).json({
         user,
@@ -163,9 +165,9 @@ module.exports = {
       return res.status(500).json({ error: 'Erro ao fazer login.' });
     }
   },
-  
-  // # forgotPassword
+  //#forgot-password-controller
   async forgotPassword(req, res) {
+    console.log('➡️ Requisição recebida em /forgotPassword');
     const { email } = req.body;
     try {
       const user = await prisma.usuario.findUnique({ where: { email } });
@@ -189,58 +191,71 @@ module.exports = {
       return res.status(500).json({ error: 'Erro ao solicitar a redefinição de senha.' });
     }
   },
-
-  // # resetPassword
+  //#reset-password-controller
   async resetPassword(req, res) {
+    console.log('➡️ Requisição recebida em /resetPassword');
     const { token, senha, confirmarSenha } = req.body;
     if (!token || !senha || !confirmarSenha) {
-        return res.status(400).json({ error: 'Token e senhas são obrigatórios.' });
+      return res.status(400).json({ error: 'Token e senhas são obrigatórios.' });
     }
     if (senha !== confirmarSenha) {
-        return res.status(400).json({ error: 'As senhas não coincidem.' });
+      return res.status(400).json({ error: 'As senhas não coincidem.' });
     }
     try {
       const user = await prisma.usuario.findFirst({
-          where: { 
-              resetPasswordToken: token,
-              resetPasswordExpires: { gt: new Date() }
-          }
+        where: {
+          resetPasswordToken: token,
+          resetPasswordExpires: { gt: new Date() }
+        }
       });
       if (!user) {
-          return res.status(400).json({ error: 'Token de redefinição de senha inválido ou expirado.' });
+        return res.status(400).json({ error: 'Token de redefinição de senha inválido ou expirado.' });
       }
       const hashedPassword = await bcrypt.hash(senha, 8);
       await prisma.usuario.update({
-          where: { id: user.id },
-          data: {
-              senha: hashedPassword,
-              resetPasswordToken: null,
-              resetPasswordExpires: null
-          }
+        where: { id: user.id },
+        data: {
+          senha: hashedPassword,
+          resetPasswordToken: null,
+          resetPasswordExpires: null
+        }
       });
       console.log('✅ Senha redefinida com sucesso para o usuário:', user.email);
       return res.status(200).json({ message: 'Senha redefinida com sucesso!' });
     } catch (error) {
-        console.error('❌ Erro no resetPassword:', error.message);
-        return res.status(500).json({ error: 'Erro ao redefinir a senha.' });
+      console.error('❌ Erro no resetPassword:', error.message);
+      return res.status(500).json({ error: 'Erro ao redefinir a senha.' });
     }
   },
-
-  // # update
+  //#update-user-controller
   async update(req, res) {
+    console.log('➡️ Requisição recebida em /update (PUT)');
     const authenticatedUserId = req.userId;
-    const { nome, email, telefone, fotoperfil } = req.body; 
+    const { nome, email, telefone, fotoperfil } = req.body;
     try {
       const updateData = {};
       if (nome) updateData.nome = nome;
       if (email) updateData.email = email;
       if (telefone) updateData.telefone = telefone;
-      if (fotoperfil) updateData.fotoperfil = fotoperfil; 
+      if (fotoperfil) updateData.fotoperfil = fotoperfil;
+
       const user = await prisma.usuario.update({
         where: { id: authenticatedUserId },
-        data: updateData
+        data: updateData,
+        include: {
+          planos: {
+            where: {
+              status: 'Pago/Ativo',
+              dataExpiracao: {
+                gte: new Date()
+              }
+            }
+          }
+        }
       });
+
       user.senha = undefined;
+      console.log(`✅ Usuário ${user.email} atualizado com sucesso.`);
       return res.status(200).json({
         user,
         token: generateToken({ id: user.id })

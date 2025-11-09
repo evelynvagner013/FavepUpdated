@@ -1,20 +1,20 @@
-// Conteúdo completo do arquivo: src/services/auth.service.ts
-// MODIFICADO: Adicionado 'getPlanoAtivo()' e 'updateUser'
-
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { Usuario, AuthResponse, PlanosMercadoPago } from '../models/api.models'; // Importado AuthResponse
-import { environment } from '../environments/environment'; // Importando environment
+import { Observable, BehaviorSubject, of } from 'rxjs';
+// 1. Importar o 'map'
+import { tap, catchError, map } from 'rxjs/operators';
+import { Usuario, AuthResponse, PlanosMercadoPago } from '../models/api.models';
+import { environment } from '../environments/environment';
+import { UsuarioService } from './usuario.service';
+
+export type TipoPlano = 'base' | 'gold';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // Usando a URL do environment
-  private authUrl = `${environment.apiUrl}/auth`; 
+  private authUrl = `${environment.apiUrl}/auth`;
   private isBrowser: boolean;
 
   private currentUserSubject: BehaviorSubject<Usuario | null>;
@@ -22,10 +22,10 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private usuarioService: UsuarioService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    // Tenta carregar o usuário do localStorage ao iniciar
     this.currentUserSubject = new BehaviorSubject<Usuario | null>(this.getUser());
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -43,7 +43,7 @@ export class AuthService {
       tap(response => {
         if (response.token && response.user) {
           this.setToken(response.token);
-          this.setUser(response.user); // Salva o usuário com os planos
+          this.setUser(response.user);
         }
       })
     );
@@ -61,39 +61,38 @@ export class AuthService {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
 
-  // --- NOVO MÉTODO ---
-  /**
-   * Retorna o ID do plano ativo do usuário logado.
-   * 'gratis' é o padrão se não houver plano "Pago/Ativo".
-   */
-  public getPlanoAtivo(): 'gratis' | 'base' | 'gold' {
-    const usuario = this.currentUserValue; // Usa o BehaviorSubject
-
-    if (usuario && usuario.planos && usuario.planos.length > 0) {
-      // O backend já filtrou por 'Pago/Ativo'
-      const planoAtivo = usuario.planos[0]; // Pega o mais recente
-
-      if (planoAtivo) {
-        const tipoNormalizado = planoAtivo.tipo.toLowerCase();
-        if (tipoNormalizado.includes('gold')) {
-          return 'gold';
-        }
-        if (tipoNormalizado.includes('base')) {
-          return 'base';
-        }
-        // Se tiver um plano "Gratis" ou "Trial" registrado no DB
-        if (tipoNormalizado.includes('gratis') || tipoNormalizado.includes('trial')) {
-           // TODO: Adicionar lógica de expiração de 7 dias
-          return 'gratis';
-        }
-      }
-    }
-
-    // Se não tem plano pago, é 'gratis' (ou trial expirado)
-    return 'gratis';
+  private isPlanoAtivo(plano: PlanosMercadoPago): boolean {
+    return plano.status === 'Pago/Ativo' || plano.status === 'Trial';
   }
 
-  // --- MÉTODOS AUXILIARES ---
+  public getPlanoAtivo(): TipoPlano | null {
+    const usuario = this.currentUserValue;
+
+    if (usuario && usuario.planos && usuario.planos.length > 0) {
+      if (usuario.planos.some(p => p.tipo.toLowerCase().includes('gold') && this.isPlanoAtivo(p))) {
+        return 'gold';
+      }
+      if (usuario.planos.some(p => p.tipo.toLowerCase().includes('base') && this.isPlanoAtivo(p))) {
+        return 'base';
+      }
+    }
+    return null;
+  }
+
+  public temPlanoSuficiente(planoRequerido: TipoPlano): boolean {
+    const planoUsuario = this.getPlanoAtivo();
+
+    if (planoUsuario === 'gold') {
+      return true;
+    }
+
+    if (planoUsuario === 'base') {
+      return planoRequerido === 'base';
+    }
+
+    return false;
+  }
+
   logout(): void {
     if (this.isBrowser) {
       localStorage.removeItem('user');
@@ -129,12 +128,31 @@ export class AuthService {
     return null;
   }
 
-  // --- NOVO MÉTODO AUXILIAR ---
-  /**
-   * Atualiza o usuário no localStorage e no BehaviorSubject.
-   * Útil após um update de perfil, por exemplo.
-   */
   public updateUser(usuario: Usuario): void {
     this.setUser(usuario);
+  }
+
+  // --- FUNÇÃO CORRIGIDA ---
+  public refreshUserData(): Observable<Usuario | null> {
+    if (!this.isLoggedIn()) {
+      return of(null);
+    }
+
+    return this.usuarioService.atualizarPerfilUsuario({}).pipe(
+      // 2. Mudar de 'tap' para 'map'
+      map((response: AuthResponse) => {
+        if (response.user && response.token) {
+          this.setToken(response.token);
+          this.setUser(response.user);
+          // 3. Retornar o 'user', transformando o stream
+          return response.user;
+        }
+        return null; // Retornar null se a resposta for inválida
+      }),
+      catchError(err => {
+        console.error("Falha ao atualizar dados do usuário", err);
+        return of(this.currentUserValue);
+      })
+    );
   }
 }

@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MercadoPagoService } from '../../services/mercadopago.service';
 import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
-import { RouterLink } from '@angular/router'; 
+import { RouterLink } from '@angular/router';
 
 // Interface para os cards de plano
 interface PlanoDisplay {
@@ -15,17 +15,17 @@ interface PlanoDisplay {
   preco: string;
   descricao: string;
   features: string[];
-  valorBackend: number; 
-  descricaoBackend: string; 
+  valorBackend: number;
+  descricaoBackend: string;
 }
 
 @Component({
   selector: 'app-plano-assinatura',
   standalone: true,
   imports: [
-    CommonModule, 
-    MenuLateralComponent, 
-    RouterLink 
+    CommonModule,
+    MenuLateralComponent,
+    RouterLink
   ],
   templateUrl: './plano-assinatura.component.html',
   styleUrls: ['./plano-assinatura.component.css']
@@ -35,7 +35,7 @@ export class PlanoAssinaturaComponent implements OnInit {
   planoAtualId: 'gratis' | 'base' | 'gold' = 'gratis';
   planoAtualDisplay: PlanoDisplay | null = null;
   planosDisponiveis: PlanoDisplay[] = [];
-  isLoading: boolean = false; 
+  isLoading: boolean = false;
 
   // --- NOVAS PROPRIEDADES PARA FEEDBACK ---
   paymentStatus: 'success' | 'failure' | 'pending' | null = null;
@@ -50,7 +50,7 @@ export class PlanoAssinaturaComponent implements OnInit {
       descricao: 'Acesso por 7 dias para avaliação.',
       features: ['Acesso de 1 membro', '7 dias de teste', 'Acesso total ao site'],
       valorBackend: 0,
-      descricaoBackend: 'Plano Grátis' 
+      descricaoBackend: 'Plano Grátis'
     },
     'base': {
       id: 'base',
@@ -59,7 +59,7 @@ export class PlanoAssinaturaComponent implements OnInit {
       descricao: 'Funcionalidades essenciais para começar.',
       features: ['Limite de 1 membro', 'Limitado a 5 produções', 'Sem acesso a relatórios'],
       valorBackend: 150.00, // SEU PREÇO REAL
-      descricaoBackend: 'Plano Base' 
+      descricaoBackend: 'Plano Base'
     },
     'gold': {
       id: 'gold',
@@ -68,7 +68,7 @@ export class PlanoAssinaturaComponent implements OnInit {
       descricao: 'Acesso completo para máxima produtividade.',
       features: ['Membros ilimitados', 'Produções ilimitadas', 'Acesso total a relatórios'],
       valorBackend: 300.00, // SEU PREÇO REAL
-      descricaoBackend: 'Plano Gold' 
+      descricaoBackend: 'Plano Gold'
     }
   };
 
@@ -86,7 +86,7 @@ export class PlanoAssinaturaComponent implements OnInit {
     this.checkPaymentStatus(); // Verifica se o usuário voltou de um pagamento
     // --- FIM DA LÓGICA ---
 
-    this.planoAtualId = this.authService.getPlanoAtivo();
+    this.planoAtualId = this.authService.getPlanoAtivo() || 'gratis';
     this.planoAtualDisplay = this.todosOsPlanos[this.planoAtualId];
     this.definirPlanosDisponiveis();
   }
@@ -100,12 +100,12 @@ export class PlanoAssinaturaComponent implements OnInit {
         this.paymentStatus = 'success';
         this.statusMessage = 'Pagamento aprovado com sucesso! Seu novo plano será ativado assim que o sistema processar (geralmente instantâneo).';
         // Atualiza a visualização do plano (pode levar alguns segundos para o webhook atualizar)
-        this.refreshPlanData(); 
-      } 
+        this.refreshPlanData();
+      }
       else if (status === 'failure') {
         this.paymentStatus = 'failure';
         this.statusMessage = 'Ocorreu uma falha ao processar seu pagamento. Por favor, tente novamente ou use outro método de pagamento.';
-      } 
+      }
       else if (status === 'pending') {
         this.paymentStatus = 'pending';
         this.statusMessage = 'Seu pagamento está pendente de processamento. Avisaremos assim que for concluído.';
@@ -117,7 +117,7 @@ export class PlanoAssinaturaComponent implements OnInit {
         setTimeout(() => {
           this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { status: null, pref_id: null }, 
+            queryParams: { status: null, pref_id: null },
             queryParamsHandling: 'merge', // 'merge' preserva outros params, 'null' remove
             replaceUrl: true
           });
@@ -132,19 +132,19 @@ export class PlanoAssinaturaComponent implements OnInit {
     // O ideal seria ter uma função authService.refreshUserData()
     // Por enquanto, apenas recarregamos o que temos:
     console.log('Recarregando dados do plano...');
-    
+
     // AVISO: A forma ideal de fazer isso seria o auth.service ter uma
     // função que busca os dados do usuário no backend novamente.
     // Como não temos isso, apenas redefinimos o plano:
-    
+
     // Simplesmente recarregamos os dados do localStorage (que o login atualizou)
-    const usuario = this.authService.getUser(); 
+    const usuario = this.authService.getUser();
     if(usuario) {
        this.authService.setUser(usuario); // Dispara o BehaviorSubject
     }
-    
+
     // Recarrega o componente
-    this.planoAtualId = this.authService.getPlanoAtivo();
+    this.planoAtualId = this.authService.getPlanoAtivo() || 'gratis';
     this.planoAtualDisplay = this.todosOsPlanos[this.planoAtualId];
     this.definirPlanosDisponiveis();
   }
@@ -189,8 +189,8 @@ export class PlanoAssinaturaComponent implements OnInit {
     }
 
     const dadosPagamento = {
-      descricao: plano.descricaoBackend, 
-      valor: plano.valorBackend      
+      descricao: plano.descricaoBackend,
+      valor: plano.valorBackend
     };
 
     this.mercadopagoService.createPreference(dadosPagamento).subscribe({

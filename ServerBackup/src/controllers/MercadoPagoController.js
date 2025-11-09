@@ -91,19 +91,6 @@ module.exports = {
           });
         }
         
-        if (planoAtivo.dataAtivacao) {
-          const agora = new Date();
-          const dataAtivacaoPlano = new Date(planoAtivo.dataAtivacao);
-          const diffTime = Math.abs(agora.getTime() - dataAtivacaoPlano.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-          if (diffDays <= 10) {
-            valorFinal = valorFinal * 0.89; // Aplicando 11% de desconto
-            aplicouDesconto = true;
-            tituloDescricao = `${descricao} (Troca c/ 11% Desconto)`;
-            console.log(`✅ Desconto de 11% aplicado para troca de plano. Novo valor: ${valorFinal}`);
-          }
-        }
       }
 
       const externalReference = `USER-${authenticatedUserId}-${Date.now()}`;
