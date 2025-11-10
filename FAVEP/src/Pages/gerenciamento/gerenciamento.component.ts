@@ -1,3 +1,5 @@
+// src/Pages/gerenciamento/gerenciamento.component.ts
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -19,13 +21,18 @@ import {
 import { MenuCentralComponent } from "../menu-central/menu-central.component";
 import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
 
+// --- INÍCIO DAS MODIFICAÇÕES (IMPORTS) ---
+// 1. IMPORTAR O SERVIÇO DE CEP E A INTERFACE
+import { CepService, ViaCepResponse } from '../../services/cep.service'; 
+// --- FIM DAS MODIFICAÇÕES ---
+
 registerLocaleData(localePt);
 
 @Component({
   selector: 'app-gerenciamento',
   standalone: true,
   imports: [RouterModule, CommonModule, FormsModule, MenuCentralComponent, MenuLateralComponent],
-  providers: [DatePipe],
+  providers: [DatePipe], // CepService é 'providedIn: root', não precisa adicionar aqui
   templateUrl: './gerenciamento.component.html',
   styleUrl: './gerenciamento.component.css',
 })
@@ -67,6 +74,11 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   producaoEditada: Partial<Producao> = {};
   financeiroEditado: Partial<Financeiro> = { tipo: 'receita' };
 
+  // --- INÍCIO DAS MODIFICAÇÕES (NOVAS PROPRIEDADES) ---
+  // 2. Variável temporária para o input de CEP no modal
+  cepParaBusca: string = ''; 
+  // --- FIM DAS MODIFICAÇÕES ---
+
   todasCulturas: string[] = [];
   safras: string[] = [];
 
@@ -85,7 +97,10 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     private movimentacaoService: MovimentacaoService,
     private authService: AuthService,
     private router: Router,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    // --- INÍCIO DAS MODIFICAÇÕES (CONSTRUTOR) ---
+    private cepService: CepService // 3. INJETAR O SERVIÇO
+    // --- FIM DAS MODIFICAÇÕES ---
   ) {}
 
   ngOnInit(): void {
@@ -338,7 +353,12 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.modalTitulo = `Adicionar ${this.getTituloModal()}`;
 
     switch (this.tipoEdicao) {
-      case 'propriedades': this.propriedadeEditada = {}; break;
+      // --- INÍCIO DAS MODIFICAÇÕES (MODAL) ---
+      case 'propriedades': 
+        this.propriedadeEditada = {}; 
+        this.cepParaBusca = ''; // 4. Limpar o CEP ao abrir modal de adicionar
+        break;
+      // --- FIM DAS MODIFICAÇÕES ---
       case 'producao': this.producaoEditada = { cultura: '', safra: '', areaproducao: 0, quantidade: 0, data: new Date(), propriedadeId: '' }; break;
       case 'financeiro': this.financeiroEditado = { tipo: 'receita', data: new Date(), descricao: '', valor: 0, propriedadeId: '' }; break;
     }
@@ -349,10 +369,16 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     this.propriedadeEditada = {};
     this.producaoEditada = {};
     this.financeiroEditado = { tipo: 'receita' };
+    // --- INÍCIO DAS MODIFICAÇÕES (MODAL) ---
+    this.cepParaBusca = ''; // 5. Limpar o CEP ao fechar o modal
+    // --- FIM DAS MODIFICAÇÕES ---
   }
 
   editarPropriedade(prop: Propriedade): void {
     this.propriedadeEditada = { ...prop };
+    // --- INÍCIO DAS MODIFICAÇÕES (MODAL) ---
+    this.cepParaBusca = ''; // 6. Limpar o CEP ao abrir modal de edição
+    // --- FIM DAS MODIFICAÇÕES ---
     this.modalTitulo = 'Editar Propriedade';
     this.tipoEdicao = 'propriedades';
     this.modalAberto = true;
@@ -413,4 +439,60 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
   trackById(index: number, item: { id: any }): any {
     return item.id;
   }
+
+  // --- INÍCIO DAS MODIFICAÇÕES (NOVOS MÉTODOS) ---
+
+  /**
+   * 7. NOVO MÉTODO: Chamado quando o usuário sai do campo CEP (blur).
+   */
+  consultarCep(): void {
+    if (this.cepParaBusca && this.cepParaBusca.length >= 8) {
+      this.cepService.buscarCep(this.cepParaBusca).subscribe(dados => {
+        if (dados && !dados.erro) {
+          // Se encontrou, preenche o campo 'localizacao'
+          this.preencherLocalizacaoFormatada(dados);
+        } else {
+          console.warn('CEP não encontrado.');
+          // Opcional: Avisar o usuário ou limpar o campo
+          // this.propriedadeEditada.localizacao = 'CEP não encontrado';
+        }
+      });
+    }
+  }
+
+  /**
+   * 8. NOVO MÉTODO (VERSÃO CORRIGIDA): 
+   * Formata os dados do ViaCEP e atualiza o objeto 'propriedadeEditada'.
+   * Trata a diferença entre CEPs gerais (de cidade) e CEPs específicos (de rua).
+   */
+  preencherLocalizacaoFormatada(dados: ViaCepResponse): void {
+    
+    // Caso 1: É um CEP GERAL (ex: 14900-000), não tem logradouro ou bairro.
+    // Mostra apenas a Cidade e o Estado.
+    if (!dados.logradouro && !dados.bairro) {
+      this.propriedadeEditada.localizacao = `${dados.localidade}/${dados.uf}`;
+      return;
+    }
+
+    // Caso 2: É um CEP específico de rua.
+    // Monta o endereço completo.
+    const partesEndereco: string[] = [];
+    
+    // Adiciona a Rua/Avenida (se houver)
+    if (dados.logradouro) {
+      partesEndereco.push(dados.logradouro);
+    }
+
+    // Adiciona o Bairro (se existir)
+    if (dados.bairro) {
+      partesEndereco.push(dados.bairro);
+    }
+
+    // Junta "Rua, Bairro"
+    const enderecoRuaBairro = partesEndereco.join(', ');
+
+    // Formato final: "Rua Exemplo, Bairro Tal - Cidade/UF"
+    this.propriedadeEditada.localizacao = `${enderecoRuaBairro} - ${dados.localidade}/${dados.uf}`;
+  }
+  // --- FIM DAS MODIFICAÇÕES ---
 }
