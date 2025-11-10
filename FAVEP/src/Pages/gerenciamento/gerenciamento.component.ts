@@ -228,7 +228,6 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     return this.getPropriedadesAtivas().reduce((total, prop) => total + (prop.area_ha || 0), 0);
   }
 
-  // --- ALTERAÇÃO APLICADA AQUI ---
   calcularProducaoTotal(): number {
     const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
     return this.producoesFiltradas
@@ -236,7 +235,7 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
       .reduce((total, prod) => total + ((prod.areaproducao || 0) * (prod.quantidade || 0)), 0);
   }
 
-  // --- ALTERAÇÃO APLICADA AQUI ---
+  
   calcularAreaPlantada(): number {
     const idsPropriedadesAtivas = new Set(this.getPropriedadesAtivas().map(p => p.id));
     return this.producoesFiltradas
@@ -318,9 +317,6 @@ export class GerenciamentoComponent implements OnInit, OnDestroy {
     switch (this.tipoExclusao) {
       case 'propriedades':
         exclusaoObservable = this.propriedadeService.togglePropertyStatus(this.itemParaExcluir.id);
-        break;
-      case 'producao':
-        exclusaoObservable = this.producaoService.excluirProducao(this.itemParaExcluir.id);
         break;
       default:
         this.cancelarExclusao();

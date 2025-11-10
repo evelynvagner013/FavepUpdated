@@ -160,8 +160,7 @@
                <td>{{getNomePropriedade(prod.propriedadeId)}}</td>
                <td class="actions">
                  <button class="btn-edit" (click)="editarProducao(prod)" aria-label="Editar"><i class="fas fa-edit"></i></button>
-                 <button class="btn-delete" (click)="confirmarExclusao(prod, 'producao')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
-               </td>
+                 </td>
              </tr>
              <tr *ngIf="producoesPaginadas.length === 0">
                <td colspan="6" class="no-data">Nenhuma produção encontrada.</td>
@@ -224,8 +223,7 @@
                </td>
                <td class="actions">
                  <button class="btn-edit" (click)="editarMovimentacao(fin)" aria-label="Editar"><i class="fas fa-edit"></i></button>
-                 <button class="btn-delete" (click)="confirmarExclusao(fin, 'financeiro')" aria-label="Excluir"><i class="fas fa-trash"></i></button>
-               </td>
+                 </td>
              </tr>
              <tr *ngIf="financeirosPaginados.length === 0">
                <td colspan="6" class="no-data">Nenhum registro financeiro encontrado.</td>
@@ -267,34 +265,34 @@
          </div>
          
          <div *ngIf="tipoEdicao === 'producao'">
-           <div class="form-group">
-             <label for="cropName">Cultura</label>
-             <input type="text" id="cropName" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
-           </div>
-           <div class="form-group">
-             <label for="cropType">Safra</label>
-             <input type="text" id="cropType" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
-           </div>
-           <div class="form-group">
-             <label for="producaoArea">Área de Produção (ha)</label>
-             <input type="number" id="producaoArea" min="0" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
-           </div>
-           <div class="form-group">
-             <label for="producaoQuantidade">Quantidade (kg)</label>
-             <input type="number" id="producaoQuantidade" min="0" step="0.01" [(ngModel)]="producaoEditada.quantidade" name="producaoQuantidade" required>
-           </div>
-           <div class="form-group">
-             <label for="plantingDate">Data</label>
-             <input type="date" id="plantingDate" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
-           </div>
-           <div class="form-group">
-             <label for="cropProperty">Propriedade</label>
-             <select id="cropProperty" [(ngModel)]="producaoEditada.propriedadeId" name="cropProperty" required>
-               <option [ngValue]="''" disabled>Selecione uma propriedade</option>
-               <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
-             </select>
-           </div>
-         </div>
+          <div class="form-group">
+            <label for="cropName" title="Nome da cultura (ex: Soja, Milho, Café)">Cultura</label>
+            <input type="text" id="cropName" [(ngModel)]="producaoEditada.cultura" name="cropName" required>
+          </div>
+          <div class="form-group">
+            <label for="cropType" title="Período de plantio e colheita (ex: 2024/2025)">Safra</label>
+            <input type="text" id="cropType" [(ngModel)]="producaoEditada.safra" name="cropType" placeholder="Ex: 2024/2025" required>
+          </div>
+          <div class="form-group">
+            <label for="producaoArea" title="Área específica utilizada para esta produção (em hectares)">Área de Produção (ha)</label>
+            <input type="number" id="producaoArea" min="0" step="0.01" [(ngModel)]="producaoEditada.areaproducao" name="producaoArea" required>
+          </div>
+          <div class="form-group">
+            <label for="producaoQuantidade" title="Quantidade total esperada da colheita">Quantidade (kg)</label>
+            <input type="number" id="producaoQuantidade" min="0" step="0.01" [(ngModel)]="producaoEditada.quantidade" name="producaoQuantidade" required>
+          </div>
+          <div class="form-group">
+            <label for="plantingDate" title="Data do registro, plantio">Data</label>
+            <input type="date" id="plantingDate" [(ngModel)]="producaoEditada.data" name="plantingDate" required>
+          </div>
+          <div class="form-group">
+            <label for="cropProperty" title="Propriedade onde esta produção ocorreu">Propriedade</label>
+            <select id="cropProperty" [(ngModel)]="producaoEditada.propriedadeId" name="cropProperty" required>
+              <option [ngValue]="''" disabled>Selecione uma propriedade</option>
+              <option *ngFor="let prop of propriedades" [value]="prop.id">{{prop.nomepropriedade}}</option>
+            </select>
+          </div>
+        </div>
  
          <div *ngIf="tipoEdicao === 'financeiro'">
            <div class="form-group">
