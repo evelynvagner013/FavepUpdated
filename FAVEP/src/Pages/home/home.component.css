@@ -65,7 +65,7 @@
     flex-wrap: wrap;
     padding: 60px 20px;
     gap: 25px;
-    background-color: #f5f5f5;
+
 }
 
 .card {
@@ -135,21 +135,31 @@
     padding: 80px 20px;
     flex-wrap: wrap;
     gap: 40px;
+   
+    /* Adicionar largura máxima para limitar o tamanho do card */
+    max-width: 1200px; /* Escolha um valor adequado */
+    /* Centralizar o bloco (card) na horizontal */
+    margin: 0 auto;
+    /* Ajustar o padding para garantir o espaçamento lateral nas telas menores */
+    padding-left: 20px;
+    padding-right: 20px;
+
+    border-radius: 16px;
 }
 
 .servico {
-    background-color: #e0f2f1;
-}
-
-.servico1 {
     background-color: #ffffff;
 }
+
+
 
 .texto, .texto1 {
     max-width: 500px;
     line-height: 1.7;
     font-family: 'Open Sans', sans-serif;
     font-size: 1rem;
+    /* NOVO: Garante que o texto tenha prioridade no espaço e quebre corretamente */
+    flex: 1 1 450px; 
 }
 
 .texto {
@@ -184,9 +194,17 @@
     margin: 0;
 }
 
+/* NOVO: Container para a imagem */
+.imagem {
+    /* Garante que o container da imagem ocupe o espaço restante e quebre a linha */
+    flex: 1 1 500px; 
+    max-width: 650px; 
+}
+
 .imagem img {
     max-width: 100%;
-    width: 650px;
+    /* MODIFICADO: Ocupa 100% do seu container flexível */
+    width: 100%; 
     height: auto;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
@@ -196,7 +214,6 @@
 /* SEÇÃO DE PARCEIROS NA HOME */
 .parceiros-section {
     padding: 80px 20px;
-    background-color: #f5f5f5;
 }
 
 .container {
@@ -247,6 +264,7 @@
     background-color: #00332b;
     border-color: #00332b;
     transform: translateY(-2px);
+    color: #ffffff;
 }
 
 /* CARROSSEL DE LOGOS */
@@ -263,12 +281,12 @@
 }
 
 .carousel img {
-    max-width: 120px;   /* largura máxima */
-    max-height: 60px;   /* altura máxima */
+    max-width: 300px;   /* largura máxima */
+    max-height: 300px;   /* altura máxima */
     margin: 0 30px;
     object-fit: contain; /* mantém proporção */
     opacity: 0.9;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: transform 0.2s ease, opacity 0.3s ease;
 }
 
 .carousel img:hover {
@@ -287,6 +305,24 @@
     flex-direction: column;
     gap: 30px;
   }
+
+  /* NOVO: Centraliza o título quando estiver em coluna */
+  .texto h1, .texto1 h1 {
+      text-align: center;
+  }
+  
+  /* NOVO: Garante que o texto ocupe a largura total em mobile */
+  .texto, .texto1 {
+      max-width: 100%; 
+  }
+  
+  /* NOVO: Centraliza o bloco da lista para melhor visualização em mobile */
+  .texto ul, .texto1 ul {
+      display: inline-block;
+      text-align: left;
+      padding-left: 0;
+  }
+  
   .carousel img {
     max-width: 80px;
     max-height: 40px;
