@@ -1,46 +1,47 @@
 /* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
 .main-content {
-  padding: 2rem;
-  background-color: #f4f7f6;
+  padding: 2.5rem; /* Aumenta um pouco o padding */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
   transition: margin-left 0.3s ease-in-out;
 }
 
 .card-adduser {
-  max-width: 700px; /* Alterado: Limita a largura máxima do formulário para 700px */
+  max-width: 800px; /* Reduz um pouco o max-width para melhor foco */
   width: 100%;
-  margin: 0 auto; /* Centraliza o card na tela */
+  margin: 0 auto;
   background-color: #ffffff;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+  /* Sombra mais elegante e menos 'dura' */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); 
+  border: 1px solid #e9ecef; /* Adiciona uma borda sutil */
   box-sizing: border-box; 
-  /* max-height: 350px; REMOVIDO - Deixa o card crescer conforme o conteúdo */
 }
 
 .card-adduser h4 {
-  font-weight: 600;
-  font-size: 1.5rem;
-  color: #004d40; /* Alterado: Cor do título principal para o verde do tema */
+  font-weight: 700; /* Mais ousado */
+  font-size: 1.6rem;
+  color: #212529; /* Alterado: Cor do título para preto quase puro para melhor contraste */
   margin: 0 0 25px 0;
   padding-bottom: 15px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #dee2e6; /* Linha divisória mais suave */
   display: flex;
   align-items: center;
 }
 
 .card-adduser h4 i {
-  margin-right: 12px;
-  color: #004d40; /* COR ATUALIZADA: Verde principal */
+  margin-right: 10px;
+  color: #007bff; /* Novo: Usa uma cor de destaque diferente (Azul) para o ícone. OU: #004d40; se quiser manter o verde */
+  font-size: 1.4rem;
 }
 
 .form-row {
   display: flex;
-  gap: 20px;
-  align-items: flex-end; /* Alinha o botão corretamente */
+  gap: 25px; /* Aumenta um pouco o espaçamento entre colunas */
+  align-items: flex-end; 
 }
 
 .form-group {
@@ -51,20 +52,20 @@
 .form-group label {
   display: block;
   font-weight: 600;
-  margin-bottom: 8px;
-  color: #4a5568;
-  font-size: 0.9em;
+  margin-bottom: 6px; /* Reduz margem para aproximar do input */
+  color: #495057; /* Alterado: Cinza escuro para melhor legibilidade */
+  font-size: 0.95em; /* Aumenta um pouco a fonte do label */
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 14px;
-  border: 1px solid #cbd5e0;
-  border-radius: 8px;
+  padding: 12px 14px; /* Ajuste o padding para harmonizar */
+  border: 1px solid #ced4da; /* Borda mais neutra */
+  border-radius: 6px; /* Borda levemente menor */
   box-sizing: border-box;
-  background-color: #ffffff; /* Alterado: Fundo branco para um visual mais limpo */
-  color: #2d3748;
+  background-color: #ffffff;
+  color: #212529;
   font-size: 1em;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
@@ -72,66 +73,143 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #004d40; /* COR ATUALIZADA: Verde principal */
-  box-shadow: 0 0 0 3px rgba(0, 77, 64, 0.2); /* Sombra do foco atualizada */
+  border-color: #004d40; /* Mantém o verde principal no foco */
+  box-shadow: 0 0 0 4px rgba(0, 77, 64, 0.15); /* Sombra do foco mais leve */
+}
+
+/* Estilo para campos inválidos, dando um feedback visual claro */
+.form-group input.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched {
+    border-color: #dc3545; /* Vermelho padrão para erro */
 }
 
 .form-group-button {
   flex: 1;
-  margin-bottom: 20px; /* Alinha com os outros form-groups */
+  margin-bottom: 20px;
 }
 
 .add-user-btn {
   width: 100%;
-  padding: 15px;
-  background-color: #004d40; /* COR ATUALIZADA: Verde principal */
+  padding: 12px 15px; /* Ajuste o padding para harmonizar com os inputs */
+  height: 44px; /* Garante a mesma altura dos inputs para alinhamento */
+  background-color: #004d40; /* COR PRINCIPAL: Verde forte */
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s ease;
+  transition: background-color 0.3s, box-shadow 0.3s; /* Adiciona transição para sombra */
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem; /* Espaço para o ícone */
+  gap: 0.5rem;
 }
 
 .add-user-btn:hover {
-  background-color: #00332b; /* Tom mais escuro */
-  transform: translateY(-2px);
+  background-color: #00332b; /* Tom mais escuro para hover */
+  box-shadow: 0 4px 10px rgba(0, 77, 64, 0.3); /* Sombra sutil no hover */
+  transform: none; /* Remove a translação no hover para um estilo mais 'flat' */
 }
 
 .add-user-btn:disabled {
-  background-color: #cccccc;
+  background-color: #ced4da; /* Cinza neutro para desabilitado */
+  color: #6c757d;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .validation-message {
-  color: #e74c3c;
-  font-size: 0.85em;
-  margin-top: 5px;
+  color: #dc3545; /* Vermelho de erro padrão */
+  font-size: 0.8em; /* Fonte um pouco menor para validação */
+  margin-top: 4px; /* Margem ajustada */
 }
 
 .status-message {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 6px; /* Ajustado para harmonizar */
   margin-top: 20px;
   text-align: center;
   font-weight: 600;
+  border: 1px solid transparent; /* Adiciona borda transparente */
 }
 
 .status-message.success {
   background-color: #d4edda;
-  color: #155724;
+  color: #004d40; /* Cor do texto de sucesso com o verde principal */
+  border-color: #c3e6cb;
 }
 
 .status-message.error {
   background-color: #f8d7da;
   color: #721c24;
+  border-color: #f5c6cb;
 }
+
+/* ============================================= */
+/* --- ESTILOS PARA O CARD DE INFORMAÇÃO DE ACESSO --- */
+/* ============================================= */
+
+.access-info-card {
+    max-width: 800px; /* Alinha com a largura do card de formulário */
+    width: 100%;
+    margin: 30px auto 0 auto; /* Margem superior para separar do formulário */
+    background-color: #ffffff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); 
+    border: 1px solid #e9ecef;
+    box-sizing: border-box; 
+}
+
+.access-info-card h4 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #212529; 
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+}
+
+.access-info-card h4 i {
+    margin-right: 10px;
+    color: #007bff; /* Azul principal */
+}
+
+.access-table-container {
+    overflow-x: auto;
+}
+
+.access-info-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    text-align: left;
+}
+
+.access-info-card th {
+    background-color: #007bff; /* Fundo escuro conforme o exemplo visual */
+    color: #ffffff;
+    padding: 12px 15px;
+    font-weight: 600;
+    border: 1px solid #ced4da;
+}
+
+.access-info-card td {
+    padding: 12px 15px;
+    border: 1px solid #ced4da; /* Bordas suaves */
+    color: #000000;
+    line-height: 1.4;
+}
+
+.access-info-card tbody tr:nth-child(even) {
+    background-color: #f8f9fa; /* Zebrada suave para melhor leitura */
+}
+
+
 
 /* ============================================= */
 /* --- MEDIA QUERIES (RESPONSIVIDADE) --- */
@@ -140,7 +218,7 @@
 /* Telas Pequenas (Mobile) */
 @media (max-width: 768px) {
   .main-content {
-    padding: 1rem;
+    padding: 1.5rem 1rem; /* Ajuste para mobile */
     margin-left: 80px; /* Corrige sobreposição do menu recolhido */
   }
   .card-adduser {
@@ -169,5 +247,13 @@
   .main-content {
       margin-left: 250px;
   }
+}
+
+/* Responsividade para o novo card de tabela de acessos */
+@media (max-width: 768px) {
+    .access-info-card {
+        margin: 20px 0 0 0; 
+        padding: 20px;
+    }
 }
 
