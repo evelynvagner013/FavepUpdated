@@ -42,6 +42,9 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   loginPassword = '';
   loginPasswordVisible = false;
   loginErrorMessage: string | null = null;
+  // highlight-start
+  lembreMe = false; // Variável para o checkbox "Lembre-me"
+  // highlight-end
 
   registerUser = { nome: '', email: '', telefone: '', senha: '', confirmarSenha: '' };
   registerSuccessMessage: string | null = null;
@@ -61,18 +64,11 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private router: Router
   ) {
-    // --- ESTA É A CORREÇÃO ---
-    // O AuthService, ao ser construído, lê o localStorage e define
-    // o valor inicial do seu BehaviorSubject.
-    // Aqui, pegamos esse valor inicial de forma síncrona.
-    // Isso garante que o currentUserValue NUNCA seja nulo se o
-    // usuário já estiver logado (ex: deu F5 na página).
     this.currentUserValue = this.authService.currentUserValue;
   }
 
   ngOnInit(): void {
-    // Esta subscrição agora serve para "ouvir" MUDANÇAS futuras
-    // (como um login, logout, ou a atualização do plano)
+   
     this.authSubscription = this.authService.currentUser.subscribe(user => {
       this.currentUserValue = user;
     });
@@ -84,14 +80,25 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- Funções de Controle de Modal (MODIFICADAS) ---
+  // --- Funções de Controle de Modal ---
 
   abrirLoginModal(): void {
     this.fecharModals();
     this.loginErrorMessage = null;
-    this.loginEmail = '';
     this.loginPassword = '';
     this.mostrarLoginModal = true;
+    
+    // highlight-start
+    // Lógica do "Lembre-me"
+    const savedEmail = localStorage.getItem('lembreMeEmail');
+    if (savedEmail) {
+      this.loginEmail = savedEmail;
+      this.lembreMe = true;
+    } else {
+      this.loginEmail = ''; // Limpa o email se não houver um salvo
+      this.lembreMe = false;
+    }
+    // highlight-end
   }
 
   abrirRegisterModal(): void {
@@ -121,13 +128,23 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
   onLoginSubmit(): void {
     this.loginErrorMessage = null;
+
+    // highlight-start
+    // Lógica do "Lembre-me"
+    if (this.lembreMe) {
+      localStorage.setItem('lembreMeEmail', this.loginEmail);
+    } else {
+      localStorage.removeItem('lembreMeEmail');
+    }
+    // highlight-end
+
     this.authService.login(this.loginEmail, this.loginPassword).subscribe({
       next: () => {
         this.fecharModals();
         this.router.navigate(['/gerenciamento']);
       },
       error: (err) => {
-        this.loginErrorMessage = err.error?.error || 'Falha no login.';
+        this.loginErrorMessage = 'Senha ou usuário incorreto.';
       }
     });
   }

@@ -11,7 +11,7 @@ const {
 } = require('../service/mailService');
 
 function generateToken(params = {}) {
-  return jwt.sign(params, authConfig.secret, { expiresIn: 86400 });
+  return jwt.sign(params, authConfig.secret, { expiresIn: 60 });
 }
 
 function generateCryptoToken() {

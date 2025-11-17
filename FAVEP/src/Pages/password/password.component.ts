@@ -1,3 +1,5 @@
+// src/Pages/password/password.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -5,6 +7,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from '../../services/auth.service';
 import { MenuCimaComponent } from '../navbar/menu-cima/menu-cima.component';
 import { FooterComponent } from '../footer/footer.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-password',
@@ -21,10 +24,14 @@ import { FooterComponent } from '../footer/footer.component';
 })
 export class PasswordComponent implements OnInit {
 
-  form: FormGroup;
-  token: string | null = null;
-  mode: 'reset' | 'verify' = 'verify'; // Modo do componente
-  
+  form!: FormGroup;
+
+  mode: 'reset' | 'verify' | 'forgot' = 'forgot';
+  forgotFlowStep: 'email' | 'code' | 'password' = 'email';
+
+  resetToken: string | null = null;
+  userEmail: string = '';
+
   isLoading = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
@@ -34,63 +41,94 @@ export class PasswordComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService
-  ) {
-    // Inicia o formulário
-    this.form = this.fb.group({
-      // Campos para o modo 'verify'
-      email: ['', [Validators.email]],
-      code: [''],
-      // Campos para o modo 'reset'
-      senha: ['', [Validators.minLength(6)]],
-      confirmarSenha: ['']
-    }, { validators: this.passwordMatchValidator });
-  }
+  ) {}
 
   ngOnInit(): void {
-    const urlPath = this.route.snapshot.url.map(segment => segment.path).join('/');
-    
-    if (urlPath === 'auth/reset-password') {
+    this.initializeForm();
+    this.detectMode();
+  }
+
+  // Inicializa o FormGroup com campos que serão usados nos 3 modos
+  private initializeForm(): void {
+    this.form = this.fb.group(
+      {
+        email: [''],
+        code: [''],
+        senha: [''],
+        confirmarSenha: ['']
+      },
+      { validators: PasswordComponent.passwordMatchValidator }
+    );
+  }
+
+  // Detecta rota para definir o modo (reset / verify / forgot)
+  private detectMode(): void {
+    const path = this.route.snapshot.url.map(p => p.path).join('/');
+
+    if (path === 'auth/reset-password') {
       this.mode = 'reset';
-      this.token = this.route.snapshot.queryParamMap.get('token');
-      
-      // Validações para o modo 'reset'
-      this.form.get('senha')?.setValidators([Validators.required, Validators.minLength(6)]);
-      this.form.get('confirmarSenha')?.setValidators([Validators.required]);
-      
-      // Remove validações do modo 'verify'
-      this.form.get('email')?.clearValidators();
-      this.form.get('code')?.clearValidators();
+      this.resetToken = this.route.snapshot.queryParamMap.get('token');
+      this.setupResetMode();
+      return;
+    }
 
-      if (!this.token) {
-        this.errorMessage = 'Token de redefinição de senha não encontrado. Por favor, solicite um novo link.';
-      }
-
-    } else { // 'auth/verify-email'
+    if (path === 'auth/verify-email') {
       this.mode = 'verify';
-
-      // Validações para o modo 'verify'
-      this.form.get('email')?.setValidators([Validators.required, Validators.email]);
-      this.form.get('code')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(6)]);
-      
-      // Remove validações do modo 'reset'
-      this.form.get('senha')?.clearValidators();
-      this.form.get('confirmarSenha')?.clearValidators();
+      this.setupVerifyMode();
+      return;
     }
-    
-    // Atualiza validadores
-    this.form.updateValueAndValidity();
+
+    // default: forgot-password flow
+    this.mode = 'forgot';
+    this.forgotFlowStep = 'email';
+    this.setupForgotEmailStep();
   }
 
-  // Validador customizado para checar se as senhas batem
-  passwordMatchValidator(form: FormGroup): null | { mismatch: true } {
-    const senha = form.get('senha');
-    const confirmarSenha = form.get('confirmarSenha');
-    if (senha && confirmarSenha && senha.value !== confirmarSenha.value) {
-      return { mismatch: true };
-    }
-    return null;
+  // limpa validadores dos controles
+  private clearValidators(): void {
+    ['email', 'code', 'senha', 'confirmarSenha'].forEach(field => {
+      const control = this.form.get(field);
+      control?.clearValidators();
+      control?.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
+  // configurações para cada modo/step (aplica validadores necessários)
+  private setupResetMode(): void {
+    this.clearValidators();
+    this.form.get('senha')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.form.get('confirmarSenha')?.setValidators([Validators.required]);
+  }
+
+  private setupVerifyMode(): void {
+    this.clearValidators();
+    this.form.get('email')?.setValidators([Validators.required, Validators.email]);
+    this.form.get('code')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(6)]);
+  }
+
+  private setupForgotEmailStep(): void {
+    this.clearValidators();
+    this.form.get('email')?.setValidators([Validators.required, Validators.email]);
+  }
+
+  private setupForgotCodeStep(): void {
+    this.clearValidators();
+    this.form.get('email')?.setValidators([Validators.required, Validators.email]);
+    this.form.get('code')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(6)]);
+  }
+
+  private setupForgotPasswordStep(): void {
+    this.setupResetMode();
+  }
+
+  // validador que garante que senha e confirmarSenha coincidam
+  static passwordMatchValidator(form: FormGroup): { mismatch: true } | null {
+    const s1 = form.get('senha')?.value;
+    const s2 = form.get('confirmarSenha')?.value;
+    return s1 && s2 && s1 !== s2 ? { mismatch: true } : null;
+  }
+
+  // Envio do form — direciona para o handler correto conforme modo/step
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -101,45 +139,131 @@ export class PasswordComponent implements OnInit {
     this.successMessage = null;
     this.errorMessage = null;
 
-    let request$: any; // Observable
+    if (this.mode === 'reset') return this.submitReset();
+    if (this.mode === 'verify') return this.submitVerify();
+    return this.submitForgotFlow();
+  }
 
-    if (this.mode === 'reset') {
-      if (!this.token) {
-        this.errorMessage = 'Token inválido.';
-        this.isLoading = false;
-        return;
-      }
-      // O método 'resetPassword' ainda existe e funciona com token
-      request$ = this.authService.resetPassword(
-        this.token,
-        this.form.value.senha,
-        this.form.value.confirmarSenha
-      );
-
-    } else { // mode === 'verify'
-      // --- CORREÇÃO AQUI ---
-      // Usando o novo método 'verifyEmailCode'
-      request$ = this.authService.verifyEmailCode(
-        this.form.value.email,
-        this.form.value.code
-      );
-      // --- FIM DA CORREÇÃO ---
+  // reset via token (link)
+  private submitReset(): void {
+    if (!this.resetToken) {
+      this.errorMessage = 'Token inválido.';
+      this.isLoading = false;
+      return;
     }
 
-    request$.subscribe({
-      // --- CORREÇÃO AQUI (Erro 3) ---
-      next: (response: any) => { 
+    const req = this.authService.resetPassword(
+      this.resetToken,
+      this.form.value.senha,
+      this.form.value.confirmarSenha
+    );
+
+    this.handleRequest(req);
+  }
+
+  // verifica código de ativação de e-mail
+  private submitVerify(): void {
+    const req = this.authService.verifyEmailCode(
+      this.form.value.email,
+      this.form.value.code
+    );
+
+    this.handleRequest(req);
+  }
+
+  // fluxo de forgot: email -> code -> password
+  private submitForgotFlow(): void {
+    if (this.forgotFlowStep === 'email') return this.sendForgotEmail();
+    if (this.forgotFlowStep === 'code') return this.validateForgotCode();
+    return this.finishForgotPassword();
+  }
+
+  private sendForgotEmail(): void {
+    const req = this.authService.forgotPassword(this.form.value.email);
+
+    req.subscribe({
+      next: res => {
         this.isLoading = false;
-        this.successMessage = response.message || 'Operação realizada com sucesso!';
-        setTimeout(() => {
-          this.router.navigate(['/home'], { queryParams: { openLogin: 'true' } });
-        }, 3000);
+        this.userEmail = this.form.value.email;
+        this.successMessage = res.message || 'Código enviado para o e-mail.';
+        this.forgotFlowStep = 'code';
+        this.form.reset();
+        this.form.get('email')?.setValue(this.userEmail);
+        this.setupForgotCodeStep();
       },
-      // --- CORREÇÃO AQUI (Erro 4) ---
-      error: (err: any) => { 
+      error: err => {
         this.isLoading = false;
-        this.errorMessage = err.error?.error || 'Ocorreu um erro. Tente novamente.';
+        this.errorMessage = err.error?.error || 'Erro ao enviar código.';
       }
     });
+  }
+
+  private validateForgotCode(): void {
+    const req = this.authService.verifyEmailCode(
+      this.form.value.email,
+      this.form.value.code
+    );
+
+    req.subscribe({
+      next: res => {
+        this.isLoading = false;
+        this.resetToken = res.token;
+
+        if (!this.resetToken) {
+          this.errorMessage = 'Token não recebido.';
+          return;
+        }
+
+        this.successMessage = 'Código validado! Agora defina sua nova senha.';
+        this.forgotFlowStep = 'password';
+        this.form.reset();
+        this.setupForgotPasswordStep();
+      },
+      error: err => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.error || 'Código inválido.';
+      }
+    });
+  }
+
+  private finishForgotPassword(): void {
+    if (!this.resetToken) {
+      this.errorMessage = 'Token não encontrado.';
+      this.isLoading = false;
+      return;
+    }
+
+    const req = this.authService.resetPassword(
+      this.resetToken,
+      this.form.value.senha,
+      this.form.value.confirmarSenha
+    );
+
+    this.handleRequest(req);
+  }
+
+  // trata respostas comuns de requisição (sucesso / erro)
+  private handleRequest(request$: Observable<any>): void {
+    request$.subscribe({
+      next: res => {
+        this.isLoading = false;
+        this.successMessage = res.message || 'Sucesso!';
+        setTimeout(() => {
+          this.router.navigate(['/home'], { queryParams: { openLogin: 'true' } });
+        }, 2500);
+      },
+      error: err => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.error || 'Erro inesperado.';
+      }
+    });
+  }
+
+  
+  public restartForgotFlow(): void {
+    this.router.navigate(['/auth/forgot-password']);
+    this.forgotFlowStep = 'email';
+    this.form.reset();
+    this.setupForgotEmailStep();
   }
 }
