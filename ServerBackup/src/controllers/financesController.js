@@ -1,15 +1,47 @@
 const prisma = require('../lib/prisma');
 
+// --- NOSSA ADIÇÃO (Helper) ---
+//Função para buscar dados do usuário logado (cargo, planos, adminId)
+async function getUserData(userId) {
+  const user = await prisma.usuario.findUnique({
+    where: { id: userId },
+    include: {
+      planos: {
+        where: {
+          status: 'Pago/Ativo',
+          dataExpiracao: { gte: new Date() }
+        }
+      }
+    }
+  });
+
+  // Determina o ID do "dono" dos dados.
+  // Se for admin, é o 'userId'. Se for sub-usuário, é o 'adminId'.
+  const dataOwnerId = user.cargo === 'ADMINISTRADOR' ? user.id : user.adminId;
+  
+  return { user, dataOwnerId };
+}
+// --- FIM DA ADIÇÃO ---
+
+
 module.exports = {
   // # getAllFinanceiros
   async getAllFinanceiros(req, res) {
     const authenticatedUserId = req.userId;
     console.log(`➡️  Requisição para listar todos os registros financeiros do usuário ${authenticatedUserId}`);
     try {
+      // --- NOSSA ADIÇÃO (Hierarquia) ---
+      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      if (!dataOwnerId) {
+        return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
       const financeiros = await prisma.financeiro.findMany({
         where: {
           propriedade: {
-            usuarioId: authenticatedUserId,
+            // MODIFICADO: Busca registros de propriedades do "dono" (admin)
+            usuarioId: dataOwnerId,
           },
         },
         include: {
@@ -35,54 +67,102 @@ module.exports = {
     }
 
     try {
+      // --- NOSSA ADIÇÃO (Hierarquia) ---
+      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      if (!dataOwnerId) {
+        return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
       const financeiro = await prisma.financeiro.findFirst({
         where: {
           id: financeiroId,
           propriedade: {
-            usuarioId: authenticatedUserId,
+            // MODIFICADO: Busca registro de propriedade do "dono" (admin)
+            usuarioId: dataOwnerId,
           },
         },
-        include: {
-          propriedade: true,
-        },
+        include: { propriedade: true },
       });
 
       if (!financeiro) {
-        console.warn(`⚠️ Registro financeiro com ID ${financeiroId} não encontrado ou não pertence ao usuário.`);
-        return res.status(404).json({ error: `Registro financeiro com ID ${financeiroId} não encontrado.` });
+        return res.status(404).json({ error: `Registro financeiro com ID \"${id}\" não encontrado ou não pertence a você.` });
       }
 
-      console.log(`✅ Registro financeiro com ID ${financeiro.id} encontrado com sucesso.`);
+      console.log('✅ Registro financeiro encontrado:', financeiro.id);
       res.status(200).json(financeiro);
     } catch (error) {
       console.error('❌ Erro ao buscar registro financeiro:', error);
-      res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar este registro financeiro.' });
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar o registro financeiro.' });
     }
   },
 
-  // # createFinanceiro - CORRIGIDO
-  async createFinanceiro(req, res) {
-    // CORREÇÃO: Espera 'propriedadeId' no corpo da requisição em vez de 'nomepropriedade'
-    const { propriedadeId, descricao, valor, data, tipo } = req.body;
+  // # getFinanceirosByProperty
+  async getFinanceirosByProperty(req, res) {
+    const { propertyId } = req.params;
     const authenticatedUserId = req.userId;
-
-    // CORREÇÃO: Validação atualizada para 'propriedadeId'
-    if (!propriedadeId || !descricao || valor === undefined || !data || !tipo) {
-      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: propriedadeId, descricao, valor, data e tipo.' });
-    }
+    console.log(`➡️  Requisição para listar registros financeiros da propriedade ${propertyId}`);
 
     try {
-      // CORREÇÃO: Verifica se a propriedade (pelo ID) pertence ao usuário
+      // --- NOSSA ADIÇÃO (Hierarquia) ---
+      const { dataOwnerId } = await getUserData(authenticatedUserId);
+
+      // 1. Checar se a propriedade pertence ao admin
       const property = await prisma.propriedade.findFirst({
-        where: {
-          id: propriedadeId,
-          usuarioId: authenticatedUserId
-        }
+        where: { id: propertyId, usuarioId: dataOwnerId }
       });
 
       if (!property) {
-        return res.status(403).json({ error: `A propriedade com ID "${propriedadeId}" não existe ou você não tem permissão para acessá-la.` });
+        return res.status(404).json({ error: 'Propriedade não encontrada ou não pertence a você.' });
       }
+      // --- FIM DA ADIÇÃO ---
+
+
+      const financeiros = await prisma.financeiro.findMany({
+        where: {
+          // MODIFICADO: Busca pela propriedade (que já foi validada)
+          propriedadeId: propertyId,
+        },
+        include: { propriedade: true },
+        orderBy: { data: 'desc' },
+      });
+
+      console.log(`✅ ${financeiros.length} registros financeiros listados para ${propertyId}`);
+      res.status(200).json(financeiros);
+    } catch (error) {
+      console.error('❌ Erro ao listar registros financeiros por propriedade:', error);
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar os registros financeiros.' });
+    }
+  },
+
+  // # createFinanceiro
+  async createFinanceiro(req, res) {
+    const { descricao, valor, data, tipo, propriedadeId } = req.body;
+    const authenticatedUserId = req.userId;
+    console.log(`➡️  Requisição para criar registro financeiro: \"${descricao}\"`);
+
+    try {
+      // --- NOSSA ADIÇÃO (Permissões) ---
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+      if (!dataOwnerId) {
+        return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
+      }
+
+      // 1. Permissão de Cargo
+      if (user.cargo === 'FUNCIONARIO') {
+        return res.status(403).json({ error: 'Funcionários não podem criar registros financeiros.' });
+      }
+
+      // 2. Checar se a propriedade-pai pertence ao admin
+      const property = await prisma.propriedade.findFirst({
+         where: { id: propriedadeId, usuarioId: dataOwnerId }
+      });
+
+      if (!property) {
+        return res.status(404).json({ error: 'A propriedade selecionada não foi encontrada ou não pertence a você.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
 
       const newFinanceiro = await prisma.financeiro.create({
         data: {
@@ -90,22 +170,15 @@ module.exports = {
           valor,
           data: new Date(data),
           tipo,
-          propriedade: {
-            // CORREÇÃO: Conecta usando o ID da propriedade
-            connect: { id: propriedadeId },
-          },
+          propriedadeId,
         },
-        include: {
-          propriedade: true,
-        },
+        include: { propriedade: true },
       });
-      res.status(201).json({
-        message: 'Registro financeiro cadastrado com sucesso!',
-        financeiro: newFinanceiro,
-      });
+      console.log('✅ Registro financeiro criado com sucesso:', newFinanceiro.id);
+      res.status(201).json(newFinanceiro);
     } catch (error) {
       console.error('❌ Erro ao criar registro financeiro:', error);
-      res.status(500).json({ error: 'Ops! Não foi possível cadastrar o registro financeiro.' });
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao criar o registro financeiro.' });
     }
   },
 
@@ -121,18 +194,29 @@ module.exports = {
     }
 
     try {
+      // --- NOSSA ADIÇÃO (Permissões) ---
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+
+      // 1. Permissão de Cargo
+      if (user.cargo === 'FUNCIONARIO') {
+        return res.status(403).json({ error: 'Funcionários não podem atualizar registros financeiros.' });
+      }
+
+      // 2. Checar se o registro existe e pertence ao admin
       const existingFinanceiro = await prisma.financeiro.findFirst({
-        where: {
+        where: { 
           id: financeiroId,
           propriedade: {
-            usuarioId: authenticatedUserId,
-          },
-        },
+            usuarioId: dataOwnerId
+          }
+        }
       });
-
+      
       if (!existingFinanceiro) {
-        return res.status(404).json({ error: `Registro financeiro com ID "${id}" não encontrado ou não pertence a você.` });
+        return res.status(404).json({ error: 'Registro financeiro não encontrado ou não pertence a você.' });
       }
+      // --- FIM DA ADIÇÃO ---
+
 
       const updatedFinanceiro = await prisma.financeiro.update({
         where: { id: financeiroId },
@@ -151,40 +235,6 @@ module.exports = {
     } catch (error) {
       console.error('❌ Erro ao atualizar registro financeiro:', error);
       res.status(500).json({ error: 'Ops! Ocorreu um erro ao atualizar o registro financeiro.' });
-    }
-  },
-
-  // # deleteFinanceiro
-  async deleteFinanceiro(req, res) {
-    const { id } = req.params;
-    const authenticatedUserId = req.userId;
-    const financeiroId = parseInt(id, 10);
-
-    if (isNaN(financeiroId)) {
-      return res.status(400).json({ error: 'ID inválido.' });
-    }
-
-    try {
-      const existingFinanceiro = await prisma.financeiro.findFirst({
-        where: {
-          id: financeiroId,
-          propriedade: {
-            usuarioId: authenticatedUserId,
-          },
-        },
-      });
-
-      if (!existingFinanceiro) {
-        return res.status(404).json({ error: `Registro financeiro com ID "${id}" não encontrado ou não pertence a você.` });
-      }
-
-      await prisma.financeiro.delete({
-        where: { id: financeiroId },
-      });
-      res.status(204).send();
-    } catch (error) {
-      console.error('❌ Erro ao deletar registro financeiro:', error);
-      res.status(500).json({ error: 'Ops! Ocorreu um erro ao deletar o registro financeiro.' });
     }
   },
 };

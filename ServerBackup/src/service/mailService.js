@@ -159,9 +159,39 @@ async function sendPaymentStatusEmail(userEmail, status, tipoPlano, valor, prefe
   }
 }
 
+// --- NOSSA ADIÇÃO ---
+//Função para enviar email de boas-vindas ao sub-usuário
+async function sendSubUserWelcomeEmail(email, password) {
+  const mailOptions = {
+    from: `"Favep" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Você foi convidado para o FAVEP',
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Bem-vindo ao FAVEP!</h2>
+        <p>Você foi pré-cadastrado na plataforma FAVEP.</p>
+        <p>Use as seguintes credenciais para o seu primeiro acesso:</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Senha Temporária:</strong> <code style="background: #f4f4f4; padding: 3px 5px; border-radius: 3px;">${password}</code></p>
+        <br>
+        <p>Ao fazer o login, você será solicitado a verificar seu e-mail e criar uma nova senha para completar seu cadastro.</p>
+        <p>Atenciosamente,<br>Equipe FAVEP</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ E-mail de boas-vindas (sub-usuário) enviado para ${email}`);
+  } catch (error) {
+    console.error(`❌ Erro ao enviar e-mail de boas-vindas para ${email}:`, error);
+  }
+}
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendContactEmailToCompany,
-  sendPaymentStatusEmail
+  sendPaymentStatusEmail,
+  sendSubUserWelcomeEmail // Adicionamos a nova função aqui
 };

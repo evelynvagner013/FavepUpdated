@@ -7,11 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Cargo {
+  ADMINISTRADOR
+  GERENTE
+  FUNCIONARIO
+}
+
 model usuario {
   id                        String              @id @default(uuid())
   nome                      String
   email                     String              @unique
-  telefone                  String              @unique
+  telefone                  String
   fotoperfil                String?
   senha                     String
   emailVerified             Boolean?            @default(false)
@@ -21,8 +27,14 @@ model usuario {
   verificationTokenExpires  DateTime?           @map("verification_token_expires_at")
   authCode                  String?             @map("auth_code")
   authCodeExpires           DateTime?           @map("auth_code_expires_at")
+  cargo                     Cargo               @default(ADMINISTRADOR)
+  profileCompleted          Boolean             @default(false)
+  adminId                   String?
   planos                    PlanosMercadoPago[]
   propriedades              propriedade[]
+
+  admin                     usuario?            @relation("AdminSubUsuarios", fields: [adminId], references: [id])
+  subUsuarios               usuario[]           @relation("AdminSubUsuarios")
 }
 
 model propriedade {
@@ -46,6 +58,7 @@ model producao {
   data          DateTime
   cultura       String
   quantidade    Float
+  status        String      @default("ativo")
   propriedadeId String
   propriedade   propriedade @relation(fields: [propriedadeId], references: [id])
 

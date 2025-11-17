@@ -1,14 +1,46 @@
 const prisma = require('../lib/prisma');
 
+// --- NOSSA ADIÇÃO (Helper) ---
+//Função para buscar dados do usuário logado (cargo, planos, adminId)
+async function getUserData(userId) {
+  const user = await prisma.usuario.findUnique({
+    where: { id: userId },
+    include: {
+      planos: {
+        where: {
+          status: 'Pago/Ativo',
+          dataExpiracao: { gte: new Date() }
+        }
+      }
+    }
+  });
+
+  // Determina o ID do "dono" dos dados.
+  // Se for admin, é o 'userId'. Se for sub-usuário, é o 'adminId'.
+  const dataOwnerId = user.cargo === 'ADMINISTRADOR' ? user.id : user.adminId;
+  
+  return { user, dataOwnerId };
+}
+// --- FIM DA ADIÇÃO ---
+
+
 module.exports = {
   // # getAllProperties - Busca todas as propriedades (ativas e inativas)
   async getAllProperties(req, res) {
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para listar todas as propriedades do usuário: ${authenticatedUserId}`);
     try {
+      // --- NOSSA ADIÇÃO (Hierarquia) ---
+      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      if (!dataOwnerId) {
+        return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
       const properties = await prisma.propriedade.findMany({
         where: { 
-          usuarioId: authenticatedUserId,
+          // MODIFICADO: Busca propriedades do "dono" (admin)
+          usuarioId: dataOwnerId,
         },
         include: {
           usuario: {
@@ -40,131 +72,145 @@ module.exports = {
     }
   },
 
-  // # getPropertyById - CORRIGIDO: Agora busca a propriedade sem verificar o status 'ativo'
+  // # getPropertyById
   async getPropertyById(req, res) {
     const { id } = req.params;
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para buscar propriedade com ID: "${id}"`);
+    console.log(`➡️ Requisição recebida para buscar propriedade com ID: \"${id}\"`);
     try {
+      // --- NOSSA ADIÇÃO (Hierarquia) ---
+      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      if (!dataOwnerId) {
+        return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
       const property = await prisma.propriedade.findFirst({
         where: {
           id: id,
-          usuarioId: authenticatedUserId
-          // A linha 'status: 'ativo'' foi removida para buscar por ID independentemente do status
+          // MODIFICADO: Busca propriedade do "dono" (admin)
+          usuarioId: dataOwnerId
         },
         include: {
           usuario: {
             select: { nome: true, email: true }
           },
-          producoes: {
-            select: { cultura: true, data: true },
-            orderBy: { data: 'desc' }
-          }
-        },
+          producoes: true,
+          financeiros: true
+        }
       });
 
       if (!property) {
-        console.warn(`⚠️ Propriedade com ID "${id}" não encontrada ou não pertence ao usuário.`);
-        return res.status(404).json({ error: `Propriedade com ID "${id}" não encontrada.` });
+        return res.status(404).json({ error: `Propriedade com ID \"${id}\" não encontrada ou não pertence a você.` });
       }
 
-      const culturas = property.producoes.map(prod => prod.cultura);
-      const { producoes, ...rest } = property;
-
-      console.log('✅ Propriedade encontrada com sucesso:', property.id);
-      res.status(200).json({ ...rest, culturas });
+      console.log('✅ Propriedade encontrada:', property.nomepropriedade);
+      res.status(200).json(property);
     } catch (error) {
       console.error('❌ Erro ao buscar propriedade:', error);
-      res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar esta propriedade.' });
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao buscar a propriedade.' });
     }
   },
 
-  // # createProperty - Adicionado 'status' padrão como 'ativo'
+  // # createProperty
   async createProperty(req, res) {
-    const { nomepropriedade, area_ha, localizacao } = req.body;
+    const { nomepropriedade, localizacao, area_ha } = req.body;
     const authenticatedUserId = req.userId;
-    console.log('➡️ Requisição recebida para criar uma nova propriedade');
-
-    if (!nomepropriedade || area_ha === undefined || !localizacao) {
-      return res.status(400).json({ error: 'Por favor, preencha todos os campos obrigatórios: nome da propriedade, área em hectares e localização.' });
-    }
+    const status = 'ativo'; // Status padrão
+    console.log(`➡️ Requisição recebida para criar propriedade: \"${nomepropriedade}\"`);
 
     try {
+      // --- NOSSA ADIÇÃO (Permissões e Limites) ---
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+
+      // 1. Permissão de Cargo (Etapa 1.5)
+      if (user.cargo === 'FUNCIONARIO') {
+        return res.status(403).json({ error: 'Funcionários não podem criar propriedades.' });
+      }
+
+      // 2. Limite de Plano (Etapa 1.6) - Só se aplica ao Administrador
+      if (user.cargo === 'ADMINISTRADOR') {
+        const planoBaseAtivo = user.planos.some(p => p.tipo.toLowerCase().includes('base'));
+        const planoGoldAtivo = user.planos.some(p => p.tipo.toLowerCase().includes('gold'));
+
+        // Se for plano base (e não tiver o gold), verifica o limite
+        if (planoBaseAtivo && !planoGoldAtivo) {
+          const propertyCount = await prisma.propriedade.count({
+            where: { usuarioId: user.id }
+          });
+
+          if (propertyCount >= 1) {
+            return res.status(403).json({ error: 'Seu Plano Base permite o cadastro de apenas 1 propriedade.' });
+          }
+        }
+      }
+      // --- FIM DA ADIÇÃO ---
 
       const newProperty = await prisma.propriedade.create({
         data: {
           nomepropriedade,
-          area_ha,
           localizacao,
-          status: 'ativo',
-          usuario: {
-            connect: { id: authenticatedUserId },
-          },
-        },
-        include: {
-          usuario: {
-            select: { nome: true, email: true }
-          },
-        },
+          area_ha,
+          status,
+          // MODIFICADO: Vincula ao "dono" (admin)
+          usuarioId: dataOwnerId
+        }
       });
-
       console.log('✅ Propriedade criada com sucesso:', newProperty.id);
-      res.status(201).json({
-        message: 'Propriedade cadastrada com sucesso!',
-        property: { ...newProperty, culturas: [] }
-      });
+      res.status(201).json(newProperty);
     } catch (error) {
       console.error('❌ Erro ao criar propriedade:', error);
-      if (error.code === 'P2025') {
-          return res.status(400).json({ error: `O usuário autenticado não foi encontrado.` });
-      }
-      res.status(500).json({ error: 'Ops! Não foi possível cadastrar a propriedade.' });
+      res.status(500).json({ error: 'Ops! Ocorreu um erro ao criar a propriedade.' });
     }
   },
 
-  // # updateProperty - Sem alterações
+  // # updateProperty
   async updateProperty(req, res) {
     const { id } = req.params;
-    const { nomepropriedade, area_ha, localizacao } = req.body;
+    const { nomepropriedade, localizacao, area_ha } = req.body;
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para atualizar propriedade com ID: "${id}"`);
+    console.log(`➡️ Requisição recebida para atualizar propriedade com ID: \"${id}\"`);
 
     try {
-      const property = await prisma.propriedade.findFirst({
-        where: {
-          id: id,
-          usuarioId: authenticatedUserId
-        }
-      });
-      
-      if (!property) {
-        return res.status(444).json({ error: `Não foi possível encontrar a propriedade com ID "${id}" para atualizar.` });
+      // --- NOSSA ADIÇÃO (Permissões) ---
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+
+      // 1. Permissão de Cargo
+      if (user.cargo === 'FUNCIONARIO') {
+        return res.status(403).json({ error: 'Funcionários não podem atualizar propriedades.' });
       }
+      
+      // 2. Checagem de Hierarquia (se a propriedade pertence ao admin)
+      const propertyToUpdate = await prisma.propriedade.findFirst({
+         where: { id: id, usuarioId: dataOwnerId }
+      });
+
+      if (!propertyToUpdate) {
+        return res.status(404).json({ error: 'Propriedade não encontrada ou não pertence à sua organização.' });
+      }
+      // --- FIM DA ADIÇÃO ---
 
       const updatedProperty = await prisma.propriedade.update({
-        where: {
-          id: id,
-        },
+        where: { id: id },
         data: {
-          nomepropriedade, 
-          area_ha,
+          nomepropriedade,
           localizacao,
+          area_ha,
+          usuarioId: dataOwnerId // Garante que o ID do dono não seja alterado
         },
         include: {
-          usuario: {
-            select: { nome: true, email: true }
-          },
           producoes: {
             select: { cultura: true, data: true },
             orderBy: { data: 'desc' }
           }
-        },
+        }
       });
 
+      // Lógica para extrair culturas (como no original)
       const culturas = updatedProperty.producoes.map(prod => prod.cultura);
       const { producoes, ...rest } = updatedProperty;
 
-      console.log('🔄 Propriedade atualizada com sucesso:', updatedProperty.id);
+      console.log('✅ Propriedade atualizada com sucesso:', updatedProperty.id);
       res.status(200).json({
         message: 'Propriedade atualizada com sucesso!',
         property: { ...rest, culturas }
@@ -175,21 +221,31 @@ module.exports = {
     }
   },
 
-  // # togglePropertyStatus - Sem alterações
+  // # togglePropertyStatus
   async togglePropertyStatus(req, res) {
     const { id } = req.params;
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para alterar status da propriedade com ID: "${id}"`);
+    console.log(`➡️ Requisição recebida para alterar status da propriedade com ID: \"${id}\"`);
     try {
+      // --- NOSSA ADIÇÃO (Permissões) ---
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+
+      // 1. Permissão de Cargo
+      if (user.cargo === 'FUNCIONARIO') {
+        return res.status(403).json({ error: 'Funcionários não podem alterar o status de propriedades.' });
+      }
+      // --- FIM DA ADIÇÃO ---
+
       const property = await prisma.propriedade.findFirst({
         where: {
           id: id,
-          usuarioId: authenticatedUserId
+          // MODIFICADO: Busca propriedade do "dono" (admin)
+          usuarioId: dataOwnerId
         }
       });
       
       if (!property) {
-        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID "${id}".` });
+        return res.status(404).json({ error: `Não foi possível encontrar a propriedade com ID \"${id}\".` });
       }
 
       const novoStatus = property.status === 'ativo' ? 'inativo' : 'ativo';
@@ -205,5 +261,5 @@ module.exports = {
       console.error('❌ Erro ao alterar status da propriedade:', error);
       res.status(500).json({ error: 'Ops! Ocorreu um erro ao alterar o status da propriedade.' });
     }
-  },
+  }
 };
