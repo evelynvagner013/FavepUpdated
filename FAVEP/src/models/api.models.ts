@@ -12,6 +12,11 @@ export interface PlanosMercadoPago {
   usuarioId: string;
   idAssinaturaExterna?: string;
   idPagamentoExterno?: string;
+  // highlight-start
+  // Adicionei estas datas que vi no seu schema.prisma
+  dataAtivacao?: Date | string;
+  dataExpiracao?: Date | string;
+  // highlight-end
 }
 
 export interface Usuario {
@@ -26,6 +31,12 @@ export interface Usuario {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   planos?: PlanosMercadoPago[]; // <-- CAMPO ADICIONADO
+  // highlight-start
+  // Adicionei estes campos que vi no seu schema.prisma
+  cargo?: 'ADMINISTRADOR' | 'GERENTE' | 'FUNCIONARIO';
+  profileCompleted?: boolean;
+  adminId?: string;
+  // highlight-end
 }
 // --- FIM DA MODIFICAÇÃO ---
 
@@ -59,6 +70,16 @@ export interface Financeiro { // Renomeado de Movimentacao
   data: Date | string; // Permitir string para facilitar o binding de formulários
   propriedade?: Propriedade; // Opcional para dados aninhados
 }
+
+// highlight-start
+// ### ADICIONADO ###
+// Interface para a troca de senha na página de perfil
+export interface ChangePasswordPayload {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmarSenha: string;
+}
+// highlight-end
 
 // Interface de resposta do Auth
 export interface AuthResponse {

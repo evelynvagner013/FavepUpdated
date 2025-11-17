@@ -17,7 +17,7 @@
       <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
       <div class="dropdown-menu" *ngIf="mostrarDropdown">
         <a routerLink="/gerenciamento" class="painel-controle">Gerenciar</a>
-        <a (click)="abrirModalPerfil()" class="modal-perfil">Perfil</a>
+        <a routerLink="/usuario" class="modal-perfil">Perfil</a>
         <a (click)="logout()" class="logout-link">Sair</a>
       </div>
     </div>
@@ -60,7 +60,7 @@
         <div class="lembre-me">
           <div class="checkbox">
             <input  type="checkbox" name="loginCheck" id="loginCheck" [(ngModel)]="lembreMe">
-            <label for="loginCheck">Lembre-me</label>
+            <label for="loginCheck">Lembre-me email</label>
           </div>
         </div>
         <a class="senha" (click)="abrirForgotPasswordModal()">Esqueceu a senha?</a>
@@ -155,32 +155,101 @@
   </div>
 
   <div class="auth-modal-container forgot-password-form-container" *ngIf="mostrarForgotPasswordModal" (click)="$event.stopPropagation()">
-    <h2 class="auth-modal-title">Recuperar Senha</h2>
     <button (click)="fecharModals()" class="auth-modal-close-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
         </svg>
     </button>
     <form (ngSubmit)="onForgotPasswordSubmit()" #forgotPasswordNgForm="ngForm">
-        <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px;">
-          <strong>Atenção:</strong> Insira seu e-mail para enviarmos um link de redefinição de senha.<br>
+      
+        <h2 class="auth-modal-title" *ngIf="forgotFlowStep === 'email'">Recuperar Senha</h2>
+        <h2 class="auth-modal-title" *ngIf="forgotFlowStep === 'code'">Verificar Código</h2>
+        <h2 class="auth-modal-title" *ngIf="forgotFlowStep === 'password'">Definir Nova Senha</h2>
+
+        <div *ngIf="forgotFlowStep === 'email'" style="width: 100%;">
+          <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px; margin-bottom: 15px;">
+            <strong>Atenção:</strong> Insira seu e-mail para enviarmos um código de 6 dígitos.<br>
+          </div>
+          <div class="inputs">
+              <div class="inputs-container">
+                  <input type="email" id="forgotPasswordEmail" name="forgotPasswordEmail" [(ngModel)]="forgotEmail" placeholder="Insira seu e-mail de cadastro" required />
+              </div>
+          </div>
         </div>
-        <div class="inputs">
+
+        <div *ngIf="forgotFlowStep === 'code'" style="width: 100%;">
+          <div style="padding: 15px; background-color: #e2f3ff; border: 1px solid #b8daff; color: #0c5460; border-radius: 5px; margin-bottom: 15px;">
+            Enviamos um código de 6 dígitos para <strong>{{ forgotEmail }}</strong>.
+          </div>
+          <div class="inputs">
             <div class="inputs-container">
-                <input type="email" id="forgotPasswordEmail" name="forgotPasswordEmail" [(ngModel)]="forgotPasswordEmail" placeholder="Insira seu e-mail de cadastro" required />
+              <input 
+                type="text" 
+                id="forgotCode" 
+                name="forgotCode" 
+                [(ngModel)]="forgotCode" 
+                placeholder="Insira o código de 6 dígitos" 
+                required 
+                maxlength="6"
+                style="text-align: center; font-size: 1.2rem; letter-spacing: 3px;"
+              />
             </div>
+          </div>
         </div>
+
+        <div *ngIf="forgotFlowStep === 'password'" style="width: 100%;">
+          <div style="padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; border-radius: 5px; margin-bottom: 15px;">
+            Código validado! Defina sua nova senha.
+          </div>
+          <div class="inputs">
+            <div class="inputs-container password-container">
+              <input 
+                [type]="forgotPasswordVisible ? 'text' : 'password'" 
+                id="forgotNewPassword" 
+                name="forgotNewPassword" 
+                [(ngModel)]="forgotNewPassword" 
+                placeholder="Insira sua nova senha" 
+                required 
+                minlength="6"
+              />
+              <i 
+                class="password-toggle-icon" 
+                [ngClass]="forgotPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                (click)="toggleForgotPasswordVisibility()"></i>
+            </div>
+            <div class="inputs-container password-container">
+              <input 
+                [type]="forgotConfirmPasswordVisible ? 'text' : 'password'" 
+                id="forgotConfirmPassword" 
+                name="forgotConfirmPassword" 
+                [(ngModel)]="forgotConfirmPassword" 
+                placeholder="Confirme sua nova senha" 
+                required
+              />
+              <i 
+                class="password-toggle-icon" 
+                [ngClass]="forgotConfirmPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                (click)="toggleForgotConfirmPasswordVisibility()"></i>
+            </div>
+          </div>
+        </div>
+
         <div class="auth-actions">
             <a (click)="abrirLoginModal()" class="auth-link">Lembrou a senha? Voltar para o Login</a>
         </div>
         <div class="confirmarBotao">
-            <input class="confirmar" type="submit" value="Enviar Link" [disabled]="!forgotPasswordNgForm.form.valid" />
+            <input *ngIf="forgotFlowStep === 'email'" class="confirmar" type="submit" value="Enviar Código" [disabled]="!forgotPasswordNgForm.form.valid" />
+            <input *ngIf="forgotFlowStep === 'code'" class="confirmar" type="submit" value="Validar Código" [disabled]="!forgotPasswordNgForm.form.valid" />
+            <input *ngIf="forgotFlowStep === 'password'" class="confirmar" type="submit" value="Salvar Nova Senha" [disabled]="!forgotPasswordNgForm.form.valid" />
         </div>
-        <div class="message success" *ngIf="forgotPasswordSuccessMessage">{{ forgotPasswordSuccessMessage }}</div>
-        <div class="message error" *ngIf="forgotPasswordErrorMessage">{{ forgotPasswordErrorMessage }}</div>
+        
+        <div class="message success" *ngIf="forgotSuccessMessage">{{ forgotSuccessMessage }}</div>
+        <div class="message error" *ngIf="forgotErrorMessage">{{ forgotErrorMessage }}</div>
     </form>
   </div>
+
 </div>
+
 <div class="modal-overlay" [class.active]="mostrarPerfilModal" *ngIf="mostrarPerfilModal" (click)="fecharModalPerfil()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">

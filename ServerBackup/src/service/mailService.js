@@ -31,7 +31,7 @@ async function sendVerificationEmail(to, code) {
   await transporter.sendMail(mailOptions);
 }
 
-// # sendPasswordResetEmail
+// # sendPasswordResetEmail (Função antiga do LINK)
 async function sendPasswordResetEmail(to, token) {
   const resetLink = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
   const mailOptions = {
@@ -48,6 +48,27 @@ async function sendPasswordResetEmail(to, token) {
             </a>
         </div>
         <p style="font-size: 0.9em; color: #777;">Se o botão não funcionar, copie e cole este link no seu navegador:<br>${resetLink}</p>
+        <p style="font-size: 0.9em; color: #777;">Se você não solicitou isso, por favor, ignore este e-mail.</p>
+      </div>
+    `
+  };
+  await transporter.sendMail(mailOptions);
+}
+
+// ### NOVO: Função para enviar CÓDIGO de redefinição ###
+async function sendPasswordResetCodeEmail(to, code) {
+  const mailOptions = {
+    from: `"Favep" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Código de Redefinição de Senha - Favep',
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; color: #333;">
+        <h2>Redefinição de Senha</h2>
+        <p>Você solicitou a redefinição da sua senha. Use o código abaixo para continuar:</p>
+        <h3 style="font-size: 32px; letter-spacing: 5px; color: #333; background: #f4f4f4; padding: 15px 0; border-radius: 5px; margin: 20px 0;">
+          ${code}
+        </h3>
+        <p style="font-size: 0.9em; color: #777;">Este código expira em 10 minutos.</p>
         <p style="font-size: 0.9em; color: #777;">Se você não solicitou isso, por favor, ignore este e-mail.</p>
       </div>
     `
@@ -193,5 +214,6 @@ module.exports = {
   sendPasswordResetEmail,
   sendContactEmailToCompany,
   sendPaymentStatusEmail,
-  sendSubUserWelcomeEmail // Adicionamos a nova função aqui
+  sendSubUserWelcomeEmail,
+  sendPasswordResetCodeEmail // Adicionamos a nova função aqui
 };

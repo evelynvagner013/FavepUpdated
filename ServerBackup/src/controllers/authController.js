@@ -3,11 +3,12 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const prisma = require('../lib/prisma');
 const authConfig = require('../config/auth.json');
-// Importamos todas as funções necessárias do mailService
+// Importamos a função de enviar CÓDIGO de redefinição
 const { 
   sendVerificationEmail, 
   sendPasswordResetEmail, 
-  sendSubUserWelcomeEmail 
+  sendSubUserWelcomeEmail,
+  sendPasswordResetCodeEmail 
 } = require('../service/mailService');
 
 function generateToken(params = {}) {
@@ -47,7 +48,6 @@ function generateRandomPassword() {
   return password.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
-// --- NOSSA ADIÇÃO (Validador de senha) ---
 //Função para validar a força da senha conforme as regras
 function validatePassword(password) {
   const minLength = 8;
@@ -120,9 +120,8 @@ module.exports = {
           verificationToken: verificationCode,
           verificationTokenExpires: expiresAt,
           emailVerified: false,
-          // Definimos o perfil como completo no registro normal
           profileCompleted: true, 
-          cargo: 'ADMINISTRADOR' // Usuário padrão é admin
+          cargo: 'ADMINISTRADOR'
         }
       });
 
@@ -134,14 +133,14 @@ module.exports = {
       });
     } catch (err) {
       console.error('❌ Erro no register:', err.message);
-      // Tratamento de erro para telefone duplicado
       if (err.code === 'P2002' && err.meta?.target?.includes('telefone')) {
          return res.status(400).json({ error: 'Este telefone já está em uso.' });
       }
       return res.status(500).json({ error: 'Erro ao registrar usuário.' });
     }
   },
-  //#verify-email-code-controller
+  
+  //#verify-email-code-controller (Modificado para retornar token)
   async verifyEmailCode(req, res) {
     console.log('➡️ Requisição recebida em /verifyEmailCode');
     const { email, code } = req.body;
@@ -163,17 +162,27 @@ module.exports = {
         return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
       }
 
+      const resetToken = generateCryptoToken();
+      const resetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos para usar o token
+
       await prisma.usuario.update({
         where: { id: user.id },
         data: {
-          verificationToken: null,
+          verificationToken: null, 
           verificationTokenExpires: null,
-          emailVerified: true
+          emailVerified: true, 
+          resetPasswordToken: resetToken, 
+          resetPasswordExpires: resetExpires
         }
       });
 
-      console.log('✅ E-mail verificado com sucesso para:', user.email);
-      return res.status(200).json({ message: 'E-mail verificado com sucesso! Agora você pode fazer login.' });
+      console.log('✅ Código verificado com sucesso para:', user.email);
+      // Retorna o token para o frontend
+      return res.status(200).json({ 
+        message: 'Código verificado com sucesso!',
+        token: resetToken 
+      });
+
     } catch (error) {
       console.error('❌ Erro ao verificar código:', error.message);
       return res.status(500).json({ error: 'Erro ao verificar o código.' });
@@ -184,22 +193,18 @@ module.exports = {
   async preRegisterSubUser(req, res) {
     console.log('➡️ Requisição recebida em /preRegisterSubUser');
     const { email, cargo } = req.body;
-    const adminId = req.userId; // Vem do middleware de autenticação
+    const adminId = req.userId; 
 
     if (!email || !cargo) {
       return res.status(400).json({ error: 'Email e cargo são obrigatórios.' });
     }
-
     if (cargo.toUpperCase() === 'ADMINISTRADOR') {
       return res.status(400).json({ error: 'Não é possível criar um sub-usuário como ADMINISTRADOR.' });
     }
-
     if (!['GERENTE', 'FUNCIONARIO'].includes(cargo.toUpperCase())) {
         return res.status(400).json({ error: 'Cargo inválido. Use GERENTE ou FUNCIONARIO.' });
     }
-
     try {
-      // 1. Verificar se o admin (usuário logado) existe e é um admin
       const adminUser = await prisma.usuario.findUnique({
         where: { id: adminId },
         include: { planos: {
@@ -209,53 +214,38 @@ module.exports = {
           }
         }}
       });
-
       if (!adminUser || adminUser.cargo !== 'ADMINISTRADOR') {
         return res.status(403).json({ error: 'Apenas administradores podem criar sub-usuários.' });
       }
-      
-      // 2. [REQ 1] - Verificar se o admin tem o Plano Gold
       const planoGoldAtivo = adminUser.planos.some(p => p.tipo.toLowerCase().includes('gold'));
-      
       if (!planoGoldAtivo) {
          return res.status(403).json({ error: 'Apenas usuários com o Plano Gold podem adicionar membros.' });
       }
-
-      // 3. Verificar se o email do sub-usuário já está em uso
       const existingUser = await prisma.usuario.findUnique({ where: { email } });
       if (existingUser) {
         return res.status(400).json({ error: 'Este email já está em uso.' });
       }
-
-      // 4. [REQ 2] - Gerar senha aleatória
       const randomPassword = generateRandomPassword();
       const hashedPassword = await bcrypt.hash(randomPassword, 8);
-
-      // 5. Criar o sub-usuário
       const subUsuario = await prisma.usuario.create({
         data: {
-          nome: 'Cadastro Pendente', // Será preenchido na Etapa 1.4
+          nome: 'Cadastro Pendente', 
           email: email,
-          telefone: `temp_${email}`, // Placeholder único, será preenchido na Etapa 1.4
+          telefone: `temp_${email}`, 
           senha: hashedPassword,
-          cargo: cargo.toUpperCase(), // GERENTE ou FUNCIONARIO
+          cargo: cargo.toUpperCase(), 
           adminId: adminId,
-          profileCompleted: false, // [REQ 2] - Ponto chave do fluxo
-          emailVerified: true // Marcamos como true, pois o fluxo de verificação é outro
+          profileCompleted: false, 
+          emailVerified: true 
         }
       });
-
-      // 6. [REQ 2] - Enviar email com a senha
       await sendSubUserWelcomeEmail(email, randomPassword);
       console.log(`✅ Sub-usuário ${email} pré-cadastrado pelo Admin ${adminUser.email}`);
-
       return res.status(201).json({
         message: 'Sub-usuário pré-cadastrado com sucesso. Um email foi enviado com a senha temporária.'
       });
-      
     } catch (err) {
       console.error('❌ Erro no preRegisterSubUser:', err.message);
-       // Tratamento de erro para telefone/email duplicado (embora o email já seja verificado)
       if (err.code === 'P2002') {
          return res.status(400).json({ error: 'Este email ou telefone temporário já está em uso.' });
       }
@@ -285,27 +275,20 @@ module.exports = {
           }
         }
       });
-
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
-
       if (!user.emailVerified) {
         return res.status(401).json({ error: 'Por favor, confirme seu e-mail antes de fazer login.' });
       }
-
       const isMatch = await bcrypt.compare(senha, user.senha);
       if (!isMatch) {
         return res.status(400).json({ error: 'Senha inválida.' });
       }
-
-      //Função para lidar com o login de sub-usuários que precisam completar o perfil
       if (!user.profileCompleted) {
         console.log(`➡️ Login de ${user.email} (sub-usuário) - Perfil incompleto. Enviando código...`);
-        
         const verificationCode = generateVerificationCode();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
-
         await prisma.usuario.update({
           where: { id: user.id },
           data: {
@@ -313,19 +296,13 @@ module.exports = {
             verificationTokenExpires: expiresAt
           }
         });
-
-        // Reutilizamos a função de verificação de e-mail para enviar o código
         await sendVerificationEmail(user.email, verificationCode);
         console.log(`✅ Código de 6 dígitos enviado para ${user.email}`);
-
-        // Retornamos um status 401 (Não autorizado) com uma ação específica
         return res.status(401).json({
           message: 'Perfil incompleto. Enviamos um código de 6 dígitos para o seu e-mail.',
-          action: 'COMPLETE_PROFILE' // Flag para o frontend saber o que fazer
+          action: 'COMPLETE_PROFILE'
         });
       }
-
-
       console.log(`✅ Login bem-sucedido para ${user.email}`);
       user.senha = undefined;
       return res.status(200).json({
@@ -338,29 +315,23 @@ module.exports = {
     }
   },
 
-  // --- NOSSA ADIÇÃO (Etapa 1.4) ---
   //#complete-sub-user-profile-controller
   async completeSubUserProfile(req, res) {
     console.log('➡️ Requisição recebida em /completeSubUserProfile');
     const { email, code, nome, telefone, senha, confirmarSenha } = req.body;
 
-    // 1. Validação básica
     if (!email || !code || !nome || !telefone || !senha || !confirmarSenha) {
       return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
     if (senha !== confirmarSenha) {
       return res.status(400).json({ error: 'As senhas não coincidem.' });
     }
-
-    // 2. [REQ 2] - Validação da força da senha
     if (!validatePassword(senha)) {
       return res.status(400).json({
         error: 'A senha não é forte o suficiente. Requer mínimo de 8 caracteres, uma maiúscula, uma minúscula e um caractere especial.'
       });
     }
-
     try {
-      // 3. Verificar se o código é válido e se o perfil não está completo
       const user = await prisma.usuario.findFirst({
         where: {
           email: email,
@@ -368,48 +339,37 @@ module.exports = {
           verificationTokenExpires: { gt: new Date() }
         }
       });
-
       if (!user) {
         return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
       }
-
       if (user.profileCompleted) {
         return res.status(400).json({ error: 'Este perfil já foi completado.' });
       }
-
-      // 4. Verificar se o novo telefone já está em uso
       const existingPhone = await prisma.usuario.findFirst({
         where: {
           telefone: telefone,
-          id: { not: user.id } // Exclui o próprio usuário da busca
+          id: { not: user.id } 
         }
       });
       if (existingPhone) {
         return res.status(400).json({ error: 'Este telefone já está em uso.' });
       }
-
-      // 5. Tudo certo. Atualizar o usuário.
       const hashedPassword = await bcrypt.hash(senha, 8);
-
       await prisma.usuario.update({
         where: { id: user.id },
         data: {
           nome: nome,
           telefone: telefone,
           senha: hashedPassword,
-          profileCompleted: true, // A "bandeira" mais importante!
+          profileCompleted: true, 
           verificationToken: null,
           verificationTokenExpires: null
         }
       });
-
       console.log(`✅ Perfil do sub-usuário ${user.email} completado com sucesso.`);
-      
-      // 6. Retornar sucesso
       return res.status(200).json({
         message: 'Perfil completado com sucesso! Agora você pode fazer login com sua nova senha.'
       });
-
     } catch (err) {
       console.error('❌ Erro no completeSubUserProfile:', err.message);
       if (err.code === 'P2002' && err.meta?.target?.includes('telefone')) {
@@ -419,33 +379,43 @@ module.exports = {
     }
   },
 
-  //#forgot-password-controller
+  //#forgot-password-controller (Modificado para enviar CÓDIGO)
   async forgotPassword(req, res) {
     console.log('➡️ Requisição recebida em /forgotPassword');
     const { email } = req.body;
     try {
       const user = await prisma.usuario.findUnique({ where: { email } });
+      
       if (!user) {
-        return res.status(200).json({ message: 'Se um usuário com este e-mail existir, um link de redefinição de senha será enviado.' });
+        console.warn(`⚠️ Tentativa de "forgotPassword" para email inexistente: ${email}`);
+        return res.status(200).json({ message: 'Se um usuário com este e-mail existir, um código de redefinição será enviado.' });
       }
-      const resetToken = generateCryptoToken();
-      const resetExpires = new Date(Date.now() + 3600000); // 1 hora de validade
+
+      const resetCode = generateVerificationCode();
+      const resetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos de validade
+
+      // Salva o CÓDIGO nos campos de verificação
       await prisma.usuario.update({
         where: { id: user.id },
         data: {
-          resetPasswordToken: resetToken,
-          resetPasswordExpires: resetExpires
+          verificationToken: resetCode,
+          verificationTokenExpires: resetExpires
         }
       });
-      await sendPasswordResetEmail(user.email, resetToken);
-      console.log(`✅ E-mail de redefinição enviado para ${user.email}`);
-      return res.status(200).json({ message: 'E-mail de redefinição de senha enviado com sucesso!' });
+
+      // ENVIA O CÓDIGO por email
+      await sendPasswordResetCodeEmail(user.email, resetCode);
+      
+      console.log(`✅ E-mail de redefinição (CÓDIGO) enviado para ${user.email}`);
+      return res.status(200).json({ message: 'Código de redefinição de senha enviado com sucesso!' });
+
     } catch (error) {
       console.error('❌ Erro no forgotPassword:', error.message);
       return res.status(500).json({ error: 'Erro ao solicitar a redefinição de senha.' });
     }
   },
-  //#reset-password-controller
+
+  //#reset-password-controller (Modificado para usar TOKEN)
   async resetPassword(req, res) {
     console.log('➡️ Requisição recebida em /resetPassword');
     const { token, senha, confirmarSenha } = req.body;
@@ -481,6 +451,7 @@ module.exports = {
       return res.status(500).json({ error: 'Erro ao redefinir a senha.' });
     }
   },
+  
   //#update-user-controller
   async update(req, res) {
     console.log('➡️ Requisição recebida em /update (PUT)');
@@ -493,34 +464,28 @@ module.exports = {
       if (telefone) updateData.telefone = telefone;
       if (fotoperfil) updateData.fotoperfil = fotoperfil;
 
-      // Se o telefone for atualizado, precisamos verificar se ele já existe
       if (telefone) {
         const existingUser = await prisma.usuario.findFirst({
           where: { 
             telefone: telefone,
-            id: { not: authenticatedUserId } // Exclui o próprio usuário da busca
+            id: { not: authenticatedUserId } 
           }
         });
         if (existingUser) {
           return res.status(400).json({ error: 'Este telefone já está em uso.' });
         }
       }
-      // Se o email for atualizado, precisamos verificar se ele já existe
        if (email) {
         const existingUser = await prisma.usuario.findFirst({
           where: { 
             email: email,
-            id: { not: authenticatedUserId } // Exclui o próprio usuário da busca
+            id: { not: authenticatedUserId } 
           }
         });
         if (existingUser) {
           return res.status(400).json({ error: 'Este email já está em uso.' });
         }
-        // Se o email mudar, é uma boa prática re-verificar?
-        // Por enquanto, vamos manter simples. Apenas atualiza.
-        // updateData.emailVerified = false; // Opcional: Forçar re-verificação
       }
-
 
       const user = await prisma.usuario.update({
         where: { id: authenticatedUserId },
@@ -551,4 +516,63 @@ module.exports = {
       return res.status(500).json({ error: 'Erro ao atualizar usuário.' });
     }
   },
+
+  // ### ADICIONADO: Nova função para alterar a senha ###
+  async changePassword(req, res) {
+    console.log('➡️ Requisição recebida em /changePassword');
+    const { senhaAtual, novaSenha, confirmarSenha } = req.body;
+    const userId = req.userId; // ID do usuário logado (via authMiddleware)
+
+    // 1. Validações de entrada
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+      return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+    }
+    if (novaSenha !== confirmarSenha) {
+      return res.status(400).json({ error: 'A nova senha e a confirmação não coincidem.' });
+    }
+    if (novaSenha === senhaAtual) {
+      return res.status(400).json({ error: 'A nova senha deve ser diferente da senha atual.' });
+    }
+
+    // 2. Validação de força da nova senha
+    if (!validatePassword(novaSenha)) {
+      return res.status(400).json({
+        error: 'A senha não é forte o suficiente. Requer mínimo de 8 caracteres, uma maiúscula, uma minúscula e um caractere especial.'
+      });
+    }
+
+    try {
+      // 3. Busca o usuário e sua senha atual
+      const user = await prisma.usuario.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+      }
+
+      // 4. Compara a senha atual
+      const isMatch = await bcrypt.compare(senhaAtual, user.senha);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Senha atual incorreta.' });
+      }
+
+      // 5. Hasheia e salva a nova senha
+      const hashedPassword = await bcrypt.hash(novaSenha, 8);
+
+      await prisma.usuario.update({
+        where: { id: userId },
+        data: {
+          senha: hashedPassword
+        }
+      });
+
+      console.log(`✅ Senha alterada com sucesso para o usuário: ${user.email}`);
+      return res.status(200).json({ message: 'Senha alterada com sucesso!' });
+
+    } catch (error) {
+      console.error('❌ Erro no changePassword:', error.message);
+      return res.status(500).json({ error: 'Erro ao alterar a senha.' });
+    }
+  }
 };

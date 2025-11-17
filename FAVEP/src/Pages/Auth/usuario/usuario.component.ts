@@ -1,6 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+// Adicionado FormBuilder, FormGroup, ReactiveFormsModule
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'; 
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
@@ -16,6 +17,7 @@ import { MenuLateralComponent } from '../../menu-lateral/menu-lateral.component'
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule, // Adicionado
     RouterLink,
     NgxMaskPipe,
     NgxMaskDirective,
@@ -32,14 +34,38 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   usuarioEditavel: Partial<Usuario> = {};
   editModalAberto = false;
 
-  // Variável para guardar a inscrição e limpá-la depois
+  // Variáveis de feedback
+  isLoading = false;
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
+  // ADICIONADO: Propriedades para o modal de alterar senha
+  senhaModalAberto = false;
+  senhaForm: FormGroup;
+  senhaIsLoading = false;
+  senhaSuccessMessage: string | null = null;
+  senhaErrorMessage: string | null = null;
+  senhaAtualVisible = false;
+  novaSenhaVisible = false;
+  confirmarSenhaVisible = false;
+
   private userSubscription: Subscription | undefined;
 
   constructor(
     private router: Router,
     private authService: AuthService,
-    private usuarioService: UsuarioService
-  ) { }
+    private usuarioService: UsuarioService,
+    private fb: FormBuilder // Adicionado FormBuilder
+  ) {
+    // Inicializa o formulário reativo para a senha
+    this.senhaForm = this.fb.group({
+      senhaAtual: ['', [Validators.required]],
+      novaSenha: ['', [Validators.required, Validators.minLength(8)]], // Você pode adicionar mais validadores aqui
+      confirmarSenha: ['', [Validators.required]]
+    }, {
+      validators: this.passwordMatchValidator // Validador customizado
+    });
+  }
 
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe(user => {
@@ -57,9 +83,13 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Converte a imagem selecionada para Base64 e atualiza a pré-visualização.
-   */
+  // Validador customizado para garantir que as senhas coincidem
+  passwordMatchValidator(form: FormGroup) {
+    const novaSenha = form.get('novaSenha')?.value;
+    const confirmarSenha = form.get('confirmarSenha')?.value;
+    return novaSenha === confirmarSenha ? null : { mismatch: true };
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -74,11 +104,18 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * MODIFICADO: Salva as alterações com feedback visual (sem alerts).
+   */
   salvarAlteracoesPerfil(): void {
     if (!this.usuario) {
         console.error('Usuário não está logado para atualização.');
         return;
     }
+    
+    this.isLoading = true;
+    this.successMessage = null;
+    this.errorMessage = null;
 
     const payload = {
       nome: this.usuarioEditavel.nome,
@@ -89,15 +126,24 @@ export class UsuarioComponent implements OnInit, OnDestroy {
 
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
       next: (response: any) => {
-        console.log('Perfil atualizado com sucesso:', response);
+        this.isLoading = false;
         this.authService.setUser(response.user);
-        this.fecharModalEdicao();
-        alert('Perfil atualizado com sucesso!');
+        this.successMessage = 'Perfil atualizado com sucesso!';
+
+        // Fecha o modal após 3 segundos
+        setTimeout(() => {
+          this.fecharModalEdicao();
+        }, 3000);
       },
       error: (err: any) => {
-        console.error('Erro ao salvar alterações no perfil:', err);
+        this.isLoading = false;
         const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
-        alert(errorMessage);
+        this.errorMessage = errorMessage;
+        
+        // Limpa a mensagem de erro após 10 segundos
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, 10000);
       }
     });
   }
@@ -109,8 +155,73 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * MODIFICADO: Limpa as mensagens ao fechar o modal.
+   */
   fecharModalEdicao(): void {
     this.editModalAberto = false;
+    this.successMessage = null;
+    this.errorMessage = null;
+    this.isLoading = false;
+  }
+
+  // ### ADICIONADO: Funções para o modal de senha ###
+
+  abrirModalSenha(): void {
+    this.senhaModalAberto = true;
+    this.senhaForm.reset();
+    this.senhaSuccessMessage = null;
+    this.senhaErrorMessage = null;
+  }
+
+  fecharModalSenha(): void {
+    this.senhaModalAberto = false;
+    this.senhaIsLoading = false;
+  }
+
+  salvarNovaSenha(): void {
+    if (this.senhaForm.invalid) {
+      this.senhaErrorMessage = 'Por favor, preencha todos os campos corretamente.';
+      setTimeout(() => { this.senhaErrorMessage = null; }, 10000);
+      return;
+    }
+
+    this.senhaIsLoading = true;
+    this.senhaSuccessMessage = null;
+    this.senhaErrorMessage = null;
+
+    const payload = {
+      senhaAtual: this.senhaForm.value.senhaAtual,
+      novaSenha: this.senhaForm.value.novaSenha,
+      confirmarSenha: this.senhaForm.value.confirmarSenha
+    };
+
+    this.authService.changePassword(payload).subscribe({
+      next: (response) => {
+        this.senhaIsLoading = false;
+        this.senhaSuccessMessage = response.message || 'Senha alterada com sucesso!';
+        this.senhaForm.reset();
+        
+        setTimeout(() => {
+          this.fecharModalSenha();
+        }, 3000);
+      },
+      error: (err) => {
+        this.senhaIsLoading = false;
+        this.senhaErrorMessage = err.error?.error || 'Erro ao alterar a senha.';
+        
+        setTimeout(() => {
+          this.senhaErrorMessage = null;
+        }, 10000);
+      }
+    });
+  }
+
+  // Toggles de visibilidade para os campos de senha
+  toggleVisibility(field: 'senhaAtual' | 'novaSenha' | 'confirmarSenha') {
+    if (field === 'senhaAtual') this.senhaAtualVisible = !this.senhaAtualVisible;
+    if (field === 'novaSenha') this.novaSenhaVisible = !this.novaSenhaVisible;
+    if (field === 'confirmarSenha') this.confirmarSenhaVisible = !this.confirmarSenhaVisible;
   }
 
   navegarParaContato(): void {

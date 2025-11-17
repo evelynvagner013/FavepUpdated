@@ -2,9 +2,9 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
-// 1. Importar o 'map'
 import { tap, catchError, map } from 'rxjs/operators';
-import { Usuario, AuthResponse, PlanosMercadoPago } from '../models/api.models';
+// Importe 'any' ou defina os tipos corretos se os tiver em api.models
+import { Usuario, AuthResponse, PlanosMercadoPago, ChangePasswordPayload } from '../models/api.models';
 import { environment } from '../environments/environment';
 import { UsuarioService } from './usuario.service';
 
@@ -60,6 +60,14 @@ export class AuthService {
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
+
+  // highlight-start
+  // ### ADICIONADO: Função para chamar a rota do backend ###
+  changePassword(payload: any): Observable<any> { 
+    // A rota é protegida, o interceptor de token (se houver) anexará o token
+    return this.http.put<any>(`${this.authUrl}/change-password`, payload);
+  }
+  // highlight-end
 
   private isPlanoAtivo(plano: PlanosMercadoPago): boolean {
     return plano.status === 'Pago/Ativo' || plano.status === 'Trial';

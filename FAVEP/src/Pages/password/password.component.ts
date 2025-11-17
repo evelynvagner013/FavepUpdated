@@ -36,6 +36,10 @@ export class PasswordComponent implements OnInit {
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
+  // Variáveis para controlar visibilidade da senha
+  senhaVisible: boolean = false;
+  confirmarSenhaVisible: boolean = false;
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -249,6 +253,7 @@ export class PasswordComponent implements OnInit {
         this.isLoading = false;
         this.successMessage = res.message || 'Sucesso!';
         setTimeout(() => {
+          // Redireciona com o query param para abrir o login
           this.router.navigate(['/home'], { queryParams: { openLogin: 'true' } });
         }, 2500);
       },
@@ -261,9 +266,20 @@ export class PasswordComponent implements OnInit {
 
   
   public restartForgotFlow(): void {
-    this.router.navigate(['/auth/forgot-password']);
+    // Não precisa de navigate, apenas reseta o estado local
     this.forgotFlowStep = 'email';
     this.form.reset();
     this.setupForgotEmailStep();
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  // Método para alternar visibilidade da senha
+  toggleVisibility(field: 'senha' | 'confirmarSenha'): void {
+    if (field === 'senha') {
+      this.senhaVisible = !this.senhaVisible;
+    } else if (field === 'confirmarSenha') {
+      this.confirmarSenhaVisible = !this.confirmarSenhaVisible;
+    }
   }
 }
