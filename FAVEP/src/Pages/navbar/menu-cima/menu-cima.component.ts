@@ -1,7 +1,7 @@
 // Conteúdo completo do arquivo: src/Pages/navbar/menu-cima/menu-cima.component.ts
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router'; 
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
@@ -28,6 +28,9 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   currentUserValue: Usuario | null = null;
   private authSubscription: Subscription = new Subscription();
   mostrarDropdown = false;
+  
+  // ADICIONADO: Propriedade para checar o ambiente
+  isBrowser: boolean; 
 
   mostrarLoginModal = false;
   mostrarRegisterModal = false;
@@ -68,8 +71,11 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private usuarioService: UsuarioService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    @Inject(PLATFORM_ID) private platformId: Object // INJEÇÃO: Detecta o ambiente
   ) {
+    // INICIALIZAÇÃO: Define se estamos no navegador
+    this.isBrowser = isPlatformBrowser(this.platformId);
     this.currentUserValue = this.authService.currentUserValue;
   }
 
@@ -107,13 +113,16 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.loginPassword = '';
     this.mostrarLoginModal = true;
     
-    const savedEmail = localStorage.getItem('lembreMeEmail');
-    if (savedEmail) {
-      this.loginEmail = savedEmail;
-      this.lembreMe = true;
-    } else {
-      this.loginEmail = '';
-      this.lembreMe = false;
+    // CORREÇÃO SSR: Acessa localStorage APENAS se estiver no navegador
+    if (this.isBrowser) {
+        const savedEmail = localStorage.getItem('lembreMeEmail');
+        if (savedEmail) {
+          this.loginEmail = savedEmail;
+          this.lembreMe = true;
+        } else {
+          this.loginEmail = '';
+          this.lembreMe = false;
+        }
     }
   }
 
@@ -154,10 +163,13 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   onLoginSubmit(): void {
     this.loginErrorMessage = null;
 
-    if (this.lembreMe) {
-      localStorage.setItem('lembreMeEmail', this.loginEmail);
-    } else {
-      localStorage.removeItem('lembreMeEmail');
+    // CORREÇÃO SSR: Acessa localStorage APENAS se estiver no navegador
+    if (this.isBrowser) {
+        if (this.lembreMe) {
+          localStorage.setItem('lembreMeEmail', this.loginEmail);
+        } else {
+          localStorage.removeItem('lembreMeEmail');
+        }
     }
 
     this.authService.login(this.loginEmail, this.loginPassword).subscribe({
@@ -167,9 +179,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loginErrorMessage = 'Senha ou usuário incorreto.';
-        // highlight-start
         setTimeout(() => { this.loginErrorMessage = null; }, 10000); // Limpa após 10s
-        // highlight-end
       }
     });
   }
@@ -180,9 +190,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
     if (this.registerUser.senha !== this.registerUser.confirmarSenha) {
       this.registerErrorMessage = 'As senhas não coincidem.';
-      // highlight-start
       setTimeout(() => { this.registerErrorMessage = null; }, 10000); // Limpa após 10s
-      // highlight-end
       return;
     }
 
@@ -198,7 +206,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         this.registerSuccessMessage = response.message;
         this.emailParaVerificar = this.registerUser.email;
         
-        // highlight-start
         // Adiciona delay de 10s antes de mudar de modal
         setTimeout(() => {
           this.fecharModals();
@@ -207,13 +214,10 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
           this.verificationCode = '';
           this.mostrarVerifyEmailModal = true;
         }, 10000); // 10 segundos de espera
-        // highlight-end
       },
       error: (err) => {
         this.registerErrorMessage = err.error?.error || 'Erro ao registrar.';
-        // highlight-start
         setTimeout(() => { this.registerErrorMessage = null; }, 10000); // Limpa após 10s
-        // highlight-end
       }
     });
   }
@@ -224,9 +228,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
     if (!this.emailParaVerificar || !this.verificationCode) {
       this.verifyErrorMessage = 'Erro: E-mail ou código faltando.';
-      // highlight-start
       setTimeout(() => { this.verifyErrorMessage = null; }, 10000); // Limpa após 10s
-      // highlight-end
       return;
     }
 
@@ -234,19 +236,15 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.verifySuccessMessage = response.message || "E-mail verificado com sucesso!";
         
-        // highlight-start
         // Adiciona delay de 10s antes de mudar de modal
         setTimeout(() => {
           this.fecharModals();
           this.abrirLoginModal();
         }, 10000); // 10 segundos de espera
-        // highlight-end
       },
       error: (err) => {
         this.verifyErrorMessage = err.error?.error || 'Falha na verificação.';
-        // highlight-start
         setTimeout(() => { this.verifyErrorMessage = null; }, 10000); // Limpa após 10s
-        // highlight-end
       }
     });
   }
@@ -264,15 +262,11 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.forgotSuccessMessage = res.message || 'Código enviado para o e-mail.';
           this.forgotFlowStep = 'code'; // Avança para a etapa do código
-          // highlight-start
           setTimeout(() => { this.forgotSuccessMessage = null; }, 10000); // Limpa após 10s
-          // highlight-end
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Erro ao enviar e-mail.';
-          // highlight-start
           setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-          // highlight-end
         }
       });
     } 
@@ -284,22 +278,16 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
           this.forgotResetToken = res.token; // Salva o token retornado pela API
           if (!this.forgotResetToken) {
             this.forgotErrorMessage = 'Token de redefinição não recebido da API.';
-            // highlight-start
             setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-            // highlight-end
             return;
           }
           this.forgotSuccessMessage = 'Código validado! Defina sua nova senha.';
           this.forgotFlowStep = 'password'; // Avança para a etapa da senha
-          // highlight-start
           setTimeout(() => { this.forgotSuccessMessage = null; }, 10000); // Limpa após 10s
-          // highlight-end
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Código inválido ou expirado.';
-          // highlight-start
           setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-          // highlight-end
         }
       });
     } 
@@ -308,36 +296,28 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     else if (this.forgotFlowStep === 'password') {
       if (this.forgotNewPassword !== this.forgotConfirmPassword) {
         this.forgotErrorMessage = 'As senhas não coincidem.';
-        // highlight-start
         setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-        // highlight-end
         return;
       }
       if (!this.forgotResetToken) {
         this.forgotErrorMessage = 'Sessão de redefinição inválida. Por favor, reinicie.';
         this.forgotFlowStep = 'email'; // Reinicia o fluxo
-        // highlight-start
         setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-        // highlight-end
         return;
       }
       
       this.authService.resetPassword(this.forgotResetToken, this.forgotNewPassword, this.forgotConfirmPassword).subscribe({
         next: (res) => {
           this.forgotSuccessMessage = res.message || 'Senha alterada com sucesso!';
-          // highlight-start
           // Altera o delay para 10 segundos
           setTimeout(() => {
             this.fecharModals();
             this.abrirLoginModal();
           }, 10000); // 10 segundos de espera
-          // highlight-end
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Erro ao redefinir a senha.';
-          // highlight-start
           setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
-          // highlight-end
         }
       });
     }

@@ -56,18 +56,31 @@ export class AuthService {
   verifyEmailCode(email: string, code: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/verify-email-code`, { email, code });
   }
+  
+  /**
+   * NOVO: Chama o endpoint protegido para verificar o código do novo e-mail.
+   */
+  verifyNewEmail(code: string): Observable<AuthResponse> {
+    // Rota protegida, envia apenas o código
+    return this.http.post<AuthResponse>(`${this.authUrl}/verify-new-email`, { code });
+  }
 
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
 
-  // highlight-start
-  // ### ADICIONADO: Função para chamar a rota do backend ###
-  changePassword(payload: any): Observable<any> { 
-    // A rota é protegida, o interceptor de token (se houver) anexará o token
-    return this.http.put<any>(`${this.authUrl}/change-password`, payload);
+  // --- FUNÇÕES DE 2FA ---
+
+  iniciarChangePassword2FA(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/iniciar-change-password-2fa`, payload);
   }
-  // highlight-end
+
+  finalizarChangePassword2FA(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/finalizar-change-password-2fa`, payload);
+  }
+  
+  // --- FIM FUNÇÕES DE 2FA ---
+
 
   private isPlanoAtivo(plano: PlanosMercadoPago): boolean {
     return plano.status === 'Pago/Ativo' || plano.status === 'Trial';
@@ -140,22 +153,19 @@ export class AuthService {
     this.setUser(usuario);
   }
 
-  // --- FUNÇÃO CORRIGIDA ---
   public refreshUserData(): Observable<Usuario | null> {
     if (!this.isLoggedIn()) {
       return of(null);
     }
 
     return this.usuarioService.atualizarPerfilUsuario({}).pipe(
-      // 2. Mudar de 'tap' para 'map'
       map((response: AuthResponse) => {
         if (response.user && response.token) {
           this.setToken(response.token);
           this.setUser(response.user);
-          // 3. Retornar o 'user', transformando o stream
           return response.user;
         }
-        return null; // Retornar null se a resposta for inválida
+        return null; 
       }),
       catchError(err => {
         console.error("Falha ao atualizar dados do usuário", err);

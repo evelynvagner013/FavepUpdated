@@ -85,6 +85,9 @@ export interface ChangePasswordPayload {
 export interface AuthResponse {
   user: Usuario;
   token: string;
+   message?: string;    
+  verificationPending?: boolean; 
+  oldEmail?: string;           
 }
 
 // Interface de requisição de Login

@@ -9,7 +9,12 @@
             </div>
             <div class="profile-summary">
                 <h1>{{ usuario.nome }}</h1>
-                <p>{{ usuario.email }}</p>
+                <p>
+                    {{ usuario.email }}
+                    <span *ngIf="!usuario.emailVerified" style="color: #e67e22; font-weight: 600; margin-left: 10px;">
+                        (Verificação Pendente)
+                    </span>
+                </p>
             </div>
             <button class="edit-main-btn" (click)="abrirModalEdicao()" title="Editar Perfil">
                 <i class="fas fa-pencil-alt"></i> Editar Perfil
@@ -30,7 +35,10 @@
                     <p>
                         <i class="fas fa-envelope"></i>
                         <strong>Email:</strong>
-                        <span>{{ usuario.email }}</span>
+                        <span>
+                            {{ usuario.email }}
+                            <i *ngIf="!usuario.emailVerified" class="fas fa-exclamation-triangle" style="color: #e67e22;" title="Verificação Pendente"></i>
+                        </span>
                     </p>
                     <p *ngIf="usuario.telefone">
                         <i class="fas fa-phone"></i>
@@ -96,6 +104,9 @@
                         <small *ngIf="emailInput.errors?.['required']">Email é obrigatório.</small>
                         <small *ngIf="emailInput.errors?.['email']">Formato de email inválido.</small>
                     </div>
+                    <p *ngIf="usuarioEditavel.email && usuario?.email !== usuarioEditavel.email" style="font-size: 0.85rem; color: #e67e22; margin-top: 5px;">
+                      Atenção: A alteração de e-mail requer verificação por código.
+                    </p>
                 </div>
                 <div class="form-group">
                     <label for="edit-telefone">Telefone:</label>
@@ -127,7 +138,6 @@
     </div>
 </div>
 
-
 <div class="modal-overlay" [class.active]="senhaModalAberto" *ngIf="senhaModalAberto">
     <div class="modal-content">
         <div class="modal-header">
@@ -138,48 +148,65 @@
         <form [formGroup]="senhaForm" (ngSubmit)="salvarNovaSenha()">
             <div class="modal-body">
                 
-                <div class="form-group">
-                    <label for="senhaAtual">Senha Atual:</label>
-                    <div class="password-container-modal">
-                        <input [type]="senhaAtualVisible ? 'text' : 'password'" id="senhaAtual" formControlName="senhaAtual" required>
-                        <i class="password-toggle-icon" 
-                           [ngClass]="senhaAtualVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
-                           (click)="toggleVisibility('senhaAtual')"></i>
+                <ng-container *ngIf="senhaStep === 'form'">
+                    <div class="form-group">
+                        <label for="senhaAtual">Senha Atual:</label>
+                        <div class="password-container-modal">
+                            <input [type]="senhaAtualVisible ? 'text' : 'password'" id="senhaAtual" formControlName="senhaAtual" required>
+                            <i class="password-toggle-icon" 
+                               [ngClass]="senhaAtualVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                               (click)="toggleVisibility('senhaAtual')"></i>
+                        </div>
+                        <div *ngIf="senhaForm.get('senhaAtual')?.invalid && senhaForm.get('senhaAtual')?.touched" class="validation-error">
+                            <small>Senha atual é obrigatória.</small>
+                        </div>
                     </div>
-                    <div *ngIf="senhaForm.get('senhaAtual')?.invalid && senhaForm.get('senhaAtual')?.touched" class="validation-error">
-                        <small>Senha atual é obrigatória.</small>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="novaSenha">Nova Senha:</label>
-                    <div class="password-container-modal">
-                        <input [type]="novaSenhaVisible ? 'text' : 'password'" id="novaSenha" formControlName="novaSenha" required minlength="8">
-                        <i class="password-toggle-icon" 
-                           [ngClass]="novaSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
-                           (click)="toggleVisibility('novaSenha')"></i>
+                    <div class="form-group">
+                        <label for="novaSenha">Nova Senha:</label>
+                        <div class="password-container-modal">
+                            <input [type]="novaSenhaVisible ? 'text' : 'password'" id="novaSenha" formControlName="novaSenha" required minlength="8">
+                            <i class="password-toggle-icon" 
+                               [ngClass]="novaSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                               (click)="toggleVisibility('novaSenha')"></i>
+                        </div>
+                        <div *ngIf="senhaForm.get('novaSenha')?.invalid && senhaForm.get('novaSenha')?.touched" class="validation-error">
+                            <small *ngIf="senhaForm.get('novaSenha')?.errors?.['required']">Nova senha é obrigatória.</small>
+                            <small *ngIf="senhaForm.get('novaSenha')?.errors?.['minlength']">A senha deve ter no mínimo 8 caracteres.</small>
+                            <small *ngIf="senhaForm.get('novaSenha')?.errors?.['pattern']">Deve conter maiúscula, minúscula, número e caractere especial.</small>
+                        </div>
                     </div>
-                    <div *ngIf="senhaForm.get('novaSenha')?.invalid && senhaForm.get('novaSenha')?.touched" class="validation-error">
-                        <small *ngIf="senhaForm.get('novaSenha')?.errors?.['required']">Nova senha é obrigatória.</small>
-                        <small *ngIf="senhaForm.get('novaSenha')?.errors?.['minlength']">A senha deve ter no mínimo 8 caracteres.</small>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="confirmarSenha">Confirmar Nova Senha:</label>
-                    <div class="password-container-modal">
-                        <input [type]="confirmarSenhaVisible ? 'text' : 'password'" id="confirmarSenha" formControlName="confirmarSenha" required>
-                        <i class="password-toggle-icon" 
-                           [ngClass]="confirmarSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
-                           (click)="toggleVisibility('confirmarSenha')"></i>
+                    <div class="form-group">
+                        <label for="confirmarSenha">Confirmar Nova Senha:</label>
+                        <div class="password-container-modal">
+                            <input [type]="confirmarSenhaVisible ? 'text' : 'password'" id="confirmarSenha" formControlName="confirmarSenha" required>
+                            <i class="password-toggle-icon" 
+                               [ngClass]="confirmarSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                               (click)="toggleVisibility('confirmarSenha')"></i>
+                        </div>
+                        <div *ngIf="senhaForm.get('confirmarSenha')?.invalid && senhaForm.get('confirmarSenha')?.touched" class="validation-error">
+                            <small *ngIf="senhaForm.get('confirmarSenha')?.errors?.['required']">Confirmação é obrigatória.</small>
+                        </div>
+                        <div *ngIf="senhaForm.errors?.['mismatch'] && senhaForm.get('confirmarSenha')?.touched" class="validation-error">
+                            <small>As senhas não coincidem.</small>
+                        </div>
                     </div>
-                    <div *ngIf="senhaForm.get('confirmarSenha')?.invalid && senhaForm.get('confirmarSenha')?.touched" class="validation-error">
-                        <small *ngIf="senhaForm.get('confirmarSenha')?.errors?.['required']">Confirmação é obrigatória.</small>
+                </ng-container>
+
+                <ng-container *ngIf="senhaStep === 'otp'">
+                    <div class="form-group">
+                        <label for="otp">Código de Verificação (2FA):</label>
+                        <p style="font-size: 0.9em; color: #6c757d; margin-top: -10px; margin-bottom: 15px;">
+                            Um código foi enviado para seu email ou telefone. Insira-o abaixo para confirmar a alteração.
+                        </p>
+                        <input type="text" id="otp" formControlName="otp" required maxlength="6" inputmode="numeric">
+                        <div *ngIf="senhaForm.get('otp')?.invalid && senhaForm.get('otp')?.touched" class="validation-error">
+                            <small *ngIf="senhaForm.get('otp')?.errors?.['required']">O código de verificação é obrigatório.</small>
+                            <small *ngIf="senhaForm.get('otp')?.errors?.['minlength'] || senhaForm.get('otp')?.errors?.['maxlength']">O código deve ter 6 dígitos.</small>
+                        </div>
                     </div>
-                    <div *ngIf="senhaForm.errors?.['mismatch'] && senhaForm.get('confirmarSenha')?.touched" class="validation-error">
-                        <small>As senhas não coincidem.</small>
-                    </div>
-                </div>
+                </ng-container>
 
             </div>
 
@@ -206,10 +233,70 @@
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" (click)="fecharModalSenha()" [disabled]="senhaIsLoading">Cancelar</button>
                 <button type="submit" class="btn-save" [disabled]="senhaForm.invalid || senhaIsLoading">
-                  <span *ngIf="!senhaIsLoading">Salvar Senha</span>
-                  <span *ngIf="senhaIsLoading">Salvando...</span>
+                  <span *ngIf="!senhaIsLoading">
+                    {{ senhaStep === 'form' ? 'Enviar Código' : 'Salvar Nova Senha' }}
+                  </span>
+                  <span *ngIf="senhaIsLoading">
+                    {{ senhaStep === 'form' ? 'Enviando...' : 'Verificando...' }}
+                  </span>
                 </button>
             </div>
         </form>
     </div>
+</div>
+
+<div class="modal-overlay" [class.active]="mostrarVerifyEmailUpdate" *ngIf="mostrarVerifyEmailUpdate">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Verificar Novo E-mail</h3>
+      <button class="close-btn" (click)="fecharModalVerificacaoEmailUpdate()" aria-label="Fechar modal">&times;</button>
+    </div>
+    
+    <form (ngSubmit)="onVerifyNewEmailCodeSubmit()" #verifyEmailUpdateForm="ngForm">
+      <div class="modal-body">
+          
+        <div style="padding: 15px; background-color: #e2f3ff; border: 1px solid #b8daff; color: #0c5460; border-radius: 5px; margin-bottom: 25px;">
+          Enviamos um código de 6 dígitos para o seu novo e-mail: 
+          <strong>{{ emailParaVerificarUpdate }}</strong>.
+          <br>
+          Seu e-mail antigo ({{ oldEmail || 'N/A' }}) continua ativo até a verificação.
+        </div>
+        
+        <div class="form-group">
+          <label for="verificationCodeUpdate">Código de Verificação:</label>
+          <input 
+            type="text" 
+            id="verificationCodeUpdate" 
+            name="verificationCodeUpdate" 
+            [(ngModel)]="verificationCodeUpdate" 
+            placeholder="Insira o código de 6 dígitos" 
+            required 
+            maxlength="6"
+            inputmode="numeric"
+            style="text-align: center; font-size: 1.2rem; letter-spacing: 3px;"
+            #codeInput="ngModel"
+          />
+          <div *ngIf="codeInput.invalid && codeInput.touched" class="validation-error">
+              <small *ngIf="codeInput.errors?.['required']">O código de verificação é obrigatório.</small>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="message success" *ngIf="verifyEmailSuccessMessage" style="margin: 0 0 15px 0;">
+        {{ verifyEmailSuccessMessage }}
+      </div>
+      <div class="message error" *ngIf="verifyEmailErrorMessage" style="margin: 0 0 15px 0;">
+        {{ verifyEmailErrorMessage }}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="fecharModalVerificacaoEmailUpdate()" [disabled]="verifyEmailIsLoading">Cancelar</button>
+        <button type="submit" class="btn-save" [disabled]="!verifyEmailUpdateForm.form.valid || verifyEmailIsLoading">
+          <span *ngIf="!verifyEmailIsLoading">Verificar e Salvar</span>
+          <span *ngIf="verifyEmailIsLoading">Verificando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
