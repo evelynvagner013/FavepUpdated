@@ -452,41 +452,70 @@ module.exports = {
     }
   },
   
-  //#update-user-controller
+  //#update-user-controller (MODIFICADO para fluxo de verificação de email)
   async update(req, res) {
     console.log('➡️ Requisição recebida em /update (PUT)');
     const authenticatedUserId = req.userId;
     const { nome, email, telefone, fotoperfil } = req.body;
+    
     try {
-      const updateData = {};
-      if (nome) updateData.nome = nome;
-      if (email) updateData.email = email;
-      if (telefone) updateData.telefone = telefone;
-      if (fotoperfil) updateData.fotoperfil = fotoperfil;
+      const userToUpdate = await prisma.usuario.findUnique({ where: { id: authenticatedUserId } });
 
-      if (telefone) {
-        const existingUser = await prisma.usuario.findFirst({
-          where: { 
-            telefone: telefone,
-            id: { not: authenticatedUserId } 
-          }
-        });
-        if (existingUser) {
-          return res.status(400).json({ error: 'Este telefone já está em uso.' });
-        }
+      if (!userToUpdate) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
       }
-       if (email) {
-        const existingUser = await prisma.usuario.findFirst({
+
+      const updateData = {};
+      let verificationNeeded = false;
+      let oldEmail = userToUpdate.email;
+
+      // --- 1. LÓGICA DE MUDANÇA DE E-MAIL ---
+      if (email && email !== userToUpdate.email) {
+        // Checa se o novo email já está em uso por outro usuário
+        const existingEmailUser = await prisma.usuario.findFirst({
           where: { 
             email: email,
             id: { not: authenticatedUserId } 
           }
         });
-        if (existingUser) {
-          return res.status(400).json({ error: 'Este email já está em uso.' });
+        if (existingEmailUser) {
+          return res.status(400).json({ error: 'Este novo e-mail já está em uso.' });
+        }
+
+        // Gera o código e inicia a verificação
+        const verificationCode = generateVerificationCode();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+        
+        updateData.email = email; // Salva o novo e-mail
+        updateData.emailVerified = false; // Define como não verificado
+        updateData.verificationToken = verificationCode;
+        updateData.verificationTokenExpires = expiresAt;
+        
+        verificationNeeded = true;
+      } else if (email) {
+        // Se o email foi enviado, mas não mudou, apenas continua
+        updateData.email = email;
+      }
+      // --- FIM DA LÓGICA DE MUDANÇA DE E-MAIL ---
+
+      // --- 2. LÓGICA DE MUDANÇA DE TELEFONE/NOME/FOTO ---
+      if (nome) updateData.nome = nome;
+      if (telefone) updateData.telefone = telefone;
+      if (fotoperfil) updateData.fotoperfil = fotoperfil;
+
+      if (telefone && telefone !== userToUpdate.telefone) {
+        const existingPhoneUser = await prisma.usuario.findFirst({
+          where: { 
+            telefone: telefone,
+            id: { not: authenticatedUserId } 
+          }
+        });
+        if (existingPhoneUser) {
+          return res.status(400).json({ error: 'Este telefone já está em uso.' });
         }
       }
-
+      // --- FIM DA LÓGICA DE MUDANÇA DE TELEFONE/NOME/FOTO ---
+      
       const user = await prisma.usuario.update({
         where: { id: authenticatedUserId },
         data: updateData,
@@ -501,6 +530,21 @@ module.exports = {
           }
         }
       });
+      
+      // 3. ENVIO DO E-MAIL (após sucesso no DB)
+      if (verificationNeeded) {
+        await sendVerificationEmail(email, updateData.verificationToken);
+        console.log(`✅ E-mail de verificação enviado para o NOVO e-mail: ${email}`);
+        
+        user.senha = undefined;
+        // Retorna um status específico para o frontend iniciar o modal de verificação
+        return res.status(202).json({ 
+          user, 
+          message: `Perfil atualizado. Um código de verificação foi enviado para o novo e-mail (${email}).`,
+          verificationPending: true,
+          oldEmail: oldEmail
+        });
+      }
 
       user.senha = undefined;
       console.log(`✅ Usuário ${user.email} atualizado com sucesso.`);
@@ -508,18 +552,87 @@ module.exports = {
         user,
         token: generateToken({ id: user.id })
       });
+      
     } catch (err) {
       console.error('❌ Erro ao atualizar usuário:', err.message);
-      if (err.code === 'P2002') {
-         return res.status(400).json({ error: 'Este email ou telefone já está em uso.' });
-      }
       return res.status(500).json({ error: 'Erro ao atualizar usuário.' });
     }
   },
+  
+  // ### NOVO: Função para validar o novo e-mail ###
+  async verifyNewEmail(req, res) {
+    console.log('➡️ Requisição recebida em /verify-new-email');
+    const authenticatedUserId = req.userId;
+    const { code } = req.body;
+    const cleanCode = code ? code.trim() : '';
 
-  // ### ADICIONADO: Nova função para alterar a senha ###
-  async changePassword(req, res) {
-    console.log('➡️ Requisição recebida em /changePassword');
+    if (!cleanCode) {
+      return res.status(400).json({ error: 'O código de verificação é obrigatório.' });
+    }
+
+    try {
+      const user = await prisma.usuario.findFirst({
+        where: {
+          id: authenticatedUserId,
+          verificationToken: cleanCode,
+          verificationTokenExpires: { gt: new Date() },
+          emailVerified: false, // Deve estar como não verificado
+        },
+        include: {
+          planos: {
+            where: {
+              status: 'Pago/Ativo',
+              dataExpiracao: {
+                gte: new Date()
+              }
+            }
+          }
+        }
+      });
+
+      if (!user) {
+        return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
+      }
+
+      // Finaliza a verificação: limpa o token e define emailVerified como true
+      const updatedUser = await prisma.usuario.update({
+        where: { id: user.id },
+        data: {
+          verificationToken: null, 
+          verificationTokenExpires: null,
+          emailVerified: true, 
+        },
+        include: {
+           planos: {
+            where: {
+              status: 'Pago/Ativo',
+              dataExpiracao: {
+                gte: new Date()
+              }
+            }
+          }
+        }
+      });
+
+      updatedUser.senha = undefined;
+      console.log('✅ Novo e-mail verificado com sucesso para:', updatedUser.email);
+      
+      // Retorna o usuário atualizado para o frontend
+      return res.status(200).json({ 
+        message: 'E-mail verificado com sucesso!',
+        user: updatedUser,
+        token: generateToken({ id: user.id })
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao verificar novo e-mail:', error.message);
+      return res.status(500).json({ error: 'Erro ao verificar o código.' });
+    }
+  },
+  
+  // ### ADICIONADO: Passo 1 do 2FA - Iniciar alteração de senha ###
+  async iniciarChangePassword2FA(req, res) {
+    console.log('➡️ Requisição recebida em /iniciar-change-password-2fa (Passo 1)');
     const { senhaAtual, novaSenha, confirmarSenha } = req.body;
     const userId = req.userId; // ID do usuário logado (via authMiddleware)
 
@@ -534,15 +647,15 @@ module.exports = {
       return res.status(400).json({ error: 'A nova senha deve ser diferente da senha atual.' });
     }
 
-    // 2. Validação de força da nova senha
+    // 2. Validação de força da nova senha (Reutiliza a função validatePassword)
     if (!validatePassword(novaSenha)) {
       return res.status(400).json({
-        error: 'A senha não é forte o suficiente. Requer mínimo de 8 caracteres, uma maiúscula, uma minúscula e um caractere especial.'
+        error: 'A nova senha não atende aos requisitos de segurança (min. 8 caracteres, maiúscula, minúscula e especial).'
       });
     }
 
     try {
-      // 3. Busca o usuário e sua senha atual
+      // 3. Busca o usuário e verifica a senha atual (CRÍTICO para o erro anterior)
       const user = await prisma.usuario.findUnique({
         where: { id: userId }
       });
@@ -551,28 +664,110 @@ module.exports = {
         return res.status(404).json({ error: 'Usuário não encontrado.' });
       }
 
-      // 4. Compara a senha atual
       const isMatch = await bcrypt.compare(senhaAtual, user.senha);
       if (!isMatch) {
+        // Retorna erro genérico de segurança
+        console.log(`⚠️ Falha na verificação da senha atual para ${user.email}.`);
+        return res.status(400).json({ error: 'Erro ao iniciar alteração de senha. Verifique a senha atual.' });
+      }
+      
+      // 4. Gera e Salva o Código 2FA temporário
+      const authCode = generateVerificationCode(); // 6 dígitos
+      const authCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+
+      await prisma.usuario.update({
+        where: { id: userId },
+        data: {
+          authCode: authCode,
+          authCodeExpires: authCodeExpires
+        }
+      });
+      
+      // 5. Envia o código por email (Reutiliza o sendPasswordResetCodeEmail)
+      await sendPasswordResetCodeEmail(user.email, authCode);
+      
+      console.log(`✅ Código 2FA para mudança de senha enviado para ${user.email}`);
+      return res.status(200).json({ message: 'Código de verificação enviado para seu e-mail/telefone!' });
+
+    } catch (error) {
+      console.error('❌ Erro no iniciarChangePassword2FA:', error.message);
+      return res.status(500).json({ error: 'Erro interno ao iniciar alteração de senha.' });
+    }
+  },
+
+  // ### ADICIONADO: Passo 2 do 2FA - Confirmar e finalizar alteração ###
+  async finalizarChangePassword2FA(req, res) {
+    console.log('➡️ Requisição recebida em /finalizar-change-password-2fa (Passo 2)');
+    const { senhaAtual, novaSenha, otp } = req.body; // Recebe o OTP
+    const userId = req.userId;
+    const cleanOtp = otp ? otp.trim() : ''; // NOVO: Limpa o OTP de espaços em branco
+
+    // 1. Validações básicas
+    if (!novaSenha || !cleanOtp || !senhaAtual) {
+      return res.status(400).json({ error: 'Os dados de senha e o código são obrigatórios.' });
+    }
+    
+    // 2. Validação de força
+    if (!validatePassword(novaSenha)) {
+      return res.status(400).json({
+        error: 'A nova senha não atende aos requisitos de segurança.'
+      });
+    }
+
+    try {
+      // 3. Busca o usuário e verifica o OTP
+      const user = await prisma.usuario.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+      }
+
+      // 4. Compara a senha atual (redundância de segurança)
+      const isMatch = await bcrypt.compare(senhaAtual, user.senha);
+      if (!isMatch) {
+        console.log(`⚠️ Falha na verificação da senha atual no Passo 2 para ${user.email}.`);
         return res.status(400).json({ error: 'Senha atual incorreta.' });
       }
 
-      // 5. Hasheia e salva a nova senha
+      // 5. Verifica se o código OTP está correto e dentro do prazo de validade
+      // NOVO: Compara o valor em milissegundos para precisão e usa o OTP limpo.
+      const isExpired = user.authCodeExpires && user.authCodeExpires.getTime() < Date.now();
+      const isCodeMatch = user.authCode === cleanOtp; 
+
+      if (!isCodeMatch || isExpired) {
+        console.log(`⚠️ Falha na verificação do OTP para ${user.email}. isCodeMatch: ${isCodeMatch}, isExpired: ${isExpired}`);
+        
+        // Limpa o código para forçar novo envio em caso de falha
+        await prisma.usuario.update({
+          where: { id: userId },
+          data: {
+            authCode: null,
+            authCodeExpires: null
+          }
+        });
+        return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
+      }
+
+      // 6. Hasheia e salva a nova senha
       const hashedPassword = await bcrypt.hash(novaSenha, 8);
 
       await prisma.usuario.update({
         where: { id: userId },
         data: {
-          senha: hashedPassword
+          senha: hashedPassword,
+          authCode: null, // Limpa o código de 2FA após o sucesso
+          authCodeExpires: null 
         }
       });
 
-      console.log(`✅ Senha alterada com sucesso para o usuário: ${user.email}`);
+      console.log(`✅ Senha alterada com sucesso via 2FA para: ${user.email}`);
       return res.status(200).json({ message: 'Senha alterada com sucesso!' });
 
     } catch (error) {
-      console.error('❌ Erro no changePassword:', error.message);
-      return res.status(500).json({ error: 'Erro ao alterar a senha.' });
+      console.error('❌ Erro no finalizarChangePassword2FA:', error.message);
+      return res.status(500).json({ error: 'Erro interno ao finalizar alteração de senha.' });
     }
   }
 };
