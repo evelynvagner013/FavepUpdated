@@ -11,6 +11,7 @@
     font-size: 2.2rem;
     font-weight: 700;
     margin-bottom: 1rem;
+    color: black;
 }
 
 .pricing-header p {
@@ -94,7 +95,7 @@
     color: #374151;
 }
 .features-list li.disabled .feature-icon{
-    color: #046b4a;
+    color: #0060c7;
 }
 .features-list li.disabled .feature-subtext {
      color: #374151;
@@ -131,9 +132,9 @@
 }
 
 /* --- Cores Específicas dos Cards --- */
-.card-base { border-top-color: #046b4a; }
-.card-base .feature-icon { color: #046b4a; }
-.card-base .btn-assinar { background-color: #046b4a; }
+.card-base { border-top-color: #0060c7; }
+.card-base .feature-icon { color: #0060c7; }
+.card-base .btn-assinar { background-color: #0060c7; }
 
 .card-gold {
     border-top-color: #ca8a04;
@@ -143,9 +144,9 @@
 .card-gold .feature-icon { color: #ca8a04; }
 .card-gold .btn-assinar { background-color: #ca8a04; }
 
-.card-trial { border-top-color: #059669; }
-.card-trial .feature-icon { color: #059669; }
-.card-trial .btn-assinar { background-color: #059669; }
+.card-trial { border-top-color: #007aff; }
+.card-trial .feature-icon { color: #007aff; }
+.card-trial .btn-assinar { background-color: #007aff; }
 
 
 /* --- RESPONSIVIDADE --- */

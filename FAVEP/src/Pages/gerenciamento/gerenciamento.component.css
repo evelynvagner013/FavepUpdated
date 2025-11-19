@@ -67,10 +67,10 @@
 }
 
 .main-nav button.active {
-  color: #004d40;
-  border-bottom: 3px solid #004d40;
+  color: #007aff;
+  border-bottom: 3px solid #007aff;
   font-weight: 600;
-  background-color: #eaf7ed;
+  background-color: #d5ebf1;
 }
 
 .main-nav button i {
@@ -140,7 +140,7 @@
 
 /* Botão Adicionar está separado */
 .btn-add {
-  background-color: #004d40;
+  background-color: #007aff;
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -155,7 +155,7 @@
 }
 
 .btn-add:hover {
-  background-color: #00332b;
+  background-color: #278fff;
 }
 
 /* CARTÕES DE RESUMO */
