@@ -34,9 +34,24 @@
             </a>
 
             <ul class="submenu">
-                <li><a routerLink="/adicionar-usuario" routerLinkActive="active"><span class="material-symbols-outlined">person_add</span> Adicionar Perfil</a></li>
-                <li><a routerLink="/plano-assinatura" routerLinkActive="active"><span class="material-symbols-outlined">credit_card</span>Trocar Plano</a></li>
-                <li><a routerLink="/usuario" routerLinkActive="active"> <span class="material-symbols-outlined">account_circle</span> Perfil</a></li>
+                <li *ngIf="podeAdicionarMembros">
+                    <a routerLink="/adicionar-usuario" routerLinkActive="active">
+                        <span class="material-symbols-outlined">person_add</span> Adicionar Perfil
+                    </a>
+                </li>
+
+                <li *ngIf="podeGerenciarPagamentos">
+                    <a routerLink="/plano-assinatura" routerLinkActive="active">
+                        <span class="material-symbols-outlined">credit_card</span>Trocar Plano
+                    </a>
+                </li>
+
+                <li>
+                    <a routerLink="/usuario" routerLinkActive="active"> 
+                        <span class="material-symbols-outlined">account_circle</span> Perfil
+                    </a>
+                </li>
+                
                 <li>
                     <hr class="dropdown-divider">
                 </li>

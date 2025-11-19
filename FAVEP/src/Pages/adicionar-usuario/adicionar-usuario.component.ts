@@ -19,9 +19,9 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   private userSubscription: Subscription | undefined;
 
   // Propriedades do formulário de usuário
+  // Removido 'password' pois o backend gera automaticamente
   newUser = {
     email: '',
-    password: '',
     accessLevel: ''
   };
   statusMessage: string = '';
@@ -45,12 +45,20 @@ export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   // Novo método para adicionar usuário
   addUser(form: NgForm): void {
     if (form.valid) {
-      // Simulação de chamada de serviço para criar o usuário
-      // Na vida real, você chamaria um serviço como: this.authService.createUser(this.newUser).subscribe(...)
-      console.log('Dados do novo usuário:', this.newUser);
-
-      this.statusMessage = 'Usuário adicionado com sucesso!';
-      form.resetForm(); // Limpa o formulário após o sucesso
+      // Chama o serviço real conectado ao backend
+      this.authService.preRegisterSubUser(this.newUser.email, this.newUser.accessLevel)
+        .subscribe({
+          next: (res) => {
+            console.log('Usuário adicionado:', res);
+            this.statusMessage = res.message || 'Usuário convidado com sucesso! A senha foi enviada por e-mail.';
+            form.resetForm(); // Limpa o formulário após o sucesso
+          },
+          error: (err) => {
+            console.error('Erro ao adicionar usuário:', err);
+            // Exibe a mensagem de erro vinda do backend (ex: Plano insuficiente)
+            this.statusMessage = err.error?.error || 'Erro ao adicionar usuário. Tente novamente.';
+          }
+        });
     } else {
       this.statusMessage = 'Erro: Por favor, preencha todos os campos corretamente.';
     }

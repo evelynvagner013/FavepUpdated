@@ -5,7 +5,8 @@
       <h4><i class="fas fa-user-plus"></i> Adicionar Novo Usuário</h4>
 
 
-      <form #userForm="ngForm" (ngSubmit)="addUser(userForm)" novalidate> <div class="form-row">
+      <form #userForm="ngForm" (ngSubmit)="addUser(userForm)" novalidate> 
+          <div class="form-row">
               <div class="form-group">
                   <label for="newUserEmail">E-mail do Usuário</label>
                   <input type="email" id="newUserEmail" name="email" [(ngModel)]="newUser.email" placeholder="nome&#64;empresa.com.br" required email 
@@ -20,21 +21,8 @@
                       </div>
                   </div>
               </div>
-              <div class="form-group">
-                  <label for="newUserPassword">Senha </label>
-                  <input type="password" id="newUserPassword" name="password" [(ngModel)]="newUser.password" placeholder="Mínimo 8 caracteres" required minlength="8" 
-                         #passwordInput="ngModel" [class.ng-invalid]="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
-                  
-                  <div *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)" class="validation-message">
-                      <div *ngIf="passwordInput.errors?.['required']">
-                          A senha é obrigatória.
-                      </div>
-                      <div *ngIf="passwordInput.errors?.['minlength']">
-                          A senha deve ter pelo menos 8 caracteres.
-                      </div>
-                  </div>
+              
               </div>
-          </div>
 
           <div class="form-row">
               <div class="form-group">
@@ -42,8 +30,8 @@
                    <select id="accessLevel" name="accessLevel" [(ngModel)]="newUser.accessLevel" required 
                           #levelSelect="ngModel" [class.ng-invalid]="levelSelect.invalid && (levelSelect.dirty || levelSelect.touched)">
                       <option value="" disabled selected>Selecione um nível</option>
-                      <option value="admin">Administrador </option> 
-                      <option value="funcionario">Funcionário </option> 
+                      <option value="GERENTE">Gerente</option> 
+                      <option value="FUNCIONARIO">Funcionário</option> 
                     </select>
                   <div *ngIf="levelSelect.invalid && (levelSelect.dirty || levelSelect.touched)" class="validation-message">
                       O nível de acesso é obrigatório.
@@ -57,7 +45,7 @@
               </div>
           </div>
           
-          <div *ngIf="statusMessage" [class.success]="statusMessage.includes('sucesso')" [class.error]="statusMessage.includes('erro')" class="status-message">
+          <div *ngIf="statusMessage" [class.success]="statusMessage.includes('sucesso')" [class.error]="statusMessage.includes('Erro') || statusMessage.includes('erro')" class="status-message">
               {{ statusMessage }}
           </div>
       </form>
@@ -75,8 +63,8 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Administrador</td>
-                    <td>Acesso "Total" a todas as áreas do sistema (Gestão de Conteúdo, Relatórios, Configurações), exceto Adicionar/Remover outros usuários.</td>
+                    <td>Gerente</td>
+                    <td>Acesso similar ao Administrador para gestão operacional, mas sem poder gerenciar assinaturas ou excluir o Admin principal.</td>
                 </tr>
                 <tr>
                     <td>Funcionário</td>

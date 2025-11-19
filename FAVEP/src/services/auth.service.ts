@@ -68,6 +68,12 @@ export class AuthService {
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
+  
+  // --- FUNÇÃO DE CADASTRO DE SUB-USUÁRIO (NOVO) ---
+  preRegisterSubUser(email: string, cargo: string): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}/pre-register-sub-user`, { email, cargo });
+  }
+  // -----------------------------------------------
 
   // --- FUNÇÕES DE 2FA ---
 
