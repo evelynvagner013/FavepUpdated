@@ -3,8 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
-// Importe 'any' ou defina os tipos corretos se os tiver em api.models
-import { Usuario, AuthResponse, PlanosMercadoPago, ChangePasswordPayload } from '../models/api.models';
+import { Usuario, AuthResponse, PlanosMercadoPago } from '../models/api.models';
 import { environment } from '../environments/environment';
 import { UsuarioService } from './usuario.service';
 
@@ -49,6 +48,13 @@ export class AuthService {
     );
   }
 
+  // --- NOVO MÉTODO ADICIONADO ---
+  completeSubUserProfile(data: any): Observable<any> {
+    // data: { email, code, nome, telefone, senha, confirmarSenha }
+    return this.http.post<any>(`${this.authUrl}/complete-sub-user-profile`, data);
+  }
+  // ------------------------------
+
   forgotPassword(email: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/forgot-password`, { email });
   }
@@ -56,26 +62,18 @@ export class AuthService {
   verifyEmailCode(email: string, code: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/verify-email-code`, { email, code });
   }
-  
-  /**
-   * NOVO: Chama o endpoint protegido para verificar o código do novo e-mail.
-   */
+
   verifyNewEmail(code: string): Observable<AuthResponse> {
-    // Rota protegida, envia apenas o código
     return this.http.post<AuthResponse>(`${this.authUrl}/verify-new-email`, { code });
   }
 
   resetPassword(token: string, senha: string, confirmarSenha: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
-  
-  // --- FUNÇÃO DE CADASTRO DE SUB-USUÁRIO (NOVO) ---
+
   preRegisterSubUser(email: string, cargo: string): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/pre-register-sub-user`, { email, cargo });
   }
-  // -----------------------------------------------
-
-  // --- FUNÇÕES DE 2FA ---
 
   iniciarChangePassword2FA(payload: any): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/iniciar-change-password-2fa`, payload);
@@ -84,9 +82,6 @@ export class AuthService {
   finalizarChangePassword2FA(payload: any): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/finalizar-change-password-2fa`, payload);
   }
-  
-  // --- FIM FUNÇÕES DE 2FA ---
-
 
   private isPlanoAtivo(plano: PlanosMercadoPago): boolean {
     return plano.status === 'Pago/Ativo' || plano.status === 'Trial';
@@ -171,7 +166,7 @@ export class AuthService {
           this.setUser(response.user);
           return response.user;
         }
-        return null; 
+        return null;
       }),
       catchError(err => {
         console.error("Falha ao atualizar dados do usuário", err);

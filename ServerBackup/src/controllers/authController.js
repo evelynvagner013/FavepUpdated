@@ -70,6 +70,17 @@ function validatePassword(password) {
   return true;
 }
 
+// Helper para injetar planos do Admin no Sub-usuário
+function inheritAdminPlans(user) {
+  if (user.admin && user.admin.planos && user.admin.planos.length > 0) {
+    // Combina os planos do usuário (se houver) com os do admin
+    // O Frontend vai ler 'user.planos' e encontrar o plano Gold/Base lá
+    user.planos = [...(user.planos || []), ...user.admin.planos];
+  }
+  // Remove o objeto admin para não trafegar dados desnecessários
+  delete user.admin;
+  return user;
+}
 
 module.exports = {
   //#register-controller
@@ -262,7 +273,8 @@ module.exports = {
       return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     }
     try {
-      const user = await prisma.usuario.findUnique({
+      // --- MODIFICAÇÃO: Incluir Admin e seus planos na busca ---
+      let user = await prisma.usuario.findUnique({
         where: { email },
         include: {
           planos: {
@@ -272,9 +284,22 @@ module.exports = {
                 gte: new Date()
               }
             }
+          },
+          admin: {
+            include: {
+              planos: {
+                where: {
+                  status: 'Pago/Ativo',
+                  dataExpiracao: {
+                    gte: new Date()
+                  }
+                }
+              }
+            }
           }
         }
       });
+      
       if (!user) {
         return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
@@ -303,6 +328,10 @@ module.exports = {
           action: 'COMPLETE_PROFILE'
         });
       }
+
+      // --- MODIFICAÇÃO: Herdar planos do Admin ---
+      user = inheritAdminPlans(user);
+      
       console.log(`✅ Login bem-sucedido para ${user.email}`);
       user.senha = undefined;
       return res.status(200).json({
@@ -471,7 +500,6 @@ module.exports = {
 
       // --- 1. LÓGICA DE MUDANÇA DE E-MAIL ---
       if (email && email !== userToUpdate.email) {
-        // Checa se o novo email já está em uso por outro usuário
         const existingEmailUser = await prisma.usuario.findFirst({
           where: { 
             email: email,
@@ -482,21 +510,18 @@ module.exports = {
           return res.status(400).json({ error: 'Este novo e-mail já está em uso.' });
         }
 
-        // Gera o código e inicia a verificação
         const verificationCode = generateVerificationCode();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
         
-        updateData.email = email; // Salva o novo e-mail
-        updateData.emailVerified = false; // Define como não verificado
+        updateData.email = email; 
+        updateData.emailVerified = false; 
         updateData.verificationToken = verificationCode;
         updateData.verificationTokenExpires = expiresAt;
         
         verificationNeeded = true;
       } else if (email) {
-        // Se o email foi enviado, mas não mudou, apenas continua
         updateData.email = email;
       }
-      // --- FIM DA LÓGICA DE MUDANÇA DE E-MAIL ---
 
       // --- 2. LÓGICA DE MUDANÇA DE TELEFONE/NOME/FOTO ---
       if (nome) updateData.nome = nome;
@@ -514,9 +539,9 @@ module.exports = {
           return res.status(400).json({ error: 'Este telefone já está em uso.' });
         }
       }
-      // --- FIM DA LÓGICA DE MUDANÇA DE TELEFONE/NOME/FOTO ---
       
-      const user = await prisma.usuario.update({
+      // --- MODIFICAÇÃO: Incluir Admin e seus planos na resposta ---
+      let user = await prisma.usuario.update({
         where: { id: authenticatedUserId },
         data: updateData,
         include: {
@@ -527,17 +552,31 @@ module.exports = {
                 gte: new Date()
               }
             }
+          },
+          admin: {
+            include: {
+              planos: {
+                where: {
+                  status: 'Pago/Ativo',
+                  dataExpiracao: {
+                    gte: new Date()
+                  }
+                }
+              }
+            }
           }
         }
       });
       
+      // --- MODIFICAÇÃO: Herdar planos ---
+      user = inheritAdminPlans(user);
+
       // 3. ENVIO DO E-MAIL (após sucesso no DB)
       if (verificationNeeded) {
         await sendVerificationEmail(email, updateData.verificationToken);
         console.log(`✅ E-mail de verificação enviado para o NOVO e-mail: ${email}`);
         
         user.senha = undefined;
-        // Retorna um status específico para o frontend iniciar o modal de verificação
         return res.status(202).json({ 
           user, 
           message: `Perfil atualizado. Um código de verificação foi enviado para o novo e-mail (${email}).`,
@@ -576,7 +615,7 @@ module.exports = {
           id: authenticatedUserId,
           verificationToken: cleanCode,
           verificationTokenExpires: { gt: new Date() },
-          emailVerified: false, // Deve estar como não verificado
+          emailVerified: false, 
         },
         include: {
           planos: {
@@ -584,6 +623,18 @@ module.exports = {
               status: 'Pago/Ativo',
               dataExpiracao: {
                 gte: new Date()
+              }
+            }
+          },
+          admin: {
+            include: {
+              planos: {
+                where: {
+                  status: 'Pago/Ativo',
+                  dataExpiracao: {
+                    gte: new Date()
+                  }
+                }
               }
             }
           }
@@ -594,8 +645,8 @@ module.exports = {
         return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
       }
 
-      // Finaliza a verificação: limpa o token e define emailVerified como true
-      const updatedUser = await prisma.usuario.update({
+      // Finaliza a verificação
+      let updatedUser = await prisma.usuario.update({
         where: { id: user.id },
         data: {
           verificationToken: null, 
@@ -610,14 +661,28 @@ module.exports = {
                 gte: new Date()
               }
             }
+          },
+          admin: {
+            include: {
+              planos: {
+                where: {
+                  status: 'Pago/Ativo',
+                  dataExpiracao: {
+                    gte: new Date()
+                  }
+                }
+              }
+            }
           }
         }
       });
 
+      // --- MODIFICAÇÃO: Herdar planos ---
+      updatedUser = inheritAdminPlans(updatedUser);
+
       updatedUser.senha = undefined;
       console.log('✅ Novo e-mail verificado com sucesso para:', updatedUser.email);
       
-      // Retorna o usuário atualizado para o frontend
       return res.status(200).json({ 
         message: 'E-mail verificado com sucesso!',
         user: updatedUser,
@@ -634,9 +699,8 @@ module.exports = {
   async iniciarChangePassword2FA(req, res) {
     console.log('➡️ Requisição recebida em /iniciar-change-password-2fa (Passo 1)');
     const { senhaAtual, novaSenha, confirmarSenha } = req.body;
-    const userId = req.userId; // ID do usuário logado (via authMiddleware)
+    const userId = req.userId; 
 
-    // 1. Validações de entrada
     if (!senhaAtual || !novaSenha || !confirmarSenha) {
       return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
@@ -647,7 +711,6 @@ module.exports = {
       return res.status(400).json({ error: 'A nova senha deve ser diferente da senha atual.' });
     }
 
-    // 2. Validação de força da nova senha (Reutiliza a função validatePassword)
     if (!validatePassword(novaSenha)) {
       return res.status(400).json({
         error: 'A nova senha não atende aos requisitos de segurança (min. 8 caracteres, maiúscula, minúscula e especial).'
@@ -655,7 +718,6 @@ module.exports = {
     }
 
     try {
-      // 3. Busca o usuário e verifica a senha atual (CRÍTICO para o erro anterior)
       const user = await prisma.usuario.findUnique({
         where: { id: userId }
       });
@@ -666,14 +728,12 @@ module.exports = {
 
       const isMatch = await bcrypt.compare(senhaAtual, user.senha);
       if (!isMatch) {
-        // Retorna erro genérico de segurança
         console.log(`⚠️ Falha na verificação da senha atual para ${user.email}.`);
         return res.status(400).json({ error: 'Erro ao iniciar alteração de senha. Verifique a senha atual.' });
       }
       
-      // 4. Gera e Salva o Código 2FA temporário
-      const authCode = generateVerificationCode(); // 6 dígitos
-      const authCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+      const authCode = generateVerificationCode(); 
+      const authCodeExpires = new Date(Date.now() + 10 * 60 * 1000); 
 
       await prisma.usuario.update({
         where: { id: userId },
@@ -683,7 +743,6 @@ module.exports = {
         }
       });
       
-      // 5. Envia o código por email (Reutiliza o sendPasswordResetCodeEmail)
       await sendPasswordResetCodeEmail(user.email, authCode);
       
       console.log(`✅ Código 2FA para mudança de senha enviado para ${user.email}`);
@@ -698,16 +757,14 @@ module.exports = {
   // ### ADICIONADO: Passo 2 do 2FA - Confirmar e finalizar alteração ###
   async finalizarChangePassword2FA(req, res) {
     console.log('➡️ Requisição recebida em /finalizar-change-password-2fa (Passo 2)');
-    const { senhaAtual, novaSenha, otp } = req.body; // Recebe o OTP
+    const { senhaAtual, novaSenha, otp } = req.body; 
     const userId = req.userId;
-    const cleanOtp = otp ? otp.trim() : ''; // NOVO: Limpa o OTP de espaços em branco
+    const cleanOtp = otp ? otp.trim() : '';
 
-    // 1. Validações básicas
     if (!novaSenha || !cleanOtp || !senhaAtual) {
       return res.status(400).json({ error: 'Os dados de senha e o código são obrigatórios.' });
     }
     
-    // 2. Validação de força
     if (!validatePassword(novaSenha)) {
       return res.status(400).json({
         error: 'A nova senha não atende aos requisitos de segurança.'
@@ -715,7 +772,6 @@ module.exports = {
     }
 
     try {
-      // 3. Busca o usuário e verifica o OTP
       const user = await prisma.usuario.findUnique({
         where: { id: userId }
       });
@@ -724,22 +780,18 @@ module.exports = {
         return res.status(404).json({ error: 'Usuário não encontrado.' });
       }
 
-      // 4. Compara a senha atual (redundância de segurança)
       const isMatch = await bcrypt.compare(senhaAtual, user.senha);
       if (!isMatch) {
         console.log(`⚠️ Falha na verificação da senha atual no Passo 2 para ${user.email}.`);
         return res.status(400).json({ error: 'Senha atual incorreta.' });
       }
 
-      // 5. Verifica se o código OTP está correto e dentro do prazo de validade
-      // NOVO: Compara o valor em milissegundos para precisão e usa o OTP limpo.
       const isExpired = user.authCodeExpires && user.authCodeExpires.getTime() < Date.now();
       const isCodeMatch = user.authCode === cleanOtp; 
 
       if (!isCodeMatch || isExpired) {
         console.log(`⚠️ Falha na verificação do OTP para ${user.email}. isCodeMatch: ${isCodeMatch}, isExpired: ${isExpired}`);
         
-        // Limpa o código para forçar novo envio em caso de falha
         await prisma.usuario.update({
           where: { id: userId },
           data: {
@@ -750,14 +802,13 @@ module.exports = {
         return res.status(400).json({ error: 'Código de verificação inválido ou expirado.' });
       }
 
-      // 6. Hasheia e salva a nova senha
       const hashedPassword = await bcrypt.hash(novaSenha, 8);
 
       await prisma.usuario.update({
         where: { id: userId },
         data: {
           senha: hashedPassword,
-          authCode: null, // Limpa o código de 2FA após o sucesso
+          authCode: null,
           authCodeExpires: null 
         }
       });
