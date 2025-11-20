@@ -1,8 +1,9 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgForm, FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { PropriedadeService } from '../../services/propriedade.service'; // Importação do Service
 import { Router, RouterLink } from '@angular/router';
-import { Usuario } from '../../models/api.models';
+import { Usuario, Propriedade } from '../../models/api.models'; // Importação do Model
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MenuCentralComponent } from "../menu-central/menu-central.component";
@@ -18,44 +19,67 @@ import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
 export class AdicionarUsuarioComponent implements OnInit, OnDestroy {
   private userSubscription: Subscription | undefined;
 
-  // Propriedades do formulário de usuário
-  // Removido 'password' pois o backend gera automaticamente
   newUser = {
     email: '',
     accessLevel: ''
   };
+
+  // Variáveis para controle das propriedades
+  availableProperties: Propriedade[] = [];
+  selectedProperties: { [id: string]: boolean } = {}; // Mapa de seleção: { 'id_123': true, 'id_456': false }
+
   statusMessage: string = '';
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private propriedadeService: PropriedadeService // Injeção do serviço
   ) { }
 
   ngOnInit(): void {
-    // Apenas me inscrevo para o usuário, se necessário para outras lógicas futuras.
     this.userSubscription = this.authService.currentUser.subscribe((user: Usuario | null) => {
-      // Por enquanto, não há lógica necessária aqui, mas a inscrição é mantida.
+      // Lógica futura se necessário
     });
+
+    // Carrega as propriedades do admin para exibir no formulário
+    this.loadProperties();
   }
 
   ngOnDestroy(): void {
     this.userSubscription?.unsubscribe();
   }
 
-  // Novo método para adicionar usuário
+  loadProperties(): void {
+    this.propriedadeService.getPropriedades().subscribe({
+      next: (props) => {
+        this.availableProperties = props;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar propriedades:', err);
+      }
+    });
+  }
+
+  // Helper para converter o objeto de seleção em array de IDs
+  getSelectedPropertyIds(): string[] {
+    return Object.keys(this.selectedProperties).filter(id => this.selectedProperties[id]);
+  }
+
   addUser(form: NgForm): void {
     if (form.valid) {
-      // Chama o serviço real conectado ao backend
-      this.authService.preRegisterSubUser(this.newUser.email, this.newUser.accessLevel)
+      const selectedIds = this.getSelectedPropertyIds();
+
+      // Passamos os IDs selecionados para o serviço
+      this.authService.preRegisterSubUser(this.newUser.email, this.newUser.accessLevel, selectedIds)
         .subscribe({
           next: (res) => {
             console.log('Usuário adicionado:', res);
             this.statusMessage = res.message || 'Usuário convidado com sucesso! A senha foi enviada por e-mail.';
-            form.resetForm(); // Limpa o formulário após o sucesso
+            form.resetForm();
+            this.selectedProperties = {}; // Limpa as seleções
           },
           error: (err) => {
             console.error('Erro ao adicionar usuário:', err);
-            // Exibe a mensagem de erro vinda do backend (ex: Plano insuficiente)
             this.statusMessage = err.error?.error || 'Erro ao adicionar usuário. Tente novamente.';
           }
         });

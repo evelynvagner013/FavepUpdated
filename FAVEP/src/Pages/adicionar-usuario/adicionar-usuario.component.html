@@ -4,14 +4,13 @@
   <div class="card-adduser">
       <h4><i class="fas fa-user-plus"></i> Adicionar Novo Usuário</h4>
 
-
-      <form #userForm="ngForm" (ngSubmit)="addUser(userForm)" novalidate> 
+      <form #userForm="ngForm" (ngSubmit)="addUser(userForm)" novalidate>
           <div class="form-row">
               <div class="form-group">
                   <label for="newUserEmail">E-mail do Usuário</label>
-                  <input type="email" id="newUserEmail" name="email" [(ngModel)]="newUser.email" placeholder="nome&#64;empresa.com.br" required email 
+                  <input type="email" id="newUserEmail" name="email" [(ngModel)]="newUser.email" placeholder="nome&#64;empresa.com.br" required email
                          #emailInput="ngModel" [class.ng-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
-                  
+
                   <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="validation-message">
                       <div *ngIf="emailInput.errors?.['required']">
                           O e-mail é obrigatório.
@@ -21,30 +20,46 @@
                       </div>
                   </div>
               </div>
-              
-              </div>
+          </div>
 
           <div class="form-row">
               <div class="form-group">
                   <label for="accessLevel">Nível de Acesso</label>
-                   <select id="accessLevel" name="accessLevel" [(ngModel)]="newUser.accessLevel" required 
+                   <select id="accessLevel" name="accessLevel" [(ngModel)]="newUser.accessLevel" required
                           #levelSelect="ngModel" [class.ng-invalid]="levelSelect.invalid && (levelSelect.dirty || levelSelect.touched)">
                       <option value="" disabled selected>Selecione um nível</option>
-                      <option value="GERENTE">Gerente</option> 
-                      <option value="FUNCIONARIO">Funcionário</option> 
+                      <option value="GERENTE">Gerente</option>
+                      <option value="FUNCIONARIO">Funcionário</option>
                     </select>
                   <div *ngIf="levelSelect.invalid && (levelSelect.dirty || levelSelect.touched)" class="validation-message">
                       O nível de acesso é obrigatório.
                   </div>
               </div>
+          </div>
 
+          <div class="form-row" *ngIf="availableProperties.length > 0">
+            <div class="form-group full-width">
+                <label class="section-label">Liberar Acesso às Propriedades (Opcional)</label>
+                <div class="properties-container">
+                    <div *ngFor="let prop of availableProperties" class="property-checkbox">
+                        <input type="checkbox"
+                               [id]="prop.id"
+                               [name]="'prop_' + prop.id"
+                               [(ngModel)]="selectedProperties[prop.id]">
+                        <label [for]="prop.id">{{ prop.nomepropriedade }}</label>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="form-row">
               <div class="form-group-button">
                   <button type="submit" class="add-user-btn" [disabled]="!userForm.form.valid">
                       <i class="fas fa-check"></i> Criar Usuário
                   </button>
               </div>
           </div>
-          
+
           <div *ngIf="statusMessage" [class.success]="statusMessage.includes('sucesso')" [class.error]="statusMessage.includes('Erro') || statusMessage.includes('erro')" class="status-message">
               {{ statusMessage }}
           </div>

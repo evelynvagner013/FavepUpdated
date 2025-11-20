@@ -203,7 +203,7 @@ module.exports = {
   //#pre-register-sub-user-controller
   async preRegisterSubUser(req, res) {
     console.log('➡️ Requisição recebida em /preRegisterSubUser');
-    const { email, cargo } = req.body;
+    const { email, cargo, propriedades } = req.body; // Recebe a lista de propriedades
     const adminId = req.userId; 
 
     if (!email || !cargo) {
@@ -216,15 +216,20 @@ module.exports = {
         return res.status(400).json({ error: 'Cargo inválido. Use GERENTE ou FUNCIONARIO.' });
     }
     try {
+      // Busca admin, planos E propriedades (para validar posse)
       const adminUser = await prisma.usuario.findUnique({
         where: { id: adminId },
-        include: { planos: {
-          where: {
-            status: 'Pago/Ativo',
-            dataExpiracao: { gte: new Date() }
-          }
-        }}
+        include: { 
+          planos: {
+            where: {
+              status: 'Pago/Ativo',
+              dataExpiracao: { gte: new Date() }
+            }
+          },
+          propriedades: true 
+        }
       });
+
       if (!adminUser || adminUser.cargo !== 'ADMINISTRADOR') {
         return res.status(403).json({ error: 'Apenas administradores podem criar sub-usuários.' });
       }
@@ -232,12 +237,24 @@ module.exports = {
       if (!planoGoldAtivo) {
          return res.status(403).json({ error: 'Apenas usuários com o Plano Gold podem adicionar membros.' });
       }
+
       const existingUser = await prisma.usuario.findUnique({ where: { email } });
       if (existingUser) {
         return res.status(400).json({ error: 'Este email já está em uso.' });
       }
+
+      // Lógica de conexão de propriedades (Validação)
+      let propriedadesParaConectar = [];
+      if (propriedades && Array.isArray(propriedades) && propriedades.length > 0) {
+        // Filtra apenas as propriedades que realmente pertencem ao Admin
+        propriedadesParaConectar = propriedades.filter(propId => 
+            adminUser.propriedades.some(adminProp => adminProp.id === propId)
+        );
+      }
+
       const randomPassword = generateRandomPassword();
       const hashedPassword = await bcrypt.hash(randomPassword, 8);
+      
       const subUsuario = await prisma.usuario.create({
         data: {
           nome: 'Cadastro Pendente', 
@@ -247,11 +264,17 @@ module.exports = {
           cargo: cargo.toUpperCase(), 
           adminId: adminId,
           profileCompleted: false, 
-          emailVerified: true 
+          emailVerified: true,
+          // Conecta as propriedades permitidas na tabela de relação
+          propriedadesAcessiveis: {
+             connect: propriedadesParaConectar.map(id => ({ id }))
+          }
         }
       });
+
       await sendSubUserWelcomeEmail(email, randomPassword);
-      console.log(`✅ Sub-usuário ${email} pré-cadastrado pelo Admin ${adminUser.email}`);
+      console.log(`✅ Sub-usuário ${email} pré-cadastrado pelo Admin ${adminUser.email} com acesso a ${propriedadesParaConectar.length} propriedades.`);
+      
       return res.status(201).json({
         message: 'Sub-usuário pré-cadastrado com sucesso. Um email foi enviado com a senha temporária.'
       });
@@ -273,7 +296,7 @@ module.exports = {
       return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
     }
     try {
-      // --- MODIFICAÇÃO: Incluir Admin e seus planos na busca ---
+      // --- MODIFICAÇÃO: Incluir propriedadesAcessiveis ---
       let user = await prisma.usuario.findUnique({
         where: { email },
         include: {
@@ -285,6 +308,7 @@ module.exports = {
               }
             }
           },
+          propriedadesAcessiveis: true, // Inclui as permissões de visualização
           admin: {
             include: {
               planos: {
@@ -540,7 +564,7 @@ module.exports = {
         }
       }
       
-      // --- MODIFICAÇÃO: Incluir Admin e seus planos na resposta ---
+      // --- MODIFICAÇÃO: Incluir propriedadesAcessiveis ---
       let user = await prisma.usuario.update({
         where: { id: authenticatedUserId },
         data: updateData,
@@ -553,6 +577,7 @@ module.exports = {
               }
             }
           },
+          propriedadesAcessiveis: true,
           admin: {
             include: {
               planos: {
@@ -626,6 +651,7 @@ module.exports = {
               }
             }
           },
+          propriedadesAcessiveis: true,
           admin: {
             include: {
               planos: {
@@ -662,6 +688,7 @@ module.exports = {
               }
             }
           },
+          propriedadesAcessiveis: true,
           admin: {
             include: {
               planos: {

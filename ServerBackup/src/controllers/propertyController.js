@@ -1,7 +1,7 @@
 const prisma = require('../lib/prisma');
 
 // --- NOSSA ADIÇÃO (Helper) ---
-//Função para buscar dados do usuário logado (cargo, planos, adminId)
+//Função para buscar dados do usuário logado (cargo, planos, adminId, permissões)
 async function getUserData(userId) {
   const user = await prisma.usuario.findUnique({
     where: { id: userId },
@@ -11,6 +11,10 @@ async function getUserData(userId) {
           status: 'Pago/Ativo',
           dataExpiracao: { gte: new Date() }
         }
+      },
+      // ### NOVO: Incluímos as propriedades que ele tem permissão (apenas ID) ###
+      propriedadesAcessiveis: {
+        select: { id: true }
       }
     }
   });
@@ -25,23 +29,36 @@ async function getUserData(userId) {
 
 
 module.exports = {
-  // # getAllProperties - Busca todas as propriedades (ativas e inativas)
+  // # getAllProperties - Busca todas as propriedades (respeitando permissões)
   async getAllProperties(req, res) {
     const authenticatedUserId = req.userId;
-    console.log(`➡️ Requisição recebida para listar todas as propriedades do usuário: ${authenticatedUserId}`);
+    console.log(`➡️ Requisição recebida para listar propriedades do usuário: ${authenticatedUserId}`);
     try {
-      // --- NOSSA ADIÇÃO (Hierarquia) ---
-      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+      
       if (!dataOwnerId) {
         return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
       }
-      // --- FIM DA ADIÇÃO ---
+
+      // Configuração inicial do filtro: Propriedades do Admin
+      const whereClause = {
+        usuarioId: dataOwnerId
+      };
+
+      // ### LÓGICA DE FILTRAGEM DE ACESSO ###
+      // Se NÃO for Administrador, aplica o filtro das checkboxes
+      if (user.cargo !== 'ADMINISTRADOR') {
+        const allowedIds = user.propriedadesAcessiveis.map(p => p.id);
+        
+        // Se o array estiver vazio, ele não verá nada (segurança)
+        // Adiciona condição: ID da propriedade deve estar na lista de permitidos
+        whereClause.id = { in: allowedIds };
+        
+        console.log(`🔒 Sub-usuário ${user.email} limitado a ${allowedIds.length} propriedades.`);
+      }
 
       const properties = await prisma.propriedade.findMany({
-        where: { 
-          // MODIFICADO: Busca propriedades do "dono" (admin)
-          usuarioId: dataOwnerId,
-        },
+        where: whereClause,
         include: {
           usuario: {
             select: { nome: true, email: true }
@@ -78,17 +95,24 @@ module.exports = {
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para buscar propriedade com ID: \"${id}\"`);
     try {
-      // --- NOSSA ADIÇÃO (Hierarquia) ---
-      const { dataOwnerId } = await getUserData(authenticatedUserId);
+      const { user, dataOwnerId } = await getUserData(authenticatedUserId);
+      
       if (!dataOwnerId) {
         return res.status(403).json({ error: 'Usuário administrador não encontrado.' });
       }
-      // --- FIM DA ADIÇÃO ---
+
+      // ### VERIFICAÇÃO DE SEGURANÇA INDIVIDUAL ###
+      if (user.cargo !== 'ADMINISTRADOR') {
+         const isAllowed = user.propriedadesAcessiveis.some(p => p.id === id);
+         if (!isAllowed) {
+             // Retorna 404 para não revelar existência ou 403
+             return res.status(404).json({ error: `Propriedade não encontrada ou sem permissão de acesso.` });
+         }
+      }
 
       const property = await prisma.propriedade.findFirst({
         where: {
           id: id,
-          // MODIFICADO: Busca propriedade do "dono" (admin)
           usuarioId: dataOwnerId
         },
         include: {
@@ -120,20 +144,18 @@ module.exports = {
     console.log(`➡️ Requisição recebida para criar propriedade: \"${nomepropriedade}\"`);
 
     try {
-      // --- NOSSA ADIÇÃO (Permissões e Limites) ---
       const { user, dataOwnerId } = await getUserData(authenticatedUserId);
 
-      // 1. Permissão de Cargo (Etapa 1.5)
+      // 1. Permissão de Cargo
       if (user.cargo === 'FUNCIONARIO') {
         return res.status(403).json({ error: 'Funcionários não podem criar propriedades.' });
       }
 
-      // 2. Limite de Plano (Etapa 1.6) - Só se aplica ao Administrador
+      // 2. Limite de Plano (Só se aplica ao Administrador)
       if (user.cargo === 'ADMINISTRADOR') {
         const planoBaseAtivo = user.planos.some(p => p.tipo.toLowerCase().includes('base'));
         const planoGoldAtivo = user.planos.some(p => p.tipo.toLowerCase().includes('gold'));
 
-        // Se for plano base (e não tiver o gold), verifica o limite
         if (planoBaseAtivo && !planoGoldAtivo) {
           const propertyCount = await prisma.propriedade.count({
             where: { usuarioId: user.id }
@@ -144,7 +166,6 @@ module.exports = {
           }
         }
       }
-      // --- FIM DA ADIÇÃO ---
 
       const newProperty = await prisma.propriedade.create({
         data: {
@@ -152,7 +173,6 @@ module.exports = {
           localizacao,
           area_ha,
           status,
-          // MODIFICADO: Vincula ao "dono" (admin)
           usuarioId: dataOwnerId
         }
       });
@@ -172,7 +192,6 @@ module.exports = {
     console.log(`➡️ Requisição recebida para atualizar propriedade com ID: \"${id}\"`);
 
     try {
-      // --- NOSSA ADIÇÃO (Permissões) ---
       const { user, dataOwnerId } = await getUserData(authenticatedUserId);
 
       // 1. Permissão de Cargo
@@ -180,15 +199,24 @@ module.exports = {
         return res.status(403).json({ error: 'Funcionários não podem atualizar propriedades.' });
       }
       
-      // 2. Checagem de Hierarquia (se a propriedade pertence ao admin)
+      // 2. Checagem de Hierarquia e Permissão
+      // Mesmo gerentes devem ter acesso à propriedade para editá-la
+      const whereClause = { id: id, usuarioId: dataOwnerId };
+      
+      if (user.cargo === 'GERENTE') {
+         const allowedIds = user.propriedadesAcessiveis.map(p => p.id);
+         if (!allowedIds.includes(id)) {
+            return res.status(403).json({ error: 'Você não tem permissão para editar esta propriedade.' });
+         }
+      }
+
       const propertyToUpdate = await prisma.propriedade.findFirst({
-         where: { id: id, usuarioId: dataOwnerId }
+         where: whereClause
       });
 
       if (!propertyToUpdate) {
         return res.status(404).json({ error: 'Propriedade não encontrada ou não pertence à sua organização.' });
       }
-      // --- FIM DA ADIÇÃO ---
 
       const updatedProperty = await prisma.propriedade.update({
         where: { id: id },
@@ -196,7 +224,7 @@ module.exports = {
           nomepropriedade,
           localizacao,
           area_ha,
-          usuarioId: dataOwnerId // Garante que o ID do dono não seja alterado
+          usuarioId: dataOwnerId
         },
         include: {
           producoes: {
@@ -206,7 +234,6 @@ module.exports = {
         }
       });
 
-      // Lógica para extrair culturas (como no original)
       const culturas = updatedProperty.producoes.map(prod => prod.cultura);
       const { producoes, ...rest } = updatedProperty;
 
@@ -227,19 +254,24 @@ module.exports = {
     const authenticatedUserId = req.userId;
     console.log(`➡️ Requisição recebida para alterar status da propriedade com ID: \"${id}\"`);
     try {
-      // --- NOSSA ADIÇÃO (Permissões) ---
       const { user, dataOwnerId } = await getUserData(authenticatedUserId);
 
       // 1. Permissão de Cargo
       if (user.cargo === 'FUNCIONARIO') {
         return res.status(403).json({ error: 'Funcionários não podem alterar o status de propriedades.' });
       }
-      // --- FIM DA ADIÇÃO ---
+
+      // Verificar se Gerente tem permissão naquela propriedade
+      if (user.cargo === 'GERENTE') {
+         const allowedIds = user.propriedadesAcessiveis.map(p => p.id);
+         if (!allowedIds.includes(id)) {
+            return res.status(403).json({ error: 'Você não tem permissão para alterar esta propriedade.' });
+         }
+      }
 
       const property = await prisma.propriedade.findFirst({
         where: {
           id: id,
-          // MODIFICADO: Busca propriedade do "dono" (admin)
           usuarioId: dataOwnerId
         }
       });
