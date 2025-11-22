@@ -16,6 +16,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    
 }
 
 .header-title {
@@ -31,7 +32,6 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-    margin-right: 2rem; /* Move o filtro um pouco para a esquerda */
 }
   
 .filtro-group select {
@@ -43,7 +43,7 @@
     color: #212121;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     flex-grow: 1; /* O select ocupa o espaço disponível */
-    max-width: 200px; /* Limita o tamanho no mobile */
+    max-width: 300px; /* Limita o tamanho no mobile */
 }
 
 .filtro-group select:hover {
@@ -123,7 +123,7 @@
     display: grid;
     grid-template-columns: 1fr; /* Padrão mobile: uma coluna */
     gap: 30px;
-    margin-bottom: 30px;
+    margin-bottom: 30px;;
 }
   
 .grafico-card {

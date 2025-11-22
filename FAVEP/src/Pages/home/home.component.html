@@ -134,4 +134,13 @@
 
   <app-assinatura></app-assinatura>
   <app-footer></app-footer>
+
+  <button 
+    id="scrollToTopBtn" 
+    class="btn-scroll-top" 
+    [class.show]="showScrollButton" 
+    (click)="scrollToTop()"
+    aria-label="Voltar ao topo da página">
+    <i class="fas fa-arrow-up"></i>
+  </button>
 </div>

@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// --- IMPORTAÇÕES ADICIONADAS ---
 import { ActivatedRoute, Router } from '@angular/router';
-// --- FIM DAS IMPORTAÇÕES ---
 import { AuthService } from '../../services/auth.service';
 import { MercadoPagoService } from '../../services/mercadopago.service';
 import { MenuLateralComponent } from "../menu-lateral/menu-lateral.component";
@@ -17,6 +15,8 @@ interface PlanoDisplay {
   features: string[];
   valorBackend: number;
   descricaoBackend: string;
+  dataAtivacao?: Date | string; 
+  dataExpiracao?: Date | string;
 }
 
 @Component({
@@ -37,10 +37,15 @@ export class PlanoAssinaturaComponent implements OnInit {
   planosDisponiveis: PlanoDisplay[] = [];
   isLoading: boolean = false;
 
-  // --- NOVAS PROPRIEDADES PARA FEEDBACK ---
   paymentStatus: 'success' | 'failure' | 'pending' | null = null;
   statusMessage: string | null = null;
-  // --- FIM DAS NOVAS PROPRIEDADES ---
+  planoAtivoCompleto: any = null; // Para guardar o objeto plano com as datas do DB
+
+  // --- ADIÇÃO: Estados para o Modal de Confirmação ---
+  showConfirmationModal: boolean = false;
+  planoToChange: PlanoDisplay | null = null;
+  confirmationMessage: string = '';
+  // --- FIM DA ADIÇÃO ---
 
   private todosOsPlanos: { [key: string]: PlanoDisplay } = {
     'gratis': {
@@ -75,23 +80,15 @@ export class PlanoAssinaturaComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private mercadopagoService: MercadoPagoService,
-    // --- SERVIÇOS INJETADOS ---
-    private route: ActivatedRoute, // Para ler a URL
-    private router: Router // Para limpar a URL
-    // --- FIM DOS SERVIÇOS ---
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-    // --- LÓGICA ADICIONADA ---
-    this.checkPaymentStatus(); // Verifica se o usuário voltou de um pagamento
-    // --- FIM DA LÓGICA ---
-
-    this.planoAtualId = this.authService.getPlanoAtivo() || 'gratis';
-    this.planoAtualDisplay = this.todosOsPlanos[this.planoAtualId];
-    this.definirPlanosDisponiveis();
+    this.checkPaymentStatus();
+    this.loadCurrentPlan();
   }
 
-  // --- NOVA FUNÇÃO ---
   private checkPaymentStatus(): void {
     this.route.queryParams.subscribe(params => {
       const status = params['status'];
@@ -99,7 +96,6 @@ export class PlanoAssinaturaComponent implements OnInit {
       if (status === 'success') {
         this.paymentStatus = 'success';
         this.statusMessage = 'Pagamento aprovado com sucesso! Seu novo plano será ativado assim que o sistema processar (geralmente instantâneo).';
-        // Atualiza a visualização do plano (pode levar alguns segundos para o webhook atualizar)
         this.refreshPlanData();
       }
       else if (status === 'failure') {
@@ -111,45 +107,66 @@ export class PlanoAssinaturaComponent implements OnInit {
         this.statusMessage = 'Seu pagamento está pendente de processamento. Avisaremos assim que for concluído.';
       }
 
-      // Limpa os parâmetros da URL para que a mensagem suma se o usuário recarregar
       if (status) {
-        // Atraso leve para garantir que a mensagem seja exibida
         setTimeout(() => {
           this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { status: null, pref_id: null },
-            queryParamsHandling: 'merge', // 'merge' preserva outros params, 'null' remove
+            queryParamsHandling: 'merge',
             replaceUrl: true
           });
-        }, 100); // 100ms de atraso
+        }, 100);
       }
     });
   }
-
-  // --- NOVA FUNÇÃO (Simples) ---
-  // Apenas recarrega os dados do auth.service, que o webhook deve ter atualizado
-  private refreshPlanData(): void {
-    // O ideal seria ter uma função authService.refreshUserData()
-    // Por enquanto, apenas recarregamos o que temos:
-    console.log('Recarregando dados do plano...');
-
-    // AVISO: A forma ideal de fazer isso seria o auth.service ter uma
-    // função que busca os dados do usuário no backend novamente.
-    // Como não temos isso, apenas redefinimos o plano:
-
-    // Simplesmente recarregamos os dados do localStorage (que o login atualizou)
-    const usuario = this.authService.getUser();
-    if(usuario) {
-       this.authService.setUser(usuario); // Dispara o BehaviorSubject
-    }
-
-    // Recarrega o componente
+  
+  private loadCurrentPlan(): void {
     this.planoAtualId = this.authService.getPlanoAtivo() || 'gratis';
-    this.planoAtualDisplay = this.todosOsPlanos[this.planoAtualId];
+    const basePlan = this.todosOsPlanos[this.planoAtualId];
+
+    const user = this.authService.getUser();
+    
+    if (user && user.planos && user.planos.length > 0) {
+        this.planoAtivoCompleto = user.planos[0]; 
+        
+        this.planoAtualDisplay = {
+            ...basePlan,
+            dataAtivacao: this.planoAtivoCompleto.dataAtivacao,
+            dataExpiracao: this.planoAtivoCompleto.dataExpiracao
+        };
+    } else {
+        this.planoAtualDisplay = basePlan;
+        this.planoAtivoCompleto = null;
+    }
+    
     this.definirPlanosDisponiveis();
   }
-  // --- FIM DAS NOVAS FUNÇÕES ---
 
+  formatDate(dateInput: Date | string | undefined): string {
+    if (!dateInput) return 'N/A';
+    
+    let date: Date;
+    if (typeof dateInput === 'string') {
+        date = new Date(dateInput);
+    } else {
+        date = dateInput;
+    }
+    
+    if (isNaN(date.getTime())) {
+      return 'Data Inválida';
+    }
+    
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  private refreshPlanData(): void {
+    console.log('Recarregando dados do plano...');
+    const usuario = this.authService.getUser();
+    if(usuario) {
+       this.authService.setUser(usuario);
+    }
+    this.loadCurrentPlan();
+  }
 
   definirPlanosDisponiveis(): void {
     this.planosDisponiveis = [];
@@ -169,24 +186,62 @@ export class PlanoAssinaturaComponent implements OnInit {
   }
 
   assinarPlano(plano: PlanoDisplay): void {
-    if (plano.id === 'gratis' || plano.valorBackend === 0) {
-      console.log('Ativando plano de teste...');
+    
+    if (this.isLoading) return;
+
+    if (plano.id === 'gratis' && this.planoAtualId === 'gratis') {
+        console.log('Ativando plano de teste...');
+        return;
+    }
+
+    let confirmationMessage = `Você está prestes a mudar do seu plano atual (${this.planoAtualDisplay?.nome}) para o ${plano.nome}. Deseja confirmar a mudança?`;
+
+    // Lógica para Downgrade de Gold para Base
+    if (this.planoAtualId === 'gold' && plano.id === 'base') {
+      confirmationMessage = 
+        "Atenção: Você está fazendo um Downgrade. Ao mudar para o Plano Base, todos os membros " +
+        "adicionais (se houver) perderão o acesso. Somente a sua conta (pagante) " +
+        "permanecerá ativa. Deseja continuar com o Downgrade?";
+    }
+    
+    // Confirmação para mudar do pago para o grátis
+    if (plano.id === 'gratis' && this.planoAtualId !== 'gratis') {
+         confirmationMessage = `Atenção: Você está prestes a mudar do Plano Pago (${this.planoAtualDisplay?.nome}) para o Plano Grátis (Trial). Seu plano atual será mantido até ${this.formatDate(this.planoAtualDisplay?.dataExpiracao)}, e sua conta passará a seguir as limitações do Plano Grátis. Deseja confirmar?`;
+    }
+    
+    // Configura o modal para aparecer
+    this.confirmationMessage = confirmationMessage;
+    this.planoToChange = plano;
+    this.showConfirmationModal = true;
+  }
+
+  // --- NOVA FUNÇÃO: Cancela a ação de mudança de plano ---
+  cancelPlanChange(): void {
+    this.showConfirmationModal = false;
+    this.planoToChange = null;
+    this.confirmationMessage = '';
+  }
+  
+  // --- NOVA FUNÇÃO: Confirma a ação e inicia o pagamento ---
+  confirmPlanChange(): void {
+    const plano = this.planoToChange;
+
+    if (!plano || this.isLoading) {
+      this.cancelPlanChange();
       return;
     }
 
-    this.isLoading = true;
-
-    if (this.planoAtualId === 'gold' && plano.id === 'base') {
-      const confirmDowngrade = confirm(
-        "Atenção: Ao mudar para o Plano Base, todos os membros " +
-        "adicionais (se houver) perderão o acesso. Somente a sua conta (pagante) " +
-        "permanecerá ativa. Deseja continuar?"
-      );
-      if (!confirmDowngrade) {
-        this.isLoading = false;
+    // Se for o Plano Grátis
+    if (plano.id === 'gratis' || plano.valorBackend === 0) {
+        console.log(`Usuário confirmou a troca para o Plano Grátis.`);
+        alert('Troca para o Plano Grátis solicitada. O sistema será atualizado em breve.');
+        this.cancelPlanChange();
         return;
-      }
     }
+
+    // Inicia o processo de pagamento
+    this.isLoading = true;
+    this.showConfirmationModal = false; // Fecha o modal antes de começar o loading principal
 
     const dadosPagamento = {
       descricao: plano.descricaoBackend,
@@ -202,11 +257,13 @@ export class PlanoAssinaturaComponent implements OnInit {
           console.error('Resposta inválida do Mercado Pago', response);
           alert('Não foi possível gerar o link de pagamento. Tente novamente.');
         }
+        this.planoToChange = null;
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Erro ao gerar link de pagamento:', err);
         alert('Erro ao conectar com o sistema de pagamento. Verifique o console.');
+        this.planoToChange = null;
       }
     });
   }

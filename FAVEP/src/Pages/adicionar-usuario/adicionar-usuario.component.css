@@ -1,6 +1,8 @@
-/* ESTILOS PADRONIZADOS PARA TELAS DE CONTEÚDO PRINCIPAL */
+/* ==========================================================================
+   1. ESTILOS GERAIS DE LAYOUT (Mantido do Novo - Melhor Responsividade)
+   ========================================================================== */
 .main-content {
-  padding: 2.5rem; /* Aumenta um pouco o padding */
+  padding: 2.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -8,61 +10,124 @@
   transition: margin-left 0.3s ease-in-out;
 }
 
+/* Ajuste responsivo do menu lateral */
+@media (max-width: 768px) {
+  .main-content { margin-left: 0; padding: 1rem; }
+}
+@media (min-width: 769px) and (max-width: 992px) {
+  .main-content { margin-left: 80px; }
+}
+@media (min-width: 993px) {
+  .main-content { margin-left: 250px; }
+}
+
+/* ==========================================================================
+   2. CABEÇALHO E NAVEGAÇÃO (ABAS)
+   Mantido o estilo novo (arredondado), pois é global.
+   Se quiser as abas antigas, me avise que reverto isso também.
+   ========================================================================== */
+.content-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.main-nav {
+  display: flex;
+  background-color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border-radius: 50px;
+  padding: 5px;
+  gap: 5px;
+  overflow-x: auto; /* Garante que não quebre em telas pequenas */
+}
+
+.main-nav button {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  border-radius: 40px;
+  color: #6c757d;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap;
+}
+
+.main-nav button:hover {
+  color: #2c3e50;
+  background-color: #f8f9fa;
+}
+
+.main-nav button.active {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+/* ==========================================================================
+   3. ÁREA DE CONVITE / ADICIONAR (REVERTIDO PARA O ORIGINAL)
+   Aqui está exatamente como era antes (Botão Verde, Layout Específico)
+   ========================================================================== */
 .card-adduser {
-  max-width: 800px; /* Reduz um pouco o max-width para melhor foco */
+  max-width: 800px;
   width: 100%;
   margin: 0 auto;
   background-color: #ffffff;
   padding: 30px;
   border-radius: 12px;
-  /* Sombra mais elegante e menos 'dura' */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e9ecef; /* Adiciona uma borda sutil */
+  border: 1px solid #e9ecef;
   box-sizing: border-box;
 }
 
 .card-adduser h4 {
-  font-weight: 700; /* Mais ousado */
+  font-weight: 700;
   font-size: 1.6rem;
-  color: #212529; /* Alterado: Cor do título para preto quase puro para melhor contraste */
+  color: #212529;
   margin: 0 0 25px 0;
   padding-bottom: 15px;
-  border-bottom: 1px solid #dee2e6; /* Linha divisória mais suave */
+  border-bottom: 1px solid #dee2e6;
   display: flex;
   align-items: center;
 }
 
 .card-adduser h4 i {
   margin-right: 10px;
-  color: #007bff; /* Novo: Usa uma cor de destaque diferente (Azul) para o ícone. OU: #004d40; se quiser manter o verde */
+  color: #007bff;
   font-size: 1.4rem;
 }
 
+/* Layout do Formulário Original */
 .form-row {
   display: flex;
-  gap: 25px; /* Aumenta um pouco o espaçamento entre colunas */
-  align-items: flex-end;
+  gap: 25px;
+  align-items: flex-end; /* Alinha o botão na base dos inputs */
+  margin-bottom: 0; /* Resetando margens genéricas */
 }
 
 .form-group {
   margin-bottom: 20px;
   flex: 1;
+  text-align: left;
 }
 
 .form-group label {
   display: block;
   font-weight: 600;
-  margin-bottom: 6px; /* Reduz margem para aproximar do input */
-  color: #495057; /* Alterado: Cinza escuro para melhor legibilidade */
-  font-size: 0.95em; /* Aumenta um pouco a fonte do label */
+  margin-bottom: 6px;
+  color: #495057;
+  font-size: 0.95em;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 12px 14px; /* Ajuste o padding para harmonizar */
-  border: 1px solid #ced4da; /* Borda mais neutra */
-  border-radius: 6px; /* Borda levemente menor */
+  padding: 12px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
   box-sizing: border-box;
   background-color: #ffffff;
   color: #212529;
@@ -73,14 +138,14 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #004d40; /* Mantém o verde principal no foco */
-  box-shadow: 0 0 0 4px rgba(0, 77, 64, 0.15); /* Sombra do foco mais leve */
+  border-color: #004d40; /* Verde escuro do foco original */
+  box-shadow: 0 0 0 4px rgba(0, 77, 64, 0.15);
 }
 
-/* Estilo para campos inválidos, dando um feedback visual claro */
+/* Estilo para campos inválidos */
 .form-group input.ng-invalid.ng-touched,
 .form-group select.ng-invalid.ng-touched {
-    border-color: #dc3545; /* Vermelho padrão para erro */
+   border-color: #dc3545;
 }
 
 .form-group-button {
@@ -88,18 +153,19 @@
   margin-bottom: 20px;
 }
 
+/* Botão VERDE Original */
 .add-user-btn {
   width: 100%;
-  padding: 12px 15px; /* Ajuste o padding para harmonizar com os inputs */
-  height: 44px; /* Garante a mesma altura dos inputs para alinhamento */
-  background-color: #004d40; /* COR PRINCIPAL: Verde forte */
+  padding: 12px 15px;
+  height: 44px;
+  background-color: #004d40; /* Verde Original */
   color: #ffffff;
   border: none;
   border-radius: 6px;
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s, box-shadow 0.3s; /* Adiciona transição para sombra */
+  transition: background-color 0.3s, box-shadow 0.3s;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -107,37 +173,38 @@
 }
 
 .add-user-btn:hover {
-  background-color: #00332b; /* Tom mais escuro para hover */
-  box-shadow: 0 4px 10px rgba(0, 77, 64, 0.3); /* Sombra sutil no hover */
-  transform: none; /* Remove a translação no hover para um estilo mais 'flat' */
+  background-color: #00332b;
+  box-shadow: 0 4px 10px rgba(0, 77, 64, 0.3);
+  transform: none;
 }
 
 .add-user-btn:disabled {
-  background-color: #ced4da; /* Cinza neutro para desabilitado */
+  background-color: #ced4da;
   color: #6c757d;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
+/* Mensagens de status (Original) */
 .validation-message {
-  color: #dc3545; /* Vermelho de erro padrão */
-  font-size: 0.8em; /* Fonte um pouco menor para validação */
-  margin-top: 4px; /* Margem ajustada */
+  color: #dc3545;
+  font-size: 0.8em;
+  margin-top: 4px;
 }
 
 .status-message {
   padding: 12px;
-  border-radius: 6px; /* Ajustado para harmonizar */
+  border-radius: 6px;
   margin-top: 20px;
   text-align: center;
   font-weight: 600;
-  border: 1px solid transparent; /* Adiciona borda transparente */
+  border: 1px solid transparent;
 }
 
 .status-message.success {
   background-color: #d4edda;
-  color: #004d40; /* Cor do texto de sucesso com o verde principal */
+  color: #004d40;
   border-color: #c3e6cb;
 }
 
@@ -147,130 +214,7 @@
   border-color: #f5c6cb;
 }
 
-/* ============================================= */
-/* --- ESTILOS PARA O CARD DE INFORMAÇÃO DE ACESSO --- */
-/* ============================================= */
-
-.access-info-card {
-    max-width: 800px; /* Alinha com a largura do card de formulário */
-    width: 100%;
-    margin: 30px auto 0 auto; /* Margem superior para separar do formulário */
-    background-color: #ffffff;
-    padding: 25px 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e9ecef;
-    box-sizing: border-box;
-}
-
-.access-info-card h4 {
-    font-weight: 700;
-    font-size: 1.3rem;
-    color: #212529;
-    margin: 0 0 20px 0;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-}
-
-.access-info-card h4 i {
-    margin-right: 10px;
-    color: #007bff; /* Azul principal */
-}
-
-.access-table-container {
-    overflow-x: auto;
-}
-
-.access-info-card table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95em;
-    text-align: left;
-}
-
-.access-info-card th {
-    background-color: #007bff; /* Fundo escuro conforme o exemplo visual */
-    color: #ffffff;
-    padding: 12px 15px;
-    font-weight: 600;
-    border: 1px solid #ced4da;
-}
-
-.access-info-card td {
-    padding: 12px 15px;
-    border: 1px solid #ced4da; /* Bordas suaves */
-    color: #000000;
-    line-height: 1.4;
-}
-
-.access-info-card tbody tr:nth-child(even) {
-    background-color: #f8f9fa; /* Zebrada suave para melhor leitura */
-}
-
-
-
-/* ============================================= */
-/* --- MEDIA QUERIES (RESPONSIVIDADE) --- */
-/* ============================================= */
-
-/* Telas Pequenas (Mobile) */
-@media (max-width: 768px) {
-  .main-content {
-    padding: 1.5rem 1rem; /* Ajuste para mobile */
-    margin-left: 80px; /* Corrige sobreposição do menu recolhido */
-  }
-  .card-adduser {
-    padding: 20px;
-    margin: 0; /* Ocupa a largura total no mobile */
-  }
-  .form-row {
-    flex-direction: column;
-    gap: 0;
-    align-items: stretch;
-  }
-  .form-group-button {
-    margin-bottom: 0; /* Remove margem extra no mobile */
-  }
-}
-
-/* Telas Médias (Tablet) - Ajuste para o menu RECOLHIDO */
-@media (min-width: 769px) and (max-width: 992px) {
-    .main-content {
-        margin-left: 80px; /* Espaço para o menu de ícones recolhido */
-    }
-}
-
-/* Telas Médias/Grandes (Desktop) - Ajuste para o menu ABERTO */
-@media (min-width: 993px) {
-  .main-content {
-      margin-left: 250px;
-  }
-}
-
-/* Responsividade para o novo card de tabela de acessos */
-@media (max-width: 768px) {
-    .access-info-card {
-        margin: 20px 0 0 0;
-        padding: 20px;
-    }
-}
-
-/* Estilos para a seleção de propriedades */
-.full-width {
-    width: 100%;
-    flex: 0 0 100%;
-}
-
-.section-label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 0.95rem;
-}
-
+/* Checkboxes de Propriedades (Estilo Original para a aba Adicionar) */
 .properties-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -293,7 +237,7 @@
 }
 
 .property-checkbox:hover {
-    border-color: #4CAF50;
+    border-color: #4CAF50; /* Verde ao hover */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -304,12 +248,308 @@
     accent-color: #4CAF50;
 }
 
-.property-checkbox label {
-    margin: 0;
-    font-size: 0.9rem;
-    cursor: pointer;
-    color: #333;
+.section-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.full-width {
+    width: 100%;
+    flex: 0 0 100%;
+}
+
+/* CARD DE INFORMAÇÃO DE ACESSO (ORIGINAL) */
+.access-info-card {
+    max-width: 800px;
+    width: 100%;
+    margin: 30px auto 0 auto;
+    background-color: #ffffff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e9ecef;
+    box-sizing: border-box;
+}
+
+.access-info-card h4 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #212529;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
     display: flex;
+    align-items: center;
+}
+
+.access-info-card h4 i { margin-right: 10px; color: #007bff; }
+.access-table-container { overflow-x: auto; }
+.access-info-card table { width: 100%; border-collapse: collapse; font-size: 0.95em; text-align: left; }
+.access-info-card th { background-color: #007bff; color: #ffffff; padding: 12px 15px; font-weight: 600; border: 1px solid #ced4da; }
+.access-info-card td { padding: 12px 15px; border: 1px solid #ced4da; color: #000000; line-height: 1.4; }
+.access-info-card tbody tr:nth-child(even) { background-color: #f8f9fa; }
+
+
+/* ==========================================================================
+   4. ESTILOS DA TABELA DE COLABORADORES (NOVA / MODIFICADA)
+   Mantendo o design limpo para a aba "Visualizar"
+   ========================================================================== */
+.card-viewusers {
+  max-width: 1000px; /* Mais largo para a tabela */
+  width: 100%;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+.card-viewusers h4 {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 15px;
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table-container thead th {
+  background-color: #f8fafc;
+  color: #4a5568;
+  font-weight: 600;
+  padding: 16px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.table-container tbody tr {
+  border-bottom: 1px solid #edf2f7;
+  transition: background-color 0.2s;
+}
+.table-container tbody tr:last-child { border-bottom: none; }
+.table-container tbody tr.clickable-row { cursor: pointer; }
+.table-container tbody tr.clickable-row:hover { background-color: #f0f7ff; }
+
+.table-container td { padding: 16px; vertical-align: middle; color: #2d3748; }
+
+.user-info-cell { display: flex; align-items: center; gap: 12px; }
+
+.avatar-small {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 1.1rem;
+  overflow: hidden;
+}
+.avatar-small img { width: 100%; height: 100%; object-fit: cover; }
+
+.user-details { display: flex; flex-direction: column; }
+.user-name { font-weight: 600; font-size: 0.95rem; }
+.user-email { font-size: 0.85rem; color: #718096; }
+
+.badge-acesso {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+.badge-gerente { background-color: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; }
+.badge-funcionario { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+.props-summary {
+  display: inline-block; max-width: 250px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #4a5568; font-size: 0.9rem;
+}
+
+.btn-icon {
+  background: none; border: none; color: #cbd5e0;
+  cursor: pointer; font-size: 1.1rem; transition: color 0.2s;
+}
+tr:hover .btn-icon { color: #007bff; }
+.no-data { text-align: center; padding: 3rem; color: #a0aec0; font-style: italic; }
+
+
+/* ==========================================================================
+   5. ESTILOS DO MODAL (NOVO / MODIFICADO)
+   Mantido o modal centralizado e moderno
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 90%; max-width: 600px; max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease-out;
+  display: flex; flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid #edf2f7;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-header h3 { margin: 0; color: #2d3748; font-size: 1.2rem; }
+
+.close-btn {
+  background: none; border: none; font-size: 2rem; color: #a0aec0; cursor: pointer; line-height: 1;
+}
+.close-btn:hover { color: #e53e3e; }
+
+.modal-body {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Perfil no Modal */
+.user-profile-header {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.avatar-large {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+.avatar-large img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+.profile-info h2 { margin: 0; color: #2d3748; font-size: 1.5rem; }
+.profile-info p {
+  margin: 5px 0; color: #718096;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+}
+
+.divider { border: 0; height: 1px; background: #edf2f7; margin: 20px 0; width: 100%; }
+
+.edit-toggle-btn {
+  background: white; border: 1px solid #cbd5e0; color: #4a5568;
+  padding: 8px 16px; border-radius: 20px; cursor: pointer;
+  font-size: 0.9rem; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+}
+.edit-toggle-btn:hover { border-color: #007bff; color: #007bff; background: #f0f7ff; }
+
+/* Área de Edição no Modal */
+.edit-section {
+  width: 100%;
+  display: flex; flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.edit-section .form-group {
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.modal-select {
+  width: 100%; max-width: 300px;
+  padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem;
+  text-align: center;
+}
+
+/* Visualização de Tags */
+.props-list-view {
+  display: flex; flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.prop-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #f0f7ff; color: #0056b3;
+  padding: 5px 10px; border-radius: 15px;
+  font-size: 0.85rem; font-weight: 500;
+  border: 1px solid #cce5ff;
+}
+
+.modal-footer {
+  padding: 20px 30px;
+  background-color: #f8fafc;
+  border-top: 1px solid #edf2f7;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+}
+
+.btn-cancel {
+  padding: 10px 20px; background: transparent; border: 1px solid #cbd5e0; border-radius: 8px;
+  color: #4a5568; font-weight: 600; cursor: pointer;
+}
+
+.btn-save {
+  background: #007bff; padding: 10px 20px; border: none; border-radius: 8px;
+  color: white; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+.btn-save:hover { background: #0056b3; }
+
+/* Animações do Modal */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* MEDIA QUERIES ORIGINAIS PARA O FORMULÁRIO */
+@media (max-width: 768px) {
+  .card-adduser {
+    padding: 20px;
+    margin: 0;
+  }
+  .form-row {
     flex-direction: column;
-    line-height: 1.2;
+    gap: 0;
+    align-items: stretch;
+  }
+  .form-group-button {
+    margin-bottom: 0;
+  }
+  .main-nav {
+    max-width: 100%;
+  }
+  .access-info-card {
+      margin: 20px 0 0 0;
+      padding: 20px;
+  }
 }

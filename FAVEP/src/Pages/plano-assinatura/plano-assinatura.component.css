@@ -1,4 +1,4 @@
-/* --- ESTILOS DE LAYOUT PRINCIPAL (Do seu arquivo) --- */
+/* --- ESTILOS DE LAYOUT PRINCIPAL --- */
 .main-content {
   padding: 2rem;
   background-color: #f4f7f6;
@@ -16,7 +16,7 @@
   }
 }
 
-/* --- (NOVO) Container principal da lógica de assinatura --- */
+/* --- Container principal da lógica de assinatura --- */
 .container-assinatura {
   width: 100%;
   max-width: 1200px;
@@ -24,23 +24,72 @@
   padding: 0 15px;
   text-align: center;
   box-sizing: border-box;
-  position: relative; /* Para o overlay */
+  position: relative; /* Para o overlay e modal */
 }
 
-/* --- (NOVO) Loading Overlay --- */
+/* --- (NOVO) Wrapper para Planos Lado a Lado --- */
+.planos-principais {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+    justify-content: center;
+    gap: 3rem; /* Espaçamento entre os dois grandes blocos */
+    margin-bottom: 3.5rem;
+}
+
+/* --- Seções e Títulos --- */
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* Estilos de Contenção para o Flexbox Lado a Lado */
+.secao-plano-atual {
+    flex: 1 1 340px; /* Base 400px */
+    max-width: 340px; /* Limita o crescimento */
+    margin-bottom: 0; /* Remove margem que fazia empilhar */
+}
+
+.secao-outros-planos {
+    flex: 1 1 340px; /* Base 400px */
+    max-width: 340px; /* Limita o crescimento */
+    margin-bottom: 0;
+}
+
+/* Garante que o título da seção atual fique alinhado */
+.secao-plano-atual h2, .secao-outros-planos h2 {
+    text-align: center;
+}
+
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* Ajusta o .cards-container dentro do "Mude seu Plano" */
+.secao-outros-planos .cards-container {
+    justify-content: center; /* Centraliza o card de plano base */
+    gap: 0; /* Remove gap interno, pois só deve haver um card */
+}
+
+/* --- Loading Overlay --- */
 .loading .loading-overlay {
-  display: flex; /* Mostra o overlay quando .loading está ativo */
+  display: flex;
 }
 
 .loading-overlay {
-  display: none; /* Escondido por padrão */
+  display: none;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(255, 255, 255, 0.9);
-  z-index: 100;
+  z-index: 1001; /* Z-index alto para ficar acima do modal */
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -50,7 +99,7 @@
 
 .spinner {
   border: 5px solid #f3f3f3;
-  border-top: 5px solid #007bff; /* Azul (pode mudar para seu verde) */
+  border-top: 5px solid #007bff;
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -69,44 +118,24 @@
   100% { transform: rotate(360deg); }
 }
 
-/* --- (NOVO) Seções e Títulos --- */
-h2 {
-  text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  font-weight: 600;
-}
-
-.secao-plano-atual {
-  margin-bottom: 3.5rem;
-}
-
-.secao-outros-planos {
-  margin-bottom: 2rem;
-}
-
-.cards-container {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-/* --- (NOVO) Estilo dos Cards (Baseado no seu CSS) --- */
+/* --- Estilo dos Cards (Plano Disponível) --- */
 .card-plano {
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  text-align: left; /* Alinha o texto do card à esquerda */
-  flex: 1;
-  min-width: 300px;
+  text-align: left;
+  
+  /* Ajuste para garantir largura e alinhamento lado a lado */
+  flex-shrink: 0; 
+  width: 340px; 
+  min-width: 300px; 
   max-width: 340px;
+  
   border-top: 5px solid transparent;
   transition: transform 0.3s, box-shadow 0.3s;
-  overflow: hidden; /* Para o header */
+  overflow: hidden;
 }
 
 .card-plano:hover {
@@ -116,38 +145,44 @@ h2 {
 
 /* Card do Plano Atual (Destaque) */
 .card-plano-atual {
-  border: 2px solid #046b4a; /* Seu verde principal */
-  margin-left: auto;
-  margin-right: auto;
+  border: 2px solid #007aff;
   box-shadow: 0 8px 20px rgba(4, 107, 74, 0.15);
-  max-width: 450px; /* Um pouco maior */
-  min-width: 300px;
-  text-align: center; /* Centraliza o card de plano atual */
+/* NOVO: Aplica a largura fixa do card disponível para que fiquem iguais */
+  width: 340px;
+  max-width: 340px;
+  text-align: center;
+  
+  /* Reset de alinhamento */
+  margin-left: initial;
+  margin-right: initial;
 }
 
-/* Cores específicas por plano (usando suas cores) */
+/* Cores específicas por plano */
 .card-gold { border-top-color: #ca8a04; }
-.card-base { border-top-color: #046b4a; }
+.card-base { border-top-color: #0056b3; }
 .card-gratis { border-top-color: #059669; }
 
 .card-header {
   padding: 1.5rem;
   position: relative;
   border-bottom: 1px solid #e5e7eb;
+
+  /* NOVO: Usa flexbox no header para alinhar o título e o badge */
+  display: flex;
+  justify-content: space-between; /* Espaçamento entre o título e o badge */
+  align-items: center;
 }
 
 .card-header h3 {
-  margin: 0;
   font-size: 1.4rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .badge-atual {
-  position: absolute;
   top: 15px;
   right: 15px;
-  background: #046b4a; /* Seu verde */
+  background: #0056b3;
   color: white;
   padding: 5px 12px;
   border-radius: 15px;
@@ -157,7 +192,7 @@ h2 {
 
 .card-body {
   padding: 1.5rem;
-  flex-grow: 1; /* Faz o corpo crescer e empurra o footer para baixo */
+  flex-grow: 1;
 }
 
 .preco {
@@ -174,11 +209,34 @@ h2 {
   font-size: 0.95rem;
   color: #555;
   margin-bottom: 1.5rem;
-  min-height: 40px; /* Altura mínima para alinhar */
+  min-height: 40px;
 }
 .card-plano-atual .descricao {
   text-align: center;
 }
+
+/* --- Datas no Plano Atual --- */
+.card-plano-atual .dates-info {
+  text-align: left;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  padding: 10px 15px;
+  border-radius: 6px;
+  background-color: #f7f7f7;
+  border: 1px solid #eee;
+}
+
+.card-plano-atual .dates-info p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.card-plano-atual .dates-info strong {
+  font-weight: 600;
+  color: #1a202c;
+}
+/* --- Fim Datas --- */
 
 
 .features-list {
@@ -197,8 +255,8 @@ h2 {
 }
 
 .features-list li::before {
-  content: '✓'; /* Checkmark */
-  color: #059669; /* Seu verde claro */
+  content: '✓';
+  color: #0056b3;
   font-weight: bold;
   font-size: 1.1rem;
   margin-right: 10px;
@@ -209,7 +267,7 @@ h2 {
   padding: 1.5rem;
   border-top: 1px solid #eee;
   background: #fdfdfd;
-  margin-top: auto; /* Garante que o footer fique no fundo */
+  margin-top: auto;
 }
 
 .card-footer button {
@@ -224,9 +282,9 @@ h2 {
   transition: background-color 0.3s, opacity 0.3s;
 }
 
-/* Cores dos Botões (usando suas cores) */
+/* Cores dos Botões */
 .card-gold .card-footer button { background-color: #ca8a04; }
-.card-base .card-footer button { background-color: #046b4a; }
+.card-base .card-footer button { background-color: #0056b3; }
 
 .card-footer button:hover:not(:disabled) {
   opacity: 0.85;
@@ -250,7 +308,7 @@ h2 {
 .feedback-container {
   width: 100%;
   max-width: 800px;
-  margin: 0 auto 2.5rem auto; /* Centraliza e dá espaço abaixo */
+  margin: 0 auto 2.5rem auto;
 }
 
 .feedback-box {
@@ -266,23 +324,113 @@ h2 {
   line-height: 1.6;
 }
 
-/* Verde (Sucesso) */
+/* Feedback Status Cores */
 .feedback-success {
   background-color: #d4edda;
   color: #155724;
   border-color: #c3e6cb;
 }
 
-/* Vermelho (Falha) */
 .feedback-failure {
   background-color: #f8d7da;
   color: #721c24;
   border-color: #f5c6cb;
 }
 
-/* Amarelo (Pendente) */
 .feedback-pending {
   background-color: #fff3cd;
   color: #856404;
   border-color: #ffeeba;
 }
+
+/* --- ESTILOS DO MODAL DE CONFIRMAÇÃO --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 15px;
+}
+
+.confirmation-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.confirmation-card h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #046b4a;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.confirmation-body p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+.confirmation-card .plan-summary {
+    background-color: #f7f7f7;
+    border: 1px solid #eee;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.confirmation-actions {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.confirmation-actions button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    flex: 1;
+}
+
+.btn-cancel-modal {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-cancel-modal:hover:not(:disabled) {
+    background-color: #c82333;
+}
+
+.btn-confirm-modal {
+    background-color: #046b4a;
+    color: white;
+}
+
+.btn-confirm-modal:hover:not(:disabled) {
+    background-color: #059669;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* --- FIM DOS ESTILOS DO MODAL --- */

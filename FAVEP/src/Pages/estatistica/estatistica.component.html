@@ -49,18 +49,18 @@
     </div>
   </div>
 
-  <div class="graficos-container">
     
-    <div class="grafico-card">
-      <h3>Produtividade por Cultura</h3>
-      <canvas *ngIf="hasProdutividadeData; else noProdutividadeData" #produtividadeChart></canvas>
-      <ng-template #noProdutividadeData>
-        <div class="no-data-message">
-          <i class="fas fa-chart-bar"></i>
-          <p>Não há dados de produção para exibir.</p>
-        </div>
-      </ng-template>
-    </div>
+      <div class="grafico-card">
+        <h3>Produtividade por Cultura</h3>
+        <canvas *ngIf="hasProdutividadeData; else noProdutividadeData" #produtividadeChart></canvas>
+        <ng-template #noProdutividadeData>
+          <div class="no-data-message">
+            <i class="fas fa-chart-bar"></i>
+            <p>Não há dados de produção para exibir.</p>
+          </div>
+        </ng-template>
+      </div>
+
 
     <div class="clima-section">
       <h2>☀️ Clima</h2>
@@ -89,7 +89,6 @@
          <p *ngIf="!climaErro" class="info">Buscando dados do clima...</p>
       </ng-template>
     </div>
-  </div>
   
   <div class="grafico-card">
     <h3>Receitas x Despesas (últimos meses)</h3>

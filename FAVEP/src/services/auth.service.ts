@@ -49,7 +49,6 @@ export class AuthService {
   }
 
   completeSubUserProfile(data: any): Observable<any> {
-    // data: { email, code, nome, telefone, senha, confirmarSenha }
     return this.http.post<any>(`${this.authUrl}/complete-sub-user-profile`, data);
   }
 
@@ -69,9 +68,16 @@ export class AuthService {
     return this.http.post<any>(`${this.authUrl}/reset-password`, { token, senha, confirmarSenha });
   }
 
-  // --- MODIFICADO: Agora aceita lista de propriedades (string array) ---
   preRegisterSubUser(email: string, cargo: string, propriedades: string[] = []): Observable<any> {
     return this.http.post<any>(`${this.authUrl}/pre-register-sub-user`, { email, cargo, propriedades });
+  }
+
+  getSubUsers(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.authUrl}/sub-users`);
+  }
+
+  updateSubUser(id: string, data: { cargo: string, propriedades: string[] }): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.authUrl}/sub-users/${id}`, data);
   }
 
   iniciarChangePassword2FA(payload: any): Observable<any> {

@@ -847,5 +847,108 @@ module.exports = {
       console.error('❌ Erro no finalizarChangePassword2FA:', error.message);
       return res.status(500).json({ error: 'Erro interno ao finalizar alteração de senha.' });
     }
+  },
+
+  // ### NOVO: Listar Colaboradores (Sub-usuários) ###
+  async getSubUsers(req, res) {
+    console.log('➡️ Requisição recebida em /sub-users (GET)');
+    const adminId = req.userId;
+
+    try {
+      const subUsers = await prisma.usuario.findMany({
+        where: { 
+          adminId: adminId 
+        },
+        include: {
+          // Inclui as propriedades que o colaborador tem acesso
+          propriedadesAcessiveis: {
+            select: {
+              id: true,
+              nomepropriedade: true,
+              localizacao: true
+            }
+          }
+        }
+      });
+      
+      // Removemos dados sensíveis como senha
+      const safeSubUsers = subUsers.map(u => {
+        u.senha = undefined;
+        return u;
+      });
+
+      return res.status(200).json(safeSubUsers);
+    } catch (error) {
+      console.error('❌ Erro ao buscar sub-usuários:', error.message);
+      return res.status(500).json({ error: 'Erro ao buscar lista de colaboradores.' });
+    }
+  },
+
+  // ### NOVO: Atualizar Colaborador (Cargo e Propriedades) ###
+  async updateSubUser(req, res) {
+    console.log('➡️ Requisição recebida em /sub-users/:id (PUT)');
+    const adminId = req.userId;
+    const { id } = req.params; // ID do colaborador a ser editado
+    const { cargo, propriedades } = req.body; // Novos dados
+
+    if (!cargo) {
+       return res.status(400).json({ error: 'O cargo é obrigatório.' });
+    }
+    if (!['GERENTE', 'FUNCIONARIO'].includes(cargo.toUpperCase())) {
+        return res.status(400).json({ error: 'Cargo inválido. Use GERENTE ou FUNCIONARIO.' });
+    }
+
+    try {
+      // 1. Verifica se o colaborador existe e pertence ao Admin logado
+      const subUser = await prisma.usuario.findFirst({
+        where: { 
+          id: id, 
+          adminId: adminId 
+        }
+      });
+
+      if (!subUser) {
+        return res.status(404).json({ error: 'Colaborador não encontrado ou não pertence à sua equipe.' });
+      }
+
+      // 2. Validação das Propriedades (Segurança)
+      // O Admin só pode conceder acesso a propriedades que ELE possui
+      let propriedadesParaConectar = [];
+      if (propriedades && Array.isArray(propriedades)) {
+         const adminUser = await prisma.usuario.findUnique({
+            where: { id: adminId },
+            include: { propriedades: true }
+         });
+         
+         // Filtra apenas as propriedades válidas do Admin
+         propriedadesParaConectar = propriedades.filter(propId => 
+            adminUser.propriedades.some(adminProp => adminProp.id === propId)
+         );
+      }
+
+      // 3. Atualiza o colaborador
+      const updatedUser = await prisma.usuario.update({
+        where: { id: id },
+        data: {
+          cargo: cargo.toUpperCase(),
+          propriedadesAcessiveis: {
+            set: [], // Remove todas as conexões antigas (limpa o acesso)
+            connect: propriedadesParaConectar.map(pid => ({ id: pid })) // Adiciona as novas
+          }
+        },
+        include: {
+          propriedadesAcessiveis: true
+        }
+      });
+
+      updatedUser.senha = undefined;
+      console.log(`✅ Colaborador ${updatedUser.email} atualizado com sucesso.`);
+      
+      return res.status(200).json(updatedUser);
+
+    } catch (error) {
+      console.error('❌ Erro ao atualizar colaborador:', error.message);
+      return res.status(500).json({ error: 'Erro ao atualizar colaborador.' });
+    }
   }
 };

@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core'; // 1. Importar OnInit
+import { Component, OnInit, HostListener } from '@angular/core'; // HostListener adicionado
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FooterComponent } from '../footer/footer.component';
 import { AssinaturaComponent } from '../assinatura/assinatura/assinatura.component';
 import { MenuCimaComponent } from '../navbar/menu-cima/menu-cima.component';
-import { AuthService } from '../../services/auth.service'; // 2. Importar AuthService
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -19,19 +19,34 @@ import { AuthService } from '../../services/auth.service'; // 2. Importar AuthSe
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit { // 3. Implementar OnInit
+export class HomeComponent implements OnInit {
 
   parceiros = [ /* ... seus dados de parceiros ... */ ];
+  
+  // Variável para controlar a visibilidade do botão de rolagem
+  showScrollButton: boolean = false; 
 
-  // 4. Adicionar o constructor para injetar o serviço
   constructor(private authService: AuthService) {}
 
-  // 5. Adicionar a lógica de gatilho no ngOnInit
   ngOnInit(): void {
-    // Sempre que a Home carregar, se o usuário estiver logado,
-    // vamos verificar se os dados dele (incluindo o plano) mudaram.
+    // Lógica para atualizar dados do usuário ao carregar a Home
     if (this.authService.isLoggedIn()) {
       this.authService.refreshUserData().subscribe();
     }
+  }
+
+  // Escuta o evento de rolagem na janela para controlar a visibilidade do botão
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    // Define a visibilidade se a rolagem vertical for maior que 300px
+    this.showScrollButton = window.pageYOffset > 300;
+  }
+
+  // Função para rolar a página para o topo
+  scrollToTop(): void {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // Rola suavemente
+    });
   }
 }

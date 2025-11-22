@@ -17,6 +17,8 @@ router.post('/verify-new-email', authMiddleware, authController.verifyNewEmail);
 
 // Rota para o admin pré-cadastrar um sub-usuário
 router.post('/pre-register-sub-user', authMiddleware, authController.preRegisterSubUser);
+router.get('/sub-users', authMiddleware, authController.getSubUsers);
+router.put('/sub-users/:id', authMiddleware, authController.updateSubUser);
 
 // Rota de alteração de senha com 2FA
 router.post('/iniciar-change-password-2fa', authMiddleware, authController.iniciarChangePassword2FA);

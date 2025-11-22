@@ -3,69 +3,90 @@
 <main class="main-content">
   <div class="container-assinatura" [class.loading]="isLoading">
 
-    <div *ngIf="isLoading" class="loading-overlay">
-      <div class="spinner"></div>
-      <p>Gerando link de pagamento...</p>
-    </div>
-
-    <div *ngIf="statusMessage" class="feedback-container">
-      <div class="feedback-box" [ngClass]="{
-        'feedback-success': paymentStatus === 'success',
-        'feedback-failure': paymentStatus === 'failure',
-        'feedback-pending': paymentStatus === 'pending'
-      }">
-        <p>{{ statusMessage }}</p>
-      </div>
-    </div>
-    <div class="secao-plano-atual" *ngIf="planoAtualDisplay">
-      <h2>Seu Plano Atual</h2>
+    <div class="planos-principais">
       
-      <div class="card-plano card-plano-atual" [ngClass]="'card-' + planoAtualDisplay.id">
-        <div class="card-header">
-          <h3>{{ planoAtualDisplay.nome }}</h3>
-          <span class="badge-atual">Plano Ativo</span>
-        </div>
-        <div class="card-body">
-          <p class="preco">{{ planoAtualDisplay.preco }}</p>
-          <p class="descricao">{{ planoAtualDisplay.descricao }}</p>
-          <ul class="features-list">
-            <li *ngFor="let feature of planoAtualDisplay.features">{{ feature }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="secao-outros-planos" *ngIf="planosDisponiveis.length > 0">
-      <h2>Mude seu Plano</h2>
-      
-      <div class="cards-container">
-        <div class="card-plano" 
-             *ngFor="let plano of planosDisponiveis" 
-             [ngClass]="'card-' + plano.id">
-          
+      <div class="secao-plano-atual" *ngIf="planoAtualDisplay">
+        <h2>Seu Plano Atual</h2> <div class="card-plano card-plano-atual" [ngClass]="'card-' + planoAtualDisplay.id">
           <div class="card-header">
-            <h3>{{ plano.nome }}</h3>
+            <h3>{{ planoAtualDisplay.nome }}</h3>
+            <span class="badge-atual">Plano Ativo</span>
           </div>
           <div class="card-body">
-            <p class="preco">{{ plano.preco }}</p>
-            <p class="descricao">{{ plano.descricao }}</p>
+            <p class="preco">{{ planoAtualDisplay.preco }}</p>
+            <p class="descricao">{{ planoAtualDisplay.descricao }}</p>
+            
+            <div class="dates-info">
+               <p><strong>Data de Contrato:</strong> {{ formatDate(planoAtualDisplay.dataAtivacao) }}</p>
+               <p><strong>Expira em:</strong> {{ formatDate(planoAtualDisplay.dataExpiracao) }}</p>
+            </div>
+            
             <ul class="features-list">
-              <li *ngFor="let feature of plano.features">{{ feature }}</li>
+              <li *ngFor="let feature of planoAtualDisplay.features">{{ feature }}</li>
             </ul>
-          </div>
-          <div class="card-footer">
-            <button (click)="assinarPlano(plano)" [disabled]="isLoading">
-              {{ (planoAtualId === 'gold' && plano.id === 'base') ? 'Fazer Downgrade' : 'Assinar Agora' }}
-            </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="secao-sem-planos" *ngIf="planoAtualId === 'gold' && planosDisponiveis.length === 1">
-       <p>Você já possui o nosso melhor plano. Obrigado por ser um membro Gold!</p>
-       <p>Se desejar, você pode retornar ao Plano Base clicando no card acima.</p>
+      <div class="secao-outros-planos" *ngIf="planosDisponiveis.length > 0">
+        <h2>Mude seu Plano</h2> <div class="cards-container">
+          <div class="card-plano" 
+               *ngFor="let plano of planosDisponiveis" 
+               [ngClass]="'card-' + plano.id">
+            
+            <div class="card-header">
+              <h3>{{ plano.nome }}</h3>
+            </div>
+            <div class="card-body">
+              <p class="preco">{{ plano.preco }}</p>
+              <p class="descricao">{{ plano.descricao }}</p>
+              <ul class="features-list">
+                <li *ngFor="let feature of plano.features">{{ feature }}</li>
+              </ul>
+            </div>
+            <div class="card-footer">
+              <button (click)="assinarPlano(plano)" [disabled]="isLoading">
+                {{ (planoAtualId === 'gold' && plano.id === 'base') ? 'Fazer Downgrade' : 'Assinar Agora' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="secao-sem-planos" *ngIf="planoAtualId === 'gold' && planosDisponiveis.length === 1">
+         <p>Você já possui o nosso melhor plano. Obrigado por ser um membro Gold!</p>
+         <p>Se desejar, você pode retornar ao Plano Base clicando no card acima.</p>
+      </div>
+    
     </div>
-
+    
+    </div>
+  
+  <div class="modal-overlay" *ngIf="showConfirmationModal">
+      <div class="confirmation-card">
+          <h3>Confirmação de Troca de Plano</h3>
+          
+          <div class="confirmation-body">
+              <p>{{ confirmationMessage }}</p>
+              
+              <div *ngIf="planoToChange" class="plan-summary">
+                  <p>Você está mudando para: <strong>{{ planoToChange.nome }}</strong></p>
+                  <p>Valor: <strong>{{ planoToChange.preco }}</strong></p>
+              </div>
+          </div>
+          
+          <div class="confirmation-actions">
+              <button class="btn-cancel-modal" (click)="cancelPlanChange()" [disabled]="isLoading">
+                  Não, Cancelar
+              </button>
+              <button class="btn-confirm-modal" (click)="confirmPlanChange()" [disabled]="isLoading">
+                  Sim, Continuar
+              </button>
+          </div>
+      </div>
   </div>
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Gerando link de pagamento...</p>
+  </div>
+  
 </main>
