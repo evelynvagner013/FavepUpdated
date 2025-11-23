@@ -49,7 +49,7 @@ O projeto é dividido em duas partes principais: Frontend (Aplicação Web) e Ba
 | **Framework:** Express.js | Framework minimalista e flexível para Node.js. |
 | **Linguagem:** JavaScript (Node.js) | Ambiente de execução. |
 | **ORM:** Prisma | ORM moderno para Node.js. |
-| **Banco de Dados:** SQLite | Banco de dados leve e integrado (para desenvolvimento). |
+| **Banco de Dados:** Postgree | Banco de dados robusto e em alta no mercado. |
 | **Autenticação:** JWT com bcrypt | JSON Web Tokens para segurança e bcrypt para hashing de senhas. |
 
 ---
