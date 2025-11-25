@@ -1,4 +1,8 @@
 /* Estilos Globais da Página de Contato */
+* {
+    box-sizing: border-box; /* Garante cálculos de largura corretos */
+}
+
 .contact-section {
     padding: 80px 20px;
     background-color: #f5f5f5; /* Fundo cinza claro */
@@ -31,6 +35,9 @@
     flex: 1; /* Permite que o card se estenda */
     display: flex;
     flex-direction: column;
+    /* Garante largura mínima razoável antes de quebrar */
+    min-width: 280px;
+    max-width: 100%;
 }
 
 .contact-card:hover {
@@ -47,6 +54,7 @@
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 2px solid #004d40;
+    word-wrap: break-word; /* Evita quebra em telas minúsculas */
 }
 
 /* Estilos do Card de Informações */
@@ -67,12 +75,18 @@
     margin-right: 15px;
     width: 30px;
     text-align: center;
+    flex-shrink: 0; /* Impede ícone de amassar */
 }
 
 .contact-detail a {
     color: #004d40;
     text-decoration: none;
     transition: color 0.3s ease;
+    word-break: break-all; /* Quebra emails/telefones longos */
+}
+
+.contact-detail p {
+    word-break: break-word;
 }
 
 .contact-detail a:hover {
@@ -110,10 +124,11 @@
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    justify-content: center; 
+    justify-content: center;
     gap: 10px;
     width: 100%; /* Botão em tela cheia no card */
     transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
 }
 
 .whatsapp-btn:hover {
@@ -153,6 +168,7 @@
     border: 1px solid #e0e0e0;
     color: #212121;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    max-width: 100%;
 }
 
 .form-group input::placeholder,
@@ -228,7 +244,10 @@
     }
     .contact-card {
         width: 100%;
-        max-width: 550px;
+        max-width: 100%;
+    }
+    .info-card {
+        max-width: 100%;
     }
 }
 
@@ -238,6 +257,7 @@
     }
     .contact-card {
         padding: 25px;
+        min-width: auto; /* Remove largura mínima para caber na tela */
     }
     .card-title {
         font-size: 1.5rem;
@@ -250,5 +270,32 @@
     }
     .whatsapp-btn {
         padding: 12px 20px;
+    }
+}
+
+/* Ajustes Finais para 300px */
+@media (max-width: 400px) {
+    .contact-section {
+        padding: 30px 10px; /* Reduz margem externa */
+    }
+
+    .contact-card {
+        padding: 20px 15px; /* Reduz margem interna do card */
+    }
+
+    .card-title {
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    .contact-detail {
+        flex-direction: column; /* Ícone em cima, texto embaixo */
+        align-items: center;
+        text-align: center;
+    }
+
+    .contact-detail .contact-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
     }
 }

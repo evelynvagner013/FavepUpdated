@@ -15,7 +15,7 @@ interface PlanoDisplay {
   features: string[];
   valorBackend: number;
   descricaoBackend: string;
-  dataAtivacao?: Date | string; 
+  dataAtivacao?: Date | string;
   dataExpiracao?: Date | string;
 }
 
@@ -62,7 +62,7 @@ export class PlanoAssinaturaComponent implements OnInit {
       nome: 'Plano Base',
       preco: 'R$ 150,00/mês', // SEU PREÇO REAL
       descricao: 'Funcionalidades essenciais para começar.',
-      features: ['Limite de 1 membro', 'Limitado a 5 produções', 'Sem acesso a relatórios'],
+      features: ['Limite de 1 propriedade', 'Limitado a 5 produções', 'Sem acesso ao convite de usuários', 'Sem acesso a relatórios'],
       valorBackend: 150.00, // SEU PREÇO REAL
       descricaoBackend: 'Plano Base'
     },
@@ -71,7 +71,7 @@ export class PlanoAssinaturaComponent implements OnInit {
       nome: 'Plano Gold',
       preco: 'R$ 300,00/mês', // SEU PREÇO REAL
       descricao: 'Acesso completo para máxima produtividade.',
-      features: ['Membros ilimitados', 'Produções ilimitadas', 'Acesso total a relatórios'],
+      features: ['Propriedades ilimitadas', 'Produções ilimitadas', 'Acesso total a relatórios'],
       valorBackend: 300.00, // SEU PREÇO REAL
       descricaoBackend: 'Plano Gold'
     }
@@ -119,16 +119,16 @@ export class PlanoAssinaturaComponent implements OnInit {
       }
     });
   }
-  
+
   private loadCurrentPlan(): void {
     this.planoAtualId = this.authService.getPlanoAtivo() || 'gratis';
     const basePlan = this.todosOsPlanos[this.planoAtualId];
 
     const user = this.authService.getUser();
-    
+
     if (user && user.planos && user.planos.length > 0) {
-        this.planoAtivoCompleto = user.planos[0]; 
-        
+        this.planoAtivoCompleto = user.planos[0];
+
         this.planoAtualDisplay = {
             ...basePlan,
             dataAtivacao: this.planoAtivoCompleto.dataAtivacao,
@@ -138,24 +138,24 @@ export class PlanoAssinaturaComponent implements OnInit {
         this.planoAtualDisplay = basePlan;
         this.planoAtivoCompleto = null;
     }
-    
+
     this.definirPlanosDisponiveis();
   }
 
   formatDate(dateInput: Date | string | undefined): string {
     if (!dateInput) return 'N/A';
-    
+
     let date: Date;
     if (typeof dateInput === 'string') {
         date = new Date(dateInput);
     } else {
         date = dateInput;
     }
-    
+
     if (isNaN(date.getTime())) {
       return 'Data Inválida';
     }
-    
+
     return date.toLocaleDateString('pt-BR');
   }
 
@@ -186,7 +186,7 @@ export class PlanoAssinaturaComponent implements OnInit {
   }
 
   assinarPlano(plano: PlanoDisplay): void {
-    
+
     if (this.isLoading) return;
 
     if (plano.id === 'gratis' && this.planoAtualId === 'gratis') {
@@ -198,17 +198,17 @@ export class PlanoAssinaturaComponent implements OnInit {
 
     // Lógica para Downgrade de Gold para Base
     if (this.planoAtualId === 'gold' && plano.id === 'base') {
-      confirmationMessage = 
+      confirmationMessage =
         "Atenção: Você está fazendo um Downgrade. Ao mudar para o Plano Base, todos os membros " +
         "adicionais (se houver) perderão o acesso. Somente a sua conta (pagante) " +
         "permanecerá ativa. Deseja continuar com o Downgrade?";
     }
-    
+
     // Confirmação para mudar do pago para o grátis
     if (plano.id === 'gratis' && this.planoAtualId !== 'gratis') {
          confirmationMessage = `Atenção: Você está prestes a mudar do Plano Pago (${this.planoAtualDisplay?.nome}) para o Plano Grátis (Trial). Seu plano atual será mantido até ${this.formatDate(this.planoAtualDisplay?.dataExpiracao)}, e sua conta passará a seguir as limitações do Plano Grátis. Deseja confirmar?`;
     }
-    
+
     // Configura o modal para aparecer
     this.confirmationMessage = confirmationMessage;
     this.planoToChange = plano;
@@ -221,7 +221,7 @@ export class PlanoAssinaturaComponent implements OnInit {
     this.planoToChange = null;
     this.confirmationMessage = '';
   }
-  
+
   // --- NOVA FUNÇÃO: Confirma a ação e inicia o pagamento ---
   confirmPlanChange(): void {
     const plano = this.planoToChange;

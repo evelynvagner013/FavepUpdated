@@ -6,7 +6,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    transition: margin-left 0.3s ease-in-out;
+    transition: margin-left 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
 /* --- CABEÇALHO --- */
@@ -16,7 +16,6 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
-    
 }
 
 .header-title {
@@ -32,18 +31,20 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
+    flex-grow: 1;
 }
-  
+
 .filtro-group select {
-    padding: 12px 18px; /* Aumentado para mais altura e largura */
+    padding: 12px 18px;
     border: 1px solid #ced4da;
     border-radius: 8px;
     background-color: #fff;
     font-size: 1rem;
     color: #212121;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    flex-grow: 1; /* O select ocupa o espaço disponível */
-    max-width: 300px; /* Limita o tamanho no mobile */
+    flex-grow: 1;
+    max-width: 300px;
+    cursor: pointer;
 }
 
 .filtro-group select:hover {
@@ -55,16 +56,16 @@
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
     outline: none;
 }
-  
+
 /* --- CARDS DE RESUMO --- */
 .resumo-cards {
     display: grid;
-    /* auto-fit já cuida da responsividade dos cards */
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* Mantido 200px para evitar quebra */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 25px;
     margin-bottom: 40px;
 }
-  
+
 .resumo-card {
     background-color: white;
     border-radius: 12px;
@@ -72,13 +73,16 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: left;
-    backdrop-filter: blur(10px); 
+    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+    /* Garante que o conteúdo não vaze a largura do card */
+    width: 100%;
+    box-sizing: border-box;
 }
-  
+
 .resumo-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
@@ -88,44 +92,52 @@
     font-size: 2rem;
     color: #007aff;
 }
-  
+
 .resumo-card h3 {
     margin-top: 0;
     color: #7f8c8d;
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin-bottom: 5px; /* Reduzido levemente */
 }
-  
+
 .resumo-card .valor {
-    font-size: 2.5rem;
+    /* CORREÇÃO AQUI:
+       1. clamp: Fonte ajustável entre 1.8rem e 2.2rem dependendo da tela.
+       2. overflow-wrap: Quebra apenas palavras/números muito longos se necessário, sem partir dígitos.
+    */
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
     font-weight: 700;
     margin: 0;
     color: #212121;
+    line-height: 1.2;
+    overflow-wrap: break-word; /* Melhor que word-break para números */
+    width: 100%; /* Garante alinhamento */
 }
-  
+
 .resumo-card .info {
     color: #95a3a6;
     font-size: 0.95rem;
     margin-top: 5px;
+    line-height: 1.4;
 }
-  
+
 .positivo {
     color: #28a745;
 }
-  
+
 .negativo {
     color: #dc3545;
 }
-  
+
 /* --- GRÁFICOS --- */
 .graficos-container {
     display: grid;
-    grid-template-columns: 1fr; /* Padrão mobile: uma coluna */
+    grid-template-columns: 1fr;
     gap: 30px;
-    margin-bottom: 30px;;
+    margin-bottom: 30px;
 }
-  
+
 .grafico-card {
     background-color: white;
     border-radius: 12px;
@@ -134,9 +146,11 @@
     height: 450px;
     display: flex;
     flex-direction: column;
-    gap: 1rem; 
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
-  
+
 .grafico-card h3 {
     margin-top: 0;
     margin-bottom: 20px;
@@ -146,14 +160,14 @@
     text-align: center;
     flex-shrink: 0;
 }
-  
+
 .grafico-card canvas {
     flex-grow: 1;
     width: 100% !important;
     height: auto !important;
     max-height: 350px;
 }
-  
+
 /* --- CLIMA --- */
 .clima-section {
     background: rgba(255, 255, 255, 0.9);
@@ -165,61 +179,65 @@
     align-items: center;
     text-align: center;
     gap: 1rem;
-    min-height: 400px; 
+    min-height: 400px;
     justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
 }
-  
+
 .clima-section h2 {
     color: #007aff;
     font-weight: 600;
     margin: 0 0 10px 0;
 }
-  
+
 .clima-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
 }
-  
+
 .clima-card img {
     width: 90px;
     height: 90px;
 }
-  
+
 .clima-card h3 {
     margin: 10px 0 5px;
     font-size: 1.2rem;
     color: #222;
 }
-  
+
 .clima-card p {
     margin: 2px 0;
     color: #666;
 }
-  
+
 .clima-card .temperatura-clima {
     font-size: 2.5rem;
     font-weight: 700;
     margin: 10px 0;
     color: #222;
 }
-  
+
 .clima-busca {
     display: flex;
     width: 100%;
     max-width: 400px;
     gap: 10px;
+    flex-wrap: wrap;
 }
-  
+
 .input-cidade {
     flex: 1;
     padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 1rem;
+    min-width: 150px;
 }
-  
+
 button {
     background: #007aff;
     color: white;
@@ -230,21 +248,21 @@ button {
     cursor: pointer;
     transition: 0.3s;
 }
-  
+
 button:hover {
     background: #005fcb;
 }
-  
+
 .erro {
     color: #ef4444;
     text-align: center;
     font-weight: 500;
 }
-  
+
 /* --- MENSAGEM "SEM DADOS" --- */
 .no-data-message {
     display: flex;
-    flex: 1; /* Garante que ocupe o espaço do gráfico */
+    flex: 1;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -255,44 +273,67 @@ button:hover {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     color: #7f8c8d;
     font-size: 1.1rem;
-    min-height: 300px; /* Altura mínima */
+    min-height: 300px;
 }
-  
+
 .no-data-message i {
     font-size: 3rem;
     margin-bottom: 15px;
-    color: #ccc; 
+    color: #ccc;
 }
 
 
-/* --- SEÇÃO DE RESPONSIVIDADE --- */
+/* --- SEÇÃO DE RESPONSIVIDADE (MEDIA QUERIES) --- */
+
+/* Desktop (Telas Grandes) */
+@media (min-width: 993px) {
+    .main-content {
+        margin-left: 250px;
+    }
+}
+
+/* Telas Médias (Tablet) */
+@media (min-width: 769px) and (max-width: 992px) {
+    .main-content {
+        margin-left: 80px;
+    }
+
+    .resumo-cards {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
 
 /* Telas Pequenas (Mobile) */
 @media (max-width: 768px) {
     .main-content {
-        padding: 1rem; /* Menos padding em telas pequenas */
+        padding: 1rem;
+        margin-left: 0;
     }
 
     .report-header {
-        flex-direction: column; /* Empilha o título e o filtro */
-        align-items: stretch; /* Ocupa a largura total */
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
     }
 
     .header-title {
-        text-align: center; /* Centraliza o título */
-        font-size: 1.5rem; /* Ajusta o tamanho do título */
-    }
-    
-    .filtro-group {
-        justify-content: center; /* Centraliza o filtro */
-        margin-right: 0; /* Remove a margem no mobile */
-    }
-    
-    .filtro-group select {
-        max-width: none; /* Permite que o select ocupe mais espaço */
+        text-align: center;
+        font-size: 1.5rem;
     }
 
+    .filtro-group {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .filtro-group select {
+        max-width: none;
+        width: 100%;
+    }
+
+    /* Cards em coluna única no mobile */
     .resumo-cards {
+        grid-template-columns: 1fr;
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
@@ -301,42 +342,36 @@ button:hover {
         padding: 1.25rem;
     }
 
-    .resumo-card .valor {
-        font-size: 2rem; /* Fonte menor para o valor */
-    }
+    /* A fonte será controlada pelo clamp() definido acima,
+       mas podemos reforçar se necessário ou ajustar margens */
 
     .clima-section,
     .grafico-card {
-        height: 400px; /* Altura ligeiramente menor */
+        height: auto;
+        min-height: 400px;
         padding: 1.25rem;
     }
 
     .clima-card .temperatura-clima {
         font-size: 2rem;
     }
-}
 
-/* Telas Médias (Tablet) - Ajuste para o menu RECOLHIDO */
-@media (min-width: 769px) and (max-width: 992px) {
-    .main-content {
-        margin-left: 40px; /* (Ajuste) Espaço para o menu de ícones recolhido */
+    .clima-busca {
+        max-width: 100%;
+    }
+
+    .input-cidade {
+        width: 100%;
+    }
+
+    .clima-busca button {
+        width: 100%;
     }
 }
 
-/* Telas Médias (Tablets) - Ajuste do menu lateral ABERTO */
-@media (min-width: 993px) {
-    .main-content {
-        margin-left: 250px; /* Abre espaço para o menu lateral */
-    }
-}
-
-/* Telas Grandes (Desktop) - Gráficos lado a lado */
+/* Telas Grandes (Desktop Extra) */
 @media (min-width: 1200px) {
     .graficos-container {
-        grid-template-columns: repeat(2, 1fr); /* 2 colunas para gráficos */
-    }
-    .resumo-cards {
-        grid-template-columns: repeat(4, 1fr); /* 4 colunas para os cards */
+        grid-template-columns: repeat(2, 1fr);
     }
 }
-

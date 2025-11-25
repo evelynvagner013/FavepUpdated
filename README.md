@@ -49,7 +49,7 @@ O projeto é dividido em duas partes principais: Frontend (Aplicação Web) e Ba
 | **Framework:** Express.js | Framework minimalista e flexível para Node.js. |
 | **Linguagem:** JavaScript (Node.js) | Ambiente de execução. |
 | **ORM:** Prisma | ORM moderno para Node.js. |
-| **Banco de Dados:** Postgree | Banco de dados robusto e em alta no mercado. |
+| **Banco de Dados:** SQLite | Banco de dados leve e integrado (para desenvolvimento). |
 | **Autenticação:** JWT com bcrypt | JSON Web Tokens para segurança e bcrypt para hashing de senhas. |
 
 ---
@@ -100,3 +100,39 @@ Siga os passos abaixo para colocar o projeto FAVEP em execução na sua máquina
     ```
 
 > ℹ️ **A aplicação estará disponível em:** `http://localhost:4200/`
+
+---
+
+## 💳 Configuração de Pagamentos (Mercado Pago)
+
+Para que o módulo de pagamentos e assinaturas funcione corretamente em ambiente de desenvolvimento, é necessário realizar a integração com o Mercado Pago e utilizar o **ngrok** para expor seu servidor local e receber notificações (Webhooks).
+
+### 1. 🌐 Instalação e Configuração do ngrok
+O **ngrok** é necessário para criar um túnel seguro para o seu `localhost`, permitindo que o Mercado Pago notifique seu sistema sobre o status dos pagamentos.
+
+1.  Baixe e instale o [ngrok](https://ngrok.com/download).
+2.  Inicie o ngrok apontando para a porta do seu backend (padrão 5050):
+    ```bash
+    ngrok http 5050
+    ```
+3.  Copie a URL HTTPS gerada pelo ngrok (ex: `https://a1b2-c3d4.ngrok-free.app`).
+
+### 2. 🛍️ Configuração no Mercado Pago Developers
+1.  Acesse o [Mercado Pago Developers](https://www.mercadopago.com.br/developers).
+2.  Crie uma nova aplicação e selecione a opção **Checkout Pro**.
+3.  No painel da aplicação, obtenha as credenciais:
+    * **Public Key**
+    * **Access Token**
+4.  Vá até a aba **Notificações Webhooks**.
+5.  Configure a URL de notificação utilizando a URL do ngrok copiada anteriormente:
+    * Formato: `https://sua-url-ngrok.ngrok-free.app/webhook` (Verifique a rota exata definida no arquivo `routes` do backend).
+6.  Ative os eventos necessários (ex: `payment`, `subscription_authorized`).
+
+### 3. 🔐 Variáveis de Ambiente (.env)
+Navegue até a pasta `ServerBackup/` e adicione as credenciais no arquivo `.env`:
+
+```env
+#MERCADO PAGO
+MERCADOPAGO_PUBLIC_KEY="sua-public-key"
+MERCADOPAGO_ACCESS_TOKEN="seu-acess-token"
+MERCADOPAGO_NOTIFICATION_URL="url-gerada-pelo-ngok/api/mercado-pago/webhook"

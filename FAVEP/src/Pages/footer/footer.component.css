@@ -1,5 +1,9 @@
-/*Rodapé*/
+/* Garante que paddings não estourem a largura */
+* {
+  box-sizing: border-box;
+}
 
+/*Rodapé*/
 .top {
   display: flex;
   align-items: center;
@@ -30,8 +34,6 @@
 .top .media-icons a:nth-child(1):hover { color: #4267B2; background: #fff; }
 .top .media-icons a:nth-child(2) { background: #E1306C; }
 .top .media-icons a:nth-child(2):hover { color: #E1306C; background: #fff; }
-/*.top .media-icons a:nth-child(3) { background: #1DA1F2; }
-.top .media-icons a:nth-child(3):hover { color: #1DA1F2; background: #fff; }*/
 .top .media-icons a:nth-child(3) { background: #20ad13; }
 .top .media-icons a:nth-child(3):hover { color: #229928; background: #fff; }
 
@@ -70,6 +72,15 @@
   margin-right: 10px;
 }
 
+/* Container para os links de política/termos para melhor controle */
+.policy_terms {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* --- ESTILOS DO MODAL --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -84,6 +95,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  padding: 10px; /* Segurança para telas pequenas */
 }
 
 .modal-overlay.active {
@@ -96,10 +108,10 @@
   color: rgb(0, 0, 0);
   padding: 30px;
   border-radius: 10px;
-  box-shadow: 0 5px 25px var(--box-shadow-color);
+  box-shadow: 0 5px 25px var(--box-shadow-color, rgba(0,0,0,0.2));
   width: 90%;
   max-width: 700px;
-  max-height: 80vh;
+  max-height: 85vh; /* Aumentado levemente */
   overflow-y: auto;
   transform: translateY(20px) scale(0.98);
   opacity: 0;
@@ -110,7 +122,6 @@
   transform: translateY(0) scale(1);
   opacity: 1;
 }
-
 
 .modal-header {
   display: flex;
@@ -123,7 +134,7 @@
 .modal-header h3 {
   margin: 0;
   font-size: 1.8rem;
-  color: var(--primary-color);
+  color: var(--primary-color, #2c3e50);
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
 }
@@ -133,14 +144,14 @@
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: var(--text-color);
+  color: var(--text-color, #333);
   padding: 5px;
   line-height: 1;
   transition: color 0.2s ease;
 }
 
 .modal-header .close-btn:hover {
-  color: var(--error-color);
+  color: var(--error-color, #d9534f);
 }
 
 .modal-body {
@@ -150,7 +161,7 @@
 
 .modal-body h4 {
   font-size: 1.2rem;
-  color: var(--secondary-color);
+  color: var(--secondary-color, #007aff);
   margin-top: 20px;
   margin-bottom: 10px;
   font-family: 'Montserrat', sans-serif;
@@ -159,7 +170,7 @@
 
 .modal-body p, .modal-body ul li {
   margin-bottom: 10px;
-  color: var(--text-color);
+  color: var(--text-color, #555);
 }
 
 .modal-body ul {
@@ -176,13 +187,13 @@
   display: flex;
   justify-content: flex-end;
   padding-top: 20px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color, #ddd);
   margin-top: 25px;
 }
 
 .modal-footer .btn-primary {
-  background-color: var(--primary-color);
-  color: var(--button-primary-text);
+  background-color: var(--primary-color, #007aff);
+  color: var(--button-primary-text, #fff);
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
@@ -192,11 +203,29 @@
 }
 
 .modal-footer .btn-primary:hover {
-  background-color: var(--link-hover-color);
+  background-color: var(--link-hover-color, #0056b3);
 }
 
+/* RESPONSIVIDADE */
 
+/* Tablet e Mobile Geral */
 @media (max-width: 768px) {
+  .bottom-details .bottom_text {
+    padding: 20px;
+    /* Empilha o copyright e os links */
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .policy_terms {
+    justify-content: center;
+  }
+
+  .bottom-details .bottom_text a {
+    margin: 0 5px;
+  }
+
   .modal-content {
     width: 95%;
     padding: 20px;
@@ -215,11 +244,27 @@
   }
 }
 
+/* Mobile Pequeno (Foco em 300px) */
 @media (max-width: 480px) {
+  .bottom-details .bottom_text {
+    padding: 15px 10px;
+  }
+
+  .top {
+    margin-top: 10px;
+  }
+
   .modal-content {
     padding: 15px;
+    width: 100%; /* Aproveita toda a largura */
+    max-height: 90vh;
   }
+
   .modal-header h3 {
     font-size: 1.2rem;
+  }
+
+  .modal-footer .btn-primary {
+    width: 100%; /* Botão de fechar fácil de clicar */
   }
 }

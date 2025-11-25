@@ -12,7 +12,7 @@ const {
 } = require('../service/mailService');
 
 function generateToken(params = {}) {
-  return jwt.sign(params, authConfig.secret, { expiresIn: 3900 });
+  return jwt.sign(params, authConfig.secret, { expiresIn: 172800 });
 }
 
 function generateCryptoToken() {

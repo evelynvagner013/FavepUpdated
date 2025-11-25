@@ -126,18 +126,28 @@ function getSystemContext() {
 
 async function getAgentResponse(userQuestion, conversationHistory = []) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash",
+      systemInstruction: getSystemContext()
+    });
 
-    const modelHistory = [
-      {
-        role: "user",
-        parts: [{ text: getSystemContext() }],
-      },
-      ...conversationHistory
-    ];
+    // Cria uma cópia do histórico para não alterar o original
+    let historyForChat = [...conversationHistory];
+
+    // --- CORREÇÃO DO ERRO 500 ---
+    // Remove a primeira mensagem SE ela for do modelo (a saudação da Sementinha)
+    // Isso evita o erro "First content should be with role 'user'"
+    if (historyForChat.length > 0 && historyForChat[0].role === 'model') {
+        historyForChat.shift();
+    }
+
+    // Remove a última mensagem SE for a pergunta atual do usuário (para não duplicar)
+    if (historyForChat.length > 0 && historyForChat[historyForChat.length - 1].role === 'user') {
+        historyForChat.pop();
+    }
 
     const chat = model.startChat({
-      history: modelHistory,
+      history: historyForChat,
       generationConfig: {
         maxOutputTokens: 600, 
       },

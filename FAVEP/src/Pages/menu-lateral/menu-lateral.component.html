@@ -16,18 +16,18 @@
     <a routerLink="/estatistica" routerLinkActive="active">
         <span class="material-symbols-outlined">monitoring</span> Estatística
     </a>
-    <a routerLink="/relatorio" routerLinkActive="active">
+    <a *ngIf="podeAcessarRelatorios" routerLink="/relatorio" routerLinkActive="active">
         <span class="material-symbols-outlined">overview</span> Relatório geral
     </a>
- 
+
      <div class="menu-item-dropdown" [class.open]="submenuAberto">
             <a (click)="toggleSubmenu()" [class.active]="isConfigActive()">
-                
+
                 <div class="user-info-wrapper">
                     <img [src]="usuarioFoto" [alt]="'Foto de ' + usuarioNome" class="user-avatar" alt="hugenerd" width="30" height="30">
-                    <span class="d-none d-sm-inline mx-1">{{ usuarioNome }}</span>
+                    <span>{{ usuarioNome }}</span>
                 </div>
-                
+
                 <span class="material-symbols-outlined dropdown-icon">
                     keyboard_arrow_up
                 </span>
@@ -47,11 +47,11 @@
                 </li>
 
                 <li>
-                    <a routerLink="/usuario" routerLinkActive="active"> 
+                    <a routerLink="/usuario" routerLinkActive="active">
                         <span class="material-symbols-outlined">account_circle</span> Perfil
                     </a>
                 </li>
-                
+
                 <li>
                     <hr class="dropdown-divider">
                 </li>

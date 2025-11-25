@@ -14,20 +14,20 @@ import { Subscription } from 'rxjs';
 })
 export class MenuLateralComponent implements OnInit, OnDestroy {
   menuAberto = false;
-  submenuAberto = false; 
+  submenuAberto = false;
 
   usuarioNome: string = '';
   usuarioFoto: string = 'https://placehold.co/40x40/aabbcc/ffffff?text=User';
   // Alterado de private para public ou acessível via getters
   public usuarioLogado: Usuario | null = null;
-  
+
   private userSubscription: Subscription | undefined;
 
   constructor(
     private router: Router,
     private authService: AuthService
   ) {}
-  
+
   ngOnInit(): void {
     this.userSubscription = this.authService.currentUser.subscribe(user => {
       if (user) {
@@ -45,11 +45,11 @@ export class MenuLateralComponent implements OnInit, OnDestroy {
       this.userSubscription.unsubscribe();
     }
   }
-  
+
   alternarMenu() {
     this.menuAberto = !this.menuAberto;
   }
-  
+
   toggleSubmenu(): void {
     this.submenuAberto = !this.submenuAberto;
   }
@@ -79,5 +79,10 @@ export class MenuLateralComponent implements OnInit, OnDestroy {
 
   get podeGerenciarPagamentos(): boolean {
     return this.isAdmin;
+  }
+
+  // Getter para controlar acesso aos relatórios (Apenas Gold)
+  get podeAcessarRelatorios(): boolean {
+    return this.isGold;
   }
 }

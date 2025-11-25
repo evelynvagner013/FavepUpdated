@@ -9,7 +9,6 @@
     </div>
   </div>
 
-  <!-- Serviços -->
   <section class="services" id="services">
     <div class="card">
       <div class="icon" style="color: #28a745;">
@@ -45,7 +44,6 @@
     </div>
   </section>
 
-  <!-- Estatísticas -->
   <section class="servico">
     <div class="texto1">
       <h1>Estatísticas</h1>
@@ -56,15 +54,50 @@
         <li>💰 Tomar decisões estratégicas com base em dados reais</li>
       </ul>
     </div>
-    <div class="imagem">
-      <img src="assets/img/telaesta.jpg" alt="Dashboard em notebook">
+    <div class="carousel-container">
+      <div class="carousel-slide">
+        <img [src]="getCurrentImageSrc('estatisticas')" alt="Dashboard de Estatísticas" class="carousel-img">
+      </div>
+      
+      <button class="carousel-btn prev" (click)="changeSlide('estatisticas', -1)" aria-label="Imagem Anterior">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next" (click)="changeSlide('estatisticas', 1)" aria-label="Próxima Imagem">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      
+      <div class="carousel-indicators">
+        <span 
+          *ngFor="let img of carouselData.estatisticas.images; let i = index"
+          [class.active]="i === carouselData.estatisticas.currentIndex"
+          (click)="carouselData.estatisticas.currentIndex = i"
+          [attr.aria-label]="'Ir para a imagem ' + (i + 1)"
+        ></span>
+      </div>
     </div>
   </section>
 
-  <!-- Gerenciamento -->
   <section class="servico1">
-    <div class="imagem">
-      <img src="assets/img/telager.jpg" alt="Dashboard em notebook">
+    <div class="carousel-container">
+      <div class="carousel-slide">
+        <img [src]="getCurrentImageSrc('gerenciamento')" alt="Dashboard de Gerenciamento" class="carousel-img">
+      </div>
+      
+      <button class="carousel-btn prev" (click)="changeSlide('gerenciamento', -1)" aria-label="Imagem Anterior">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next" (click)="changeSlide('gerenciamento', 1)" aria-label="Próxima Imagem">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      
+      <div class="carousel-indicators">
+        <span 
+          *ngFor="let img of carouselData.gerenciamento.images; let i = index"
+          [class.active]="i === carouselData.gerenciamento.currentIndex"
+          (click)="carouselData.gerenciamento.currentIndex = i"
+          [attr.aria-label]="'Ir para a imagem ' + (i + 1)"
+        ></span>
+      </div>
     </div>
     <div class="texto">
       <h1>Gerenciamento</h1>
@@ -79,7 +112,6 @@
     </div>
   </section>
 
-  <!-- Relatórios -->
   <section class="servico">
     <div class="texto1">
       <h1>Relatórios</h1>
@@ -92,12 +124,63 @@
         <li>🔄 Exportação Simplificada - Compartilhe relatórios em PDF, Excel ou CSV com parceiros e técnicos.</li>
       </ul>
     </div>
-    <div class="imagem">
-      <img src="assets/img/telarela.jpg" alt="Dashboard em notebook">
+    <div class="carousel-container">
+      <div class="carousel-slide">
+        <img [src]="getCurrentImageSrc('relatorios')" alt="Dashboard de Relatórios" class="carousel-img">
+      </div>
+      
+      <button class="carousel-btn prev" (click)="changeSlide('relatorios', -1)" aria-label="Imagem Anterior">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next" (click)="changeSlide('relatorios', 1)" aria-label="Próxima Imagem">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      
+      <div class="carousel-indicators">
+        <span 
+          *ngFor="let img of carouselData.relatorios.images; let i = index"
+          [class.active]="i === carouselData.relatorios.currentIndex"
+          (click)="carouselData.relatorios.currentIndex = i"
+          [attr.aria-label]="'Ir para a imagem ' + (i + 1)"
+        ></span>
+      </div>
     </div>
   </section>
 
-  <!-- Parceiros -->
+  <section class="servico1">
+    <div class="carousel-container">
+      <div class="carousel-slide">
+        <img [src]="getCurrentImageSrc('colaboradores')" alt="Tela de Colaboradores" class="carousel-img">
+      </div>
+      
+      <button class="carousel-btn prev" (click)="changeSlide('colaboradores', -1)" aria-label="Imagem Anterior">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next" (click)="changeSlide('colaboradores', 1)" aria-label="Próxima Imagem">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+      
+      <div class="carousel-indicators">
+        <span 
+          *ngFor="let img of carouselData.colaboradores.images; let i = index"
+          [class.active]="i === carouselData.colaboradores.currentIndex"
+          (click)="carouselData.colaboradores.currentIndex = i"
+          [attr.aria-label]="'Ir para a imagem ' + (i + 1)"
+        ></span>
+      </div>
+    </div>
+    <div class="texto">
+      <h1>Colaboradores</h1>
+      <ul>
+        <li>Sua equipe é o coração da sua fazenda, e a gestão eficiente dela é a chave para o sucesso. Com o módulo "Convidar Novo Colaborador" do FAVEP - Gestão Agrícola, você ganha controle, segurança e agilidade, tudo em um só lugar.</li>
+        <li> ✅ Identificação Clara - Basta inserir o E-mail do Usuário e você já pode começar a configurar o acesso.</li>
+        <li> ✅ Nível de Acesso Personalizado - Atribua funções específicas (Gerente, Funcionário.) para definir o que cada pessoa pode visualizar ou editar no sistema.</li>
+        <li> ✅ Foco por Propriedade - Tem várias fazendas? Com o recurso "Liberar Acesso às Propriedades (Opcional)", você garante que cada colaborador veja apenas os dados e operações da propriedade para a qual ele foi designado</li>
+      </ul>
+    </div>
+  </section>
+  
+
   <section class="parceiros-section">
     <div class="container">
       <div class="parceiros-home-titulo">
@@ -105,24 +188,18 @@
         <p>Colaboramos com os melhores para impulsionar seus resultados.</p>
       </div>
 
-      <!-- Carrossel de Logos -->
       <div class="carousel">
         <div class="carousel-track">
          
-          <img src="../../assets/img/agrovital.png" alt="Amazon">
-          <img src="../../assets/img/terraviva.png" alt="Flutter">
-          <img src="../../assets/img/FAVEP_LOGO.png" alt="Vue.js">
-          <img src="../../assets/img/Agrotech.png" alt="Tailwind">
+          <img src="../../assets/img/agrovital.png" alt="Agrovital Insumos">
+          <img src="../../assets/img/terraviva.png" alt="Terraviva Nutrientes">
+          <img src="../../assets/img/FAVEP_LOGO.png" alt="FAVEP">
+          <img src="../../assets/img/Agrotech.png" alt="Agrotech Solutions">
 
-          <img src="../../assets/img/agrovital.png" alt="Amazon">
-          <img src="../../assets/img/terraviva.png" alt="Flutter">
-          <img src="../../assets/img/FAVEP_LOGO.png" alt="Vue.js">
-          <img src="../../assets/img/Agrotech.png" alt="Tailwind">
-
-          <img src="../../assets/img/agrovital.png" alt="Amazon">
-          <img src="../../assets/img/terraviva.png" alt="Flutter">
-          <img src="../../assets/img/FAVEP_LOGO.png" alt="Vue.js">
-          <img src="../../assets/img/Agrotech.png" alt="Tailwind">
+          <img src="../../assets/img/agrovital.png" alt="Agrovital Insumos">
+          <img src="../../assets/img/terraviva.png" alt="Terraviva Nutrientes">
+          <img src="../../assets/img/FAVEP_LOGO.png" alt="FAVEP">
+          <img src="../../assets/img/Agrotech.png" alt="Agrotech Solutions">
         </div>
       </div>
 

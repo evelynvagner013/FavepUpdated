@@ -1,12 +1,11 @@
-// Conteúdo completo do arquivo: src/Pages/navbar/menu-cima/menu-cima.component.ts
-
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 import { UsuarioService } from '../../../services/usuario.service';
-import { Usuario } from '../../../models/api.models';
+// ADICIONADO: AuthResponse na importação
+import { Usuario, AuthResponse } from '../../../models/api.models';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 import { FormsModule } from '@angular/forms';
 
@@ -29,7 +28,9 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   private authSubscription: Subscription = new Subscription();
   mostrarDropdown = false;
 
-  // ADICIONADO: Propriedade para checar o ambiente
+  // Variável para controlar o Menu Hambúrguer
+  menuAberto = false;
+
   isBrowser: boolean;
 
   mostrarLoginModal = false;
@@ -37,7 +38,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   mostrarPerfilModal = false;
   mostrarVerifyEmailModal = false;
 
-  // --- NOVO: Variáveis para o fluxo de Completar Perfil (Sub-usuário) ---
+  // Variáveis para o fluxo de Completar Perfil (Sub-usuário)
   isCompleteProfileModalOpen = false;
   subUserStep: 'code' | 'details' = 'code';
   subUserTempData = {
@@ -50,8 +51,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   };
   subUserError: string | null = null;
   subUserSuccess: string | null = null;
-  isLoading = false; // Reutilizando isLoading existente ou criando se não existir no contexto original, mas vou criar um local para garantir.
-  // ----------------------------------------------------------------------
+  isLoading = false;
 
   // Variáveis para o fluxo de "Esqueci a Senha"
   mostrarForgotPasswordModal = false;
@@ -64,7 +64,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
   forgotErrorMessage: string | null = null;
   forgotPasswordVisible: boolean = false;
   forgotConfirmPasswordVisible: boolean = false;
-  private forgotResetToken: string | null = null; // Token salvo internamente
+  private forgotResetToken: string | null = null;
 
   usuarioEditavel: Partial<Usuario> = {};
 
@@ -88,20 +88,17 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     private usuarioService: UsuarioService,
     private router: Router,
     private route: ActivatedRoute,
-    @Inject(PLATFORM_ID) private platformId: Object // INJEÇÃO: Detecta o ambiente
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // INICIALIZAÇÃO: Define se estamos no navegador
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.currentUserValue = this.authService.currentUserValue;
   }
 
   ngOnInit(): void {
-
     this.authSubscription = this.authService.currentUser.subscribe(user => {
       this.currentUserValue = user;
     });
 
-    // Lógica para abrir modal via query param (vinda do password.component)
     this.route.queryParamMap.subscribe(params => {
       if (params.get('openLogin') === 'true') {
         this.abrirLoginModal();
@@ -121,7 +118,13 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- Funções de Controle de Modal ---
+  alternarMenu(): void {
+    this.menuAberto = !this.menuAberto;
+  }
+
+  fecharMenu(): void {
+    this.menuAberto = false;
+  }
 
   abrirLoginModal(): void {
     this.fecharModals();
@@ -129,7 +132,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.loginPassword = '';
     this.mostrarLoginModal = true;
 
-    // CORREÇÃO SSR: Acessa localStorage APENAS se estiver no navegador
     if (this.isBrowser) {
         const savedEmail = localStorage.getItem('lembreMeEmail');
         if (savedEmail) {
@@ -150,14 +152,10 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.mostrarRegisterModal = true;
   }
 
-  /**
-   * Abre o modal de "Esqueci a Senha" e reseta seu estado.
-   */
   abrirForgotPasswordModal(): void {
     this.fecharModals();
     this.mostrarForgotPasswordModal = true;
     this.forgotFlowStep = 'email';
-    // Pega o email do campo de login, se estiver preenchido
     this.forgotEmail = this.loginEmail;
     this.forgotCode = '';
     this.forgotNewPassword = '';
@@ -167,7 +165,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.forgotResetToken = null;
   }
 
-  // --- NOVO: Controle do modal de completar perfil ---
   abrirCompleteProfileModal(email: string): void {
     this.fecharModals();
     this.isCompleteProfileModalOpen = true;
@@ -183,22 +180,18 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
       confirmarSenha: ''
     };
   }
-  // --------------------------------------------------
 
   fecharModals(): void {
     this.mostrarLoginModal = false;
     this.mostrarRegisterModal = false;
     this.mostrarVerifyEmailModal = false;
     this.mostrarForgotPasswordModal = false;
-    this.isCompleteProfileModalOpen = false; // Fecha o novo modal também
+    this.isCompleteProfileModalOpen = false;
   }
-
-  // --- Lógica de Autenticação ---
 
   onLoginSubmit(): void {
     this.loginErrorMessage = null;
 
-    // CORREÇÃO SSR: Acessa localStorage APENAS se estiver no navegador
     if (this.isBrowser) {
         if (this.lembreMe) {
           localStorage.setItem('lembreMeEmail', this.loginEmail);
@@ -213,18 +206,12 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         this.router.navigate(['/gerenciamento']);
       },
       error: (err) => {
-
-        // --- INTERCEPTAÇÃO DO PERFIL INCOMPLETO (SUB-USUÁRIO) ---
         if (err.status === 401 && err.error.action === 'COMPLETE_PROFILE') {
-            // O backend já reenviou o código ao tentar logar.
-            // Fechamos o login e abrimos o fluxo de conclusão.
             this.abrirCompleteProfileModal(this.loginEmail);
             return;
         }
-        // --------------------------------------------------------
-
         this.loginErrorMessage = 'Senha ou usuário incorreto.';
-        setTimeout(() => { this.loginErrorMessage = null; }, 10000); // Limpa após 10s
+        setTimeout(() => { this.loginErrorMessage = null; }, 10000);
       }
     });
   }
@@ -235,7 +222,7 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
     if (this.registerUser.senha !== this.registerUser.confirmarSenha) {
       this.registerErrorMessage = 'As senhas não coincidem.';
-      setTimeout(() => { this.registerErrorMessage = null; }, 10000); // Limpa após 10s
+      setTimeout(() => { this.registerErrorMessage = null; }, 10000);
       return;
     }
 
@@ -251,18 +238,17 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         this.registerSuccessMessage = response.message;
         this.emailParaVerificar = this.registerUser.email;
 
-        // Adiciona delay de 10s antes de mudar de modal
         setTimeout(() => {
           this.fecharModals();
           this.verifyErrorMessage = null;
-          this.verifySuccessMessage = null; // Mensagem será mostrada no próximo modal
+          this.verifySuccessMessage = null;
           this.verificationCode = '';
           this.mostrarVerifyEmailModal = true;
-        }, 10000); // 10 segundos de espera
+        }, 10000);
       },
       error: (err) => {
         this.registerErrorMessage = err.error?.error || 'Erro ao registrar.';
-        setTimeout(() => { this.registerErrorMessage = null; }, 10000); // Limpa após 10s
+        setTimeout(() => { this.registerErrorMessage = null; }, 10000);
       }
     });
   }
@@ -273,49 +259,42 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
 
     if (!this.emailParaVerificar || !this.verificationCode) {
       this.verifyErrorMessage = 'Erro: E-mail ou código faltando.';
-      setTimeout(() => { this.verifyErrorMessage = null; }, 10000); // Limpa após 10s
+      setTimeout(() => { this.verifyErrorMessage = null; }, 10000);
       return;
     }
 
     this.authService.verifyEmailCode(this.emailParaVerificar, this.verificationCode).subscribe({
       next: (response) => {
         this.verifySuccessMessage = response.message || "E-mail verificado com sucesso!";
-
-        // Adiciona delay de 10s antes de mudar de modal
         setTimeout(() => {
           this.fecharModals();
           this.abrirLoginModal();
-        }, 10000); // 10 segundos de espera
+        }, 10000);
       },
       error: (err) => {
         this.verifyErrorMessage = err.error?.error || 'Falha na verificação.';
-        setTimeout(() => { this.verifyErrorMessage = null; }, 10000); // Limpa após 10s
+        setTimeout(() => { this.verifyErrorMessage = null; }, 10000);
       }
     });
   }
 
-  // --- NOVOS MÉTODOS DO FLUXO DE SUB-USUÁRIO ---
-
-  // Passo 1: Avançar para dados
   onSubUserCodeSubmit(): void {
     if (!this.subUserTempData.code || this.subUserTempData.code.length !== 6) {
         this.subUserError = 'O código deve ter 6 dígitos.';
         setTimeout(() => { this.subUserError = null; }, 5000);
         return;
     }
-    // Avança visualmente (o backend valida tudo no final, mas assumimos ok aqui)
     this.subUserStep = 'details';
     this.subUserError = null;
   }
 
-  // Passo 2: Finalizar e Logar
   onSubUserFinalizeSubmit(): void {
     if (this.subUserTempData.senha !== this.subUserTempData.confirmarSenha) {
         this.subUserError = 'As senhas não coincidem.';
         setTimeout(() => { this.subUserError = null; }, 5000);
         return;
     }
-    // Validação de força de senha básica
+
     const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
     if (!strongPassword.test(this.subUserTempData.senha)) {
         this.subUserError = 'A senha deve ter no mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e caracteres especiais.';
@@ -323,12 +302,10 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         return;
     }
 
-    this.isLoading = true; // Bloqueia botão
+    this.isLoading = true;
     this.authService.completeSubUserProfile(this.subUserTempData).subscribe({
         next: (res) => {
             this.subUserSuccess = 'Cadastro concluído! Redirecionando...';
-
-            // Como o endpoint completeSubUserProfile não retorna token, fazemos login automático
             this.authService.login(this.subUserTempData.email, this.subUserTempData.senha).subscribe({
                 next: () => {
                     this.isLoading = false;
@@ -350,7 +327,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         error: (err) => {
             this.isLoading = false;
             this.subUserError = err.error?.error || 'Erro ao concluir cadastro.';
-            // Se o erro for relacionado ao código expirado/inválido, volta para passo 1
             if (this.subUserError?.toLowerCase().includes('código')) {
                 this.subUserStep = 'code';
             }
@@ -358,77 +334,68 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
         }
     });
   }
-  // -----------------------------------------------
 
-  /**
-   * Lida com o envio do formulário de "Esqueci a Senha" em 3 etapas.
-   */
   onForgotPasswordSubmit(): void {
     this.forgotSuccessMessage = null;
     this.forgotErrorMessage = null;
 
-    // Etapa 1: Enviar o e-mail
     if (this.forgotFlowStep === 'email') {
       this.authService.forgotPassword(this.forgotEmail).subscribe({
         next: (res) => {
           this.forgotSuccessMessage = res.message || 'Código enviado para o e-mail.';
-          this.forgotFlowStep = 'code'; // Avança para a etapa do código
-          setTimeout(() => { this.forgotSuccessMessage = null; }, 10000); // Limpa após 10s
+          this.forgotFlowStep = 'code';
+          setTimeout(() => { this.forgotSuccessMessage = null; }, 10000);
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Erro ao enviar e-mail.';
-          setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+          setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
         }
       });
     }
-
-    // Etapa 2: Validar o código
     else if (this.forgotFlowStep === 'code') {
       this.authService.verifyEmailCode(this.forgotEmail, this.forgotCode).subscribe({
         next: (res) => {
-          this.forgotResetToken = res.token; // Salva o token retornado pela API
+          this.forgotResetToken = res.token;
           if (!this.forgotResetToken) {
             this.forgotErrorMessage = 'Token de redefinição não recebido da API.';
-            setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+            setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
             return;
           }
           this.forgotSuccessMessage = 'Código validado! Defina sua nova senha.';
-          this.forgotFlowStep = 'password'; // Avança para a etapa da senha
-          setTimeout(() => { this.forgotSuccessMessage = null; }, 10000); // Limpa após 10s
+          this.forgotFlowStep = 'password';
+          setTimeout(() => { this.forgotSuccessMessage = null; }, 10000);
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Código inválido ou expirado.';
-          setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+          setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
         }
       });
     }
-
-    // Etapa 3: Redefinir a senha
     else if (this.forgotFlowStep === 'password') {
       if (this.forgotNewPassword !== this.forgotConfirmPassword) {
         this.forgotErrorMessage = 'As senhas não coincidem.';
-        setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+        setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
         return;
       }
       if (!this.forgotResetToken) {
         this.forgotErrorMessage = 'Sessão de redefinição inválida. Por favor, reinicie.';
-        this.forgotFlowStep = 'email'; // Reinicia o fluxo
-        setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+        this.forgotFlowStep = 'email';
+        setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
         return;
       }
 
-      this.authService.resetPassword(this.forgotResetToken, this.forgotNewPassword, this.forgotConfirmPassword).subscribe({
+      // CORREÇÃO: Adicionado '!' para garantir que não é nulo
+      this.authService.resetPassword(this.forgotResetToken!, this.forgotNewPassword, this.forgotConfirmPassword).subscribe({
         next: (res) => {
           this.forgotSuccessMessage = res.message || 'Senha alterada com sucesso!';
-          // Altera o delay para 10 segundos
           setTimeout(() => {
             this.fecharModals();
             this.abrirLoginModal();
-          }, 10000); // 10 segundos de espera
+          }, 10000);
         },
         error: (err) => {
           this.forgotErrorMessage = err.error?.error || 'Erro ao redefinir a senha.';
-          setTimeout(() => { this.forgotErrorMessage = null; }, 10000); // Limpa após 10s
+          setTimeout(() => { this.forgotErrorMessage = null; }, 10000);
         }
       });
     }
@@ -438,7 +405,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.loginPasswordVisible = !this.loginPasswordVisible;
   }
 
-  // Toggles de visibilidade para o novo formulário
   toggleForgotPasswordVisibility(): void {
     this.forgotPasswordVisible = !this.forgotPasswordVisible;
   }
@@ -447,7 +413,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.forgotConfirmPasswordVisible = !this.forgotConfirmPasswordVisible;
   }
 
-  // --- Lógica do Dropdown e Logout (Sem MUDANÇAS) ---
   toggleDropdown(event: MouseEvent): void {
     event.stopPropagation();
     this.mostrarDropdown = !this.mostrarDropdown;
@@ -459,7 +424,6 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 
-  // --- Lógica do Modal de Perfil (Sem MUDANÇAS) ---
   abrirModalPerfil(): void {
     if (this.currentUserValue) {
       this.usuarioEditavel = { ...this.currentUserValue };
@@ -494,9 +458,11 @@ export class MenuCimaComponent implements OnInit, OnDestroy {
     };
 
     this.usuarioService.atualizarPerfilUsuario(payload).subscribe({
-      next: (response: any) => {
-        this.authService.setUser(response.user);
-        this.currentUserValue = response.user;
+      next: (response: AuthResponse) => {
+        if (response.user) {
+            this.authService.setUser(response.user);
+            this.currentUserValue = response.user;
+        }
         this.fecharModalPerfil();
       },
       error: (err: any) => {

@@ -1,3 +1,8 @@
+/* Garante que paddings não aumentem a largura total */
+* {
+    box-sizing: border-box;
+}
+
 /* --- Menu Principal (Desktop) --- */
 .main-menu {
     display: flex;
@@ -67,7 +72,7 @@
     width: 100%;
     cursor: pointer;
     /* Adiciona o padding aqui em vez de no 'a' global para alinhamento da seta */
-    padding-left: 25px; 
+    padding-left: 25px;
     padding-right: 20px;
 }
 
@@ -76,6 +81,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    /* Garante que o nome não quebre o layout se for longo */
+    overflow: hidden;
 }
 .user-avatar {
     width: 35px;
@@ -83,12 +90,14 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #27ae60;
+    flex-shrink: 0;
 }
 
 /* (NOVO) Estilo da seta */
 .dropdown-icon {
     font-size: 24px;
     transition: transform 0.3s ease-in-out;
+    flex-shrink: 0;
 }
 /* (NOVO) Gira a seta quando o menu está aberto */
 .menu-item-dropdown.open .dropdown-icon {
@@ -103,7 +112,7 @@
     left: 0;
     width: 100%;
     margin-bottom: 8px; /* Espaço entre o menu e o item */
-    
+
     list-style: none;
     padding: 8px 0; /* Espaçamento interno */
     margin: 0;
@@ -152,7 +161,7 @@
 
 /* --- Conteúdo principal --- */
 .main-content, .main-content-perfil {
-    margin-left: 250px; 
+    margin-left: 250px;
     padding: 2rem;
     background-color: #f4f7f6;
     transition: margin-left 0.3s ease-in-out;
@@ -172,6 +181,7 @@
     padding: 10px;
     cursor: pointer;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 /* --- Overlay Mobile --- */
@@ -199,8 +209,13 @@
     }
 
     .main-menu {
-        width: 70%;
-        left: -70%;
+        /* ALTERADO: Largura mais inteligente para telas pequenas */
+        width: 260px; /* Largura fixa ideal */
+        max-width: 85%; /* Mas nunca maior que 85% da tela (para telas < 300px) */
+
+        /* ALTERADO: Esconde completamente à esquerda baseado na largura definida */
+        left: -100%;
+
         top: 0;
         height: 100vh;
         padding-top: 60px;
@@ -214,5 +229,20 @@
 
     .main-content, .main-content-perfil {
         margin-left: 0;
+        /* Ajuste de padding para mobile */
+        padding: 1rem;
+    }
+}
+
+/* Ajuste específico para 300px se necessário */
+@media (max-width: 320px) {
+    .main-menu a {
+        padding: 10px 15px; /* Menos padding lateral para caber texto */
+        font-size: 0.9rem; /* Fonte levemente menor */
+    }
+
+    .main-menu h1 {
+        font-size: 1rem;
+        padding: 0 15px 15px 15px;
     }
 }

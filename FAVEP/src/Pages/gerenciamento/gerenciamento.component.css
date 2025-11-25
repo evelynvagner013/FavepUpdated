@@ -6,7 +6,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  transition: margin-left 0.3s ease-in-out;
+  /* Transição suave para quando o menu expande/recolhe */
+  transition: margin-left 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
 /* --- CABEÇALHO E TÍTULO --- */
@@ -27,7 +28,7 @@
 
 /* --- BARRA DE NAVEGAÇÃO INTERNA (ABAS) --- */
 .content-header {
-  display: flex; /* Adicionado para alinhar com o botão */
+  display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
@@ -41,12 +42,12 @@
   border-radius: 8px;
   overflow-x: auto;
   white-space: nowrap;
-  flex-grow: 1; /* Faz as abas ocuparem o espaço */
+  flex-grow: 1;
 }
 
 .main-nav button {
   flex: 1;
-  min-width: 120px;
+  min-width: 120px; /* Mantém largura confortável em desktop */
   padding: 1rem;
   border: none;
   background: none;
@@ -78,14 +79,13 @@
 }
 
 /* --- FILTROS E BOTÕES --- */
-/* O .filtros é combinado com .report-header no HTML */
 .filtros {
   display: flex;
-  gap: 1rem; /* Gap menor */
+  gap: 1rem;
   flex-wrap: wrap;
   align-items: center;
-  flex-grow: 1; /* Permite que os filtros cresçam */
-  justify-content: flex-end; /* Alinha à direita */
+  flex-grow: 1;
+  justify-content: flex-end;
 }
 
 .filtro-group,
@@ -99,17 +99,17 @@
   font-weight: 500;
   color: #2c3e50;
   white-space: nowrap;
-  font-size: 0.9rem; /* Tamanho ajustado */
+  font-size: 0.9rem;
 }
 
 .filtro-group select,
 .search-group input {
-  padding: 0.6rem 0.8rem; /* Padding ajustado */
+  padding: 0.6rem 0.8rem;
   border-radius: 8px;
   border: 1px solid #ddd;
   background-color: #f9f9f9;
   transition: all 0.3s;
-  font-size: 0.9rem; /* Tamanho ajustado */
+  font-size: 0.9rem;
 }
 
 .filtro-group select:focus,
@@ -127,7 +127,7 @@
 .btn-search {
   background-color: #007bff;
   color: white;
-  padding: 0.6rem 0.8rem; /* Padding ajustado */
+  padding: 0.6rem 0.8rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -138,7 +138,7 @@
   background-color: #0056b3;
 }
 
-/* Botão Adicionar está separado */
+/* Botão Adicionar */
 .btn-add {
   background-color: #007aff;
   color: white;
@@ -151,7 +151,7 @@
   gap: 0.5rem;
   font-weight: 600;
   transition: background-color 0.3s;
-  align-self: flex-start; /* Alinha o botão no topo */
+  align-self: flex-start;
 }
 
 .btn-add:hover {
@@ -161,7 +161,7 @@
 /* CARTÕES DE RESUMO */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 25px;
 }
 
@@ -202,11 +202,13 @@
   border-radius: 12px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
 }
 
 th,
@@ -228,7 +230,6 @@ tr:hover {
   background-color: #f8f9fa;
 }
 
-/* Classe para linha inativa */
 tr.inativa {
   background-color: #fafafa;
   color: #999;
@@ -248,7 +249,7 @@ tr.inativa:hover {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  white-space: nowrap; /* Impede que os botões quebrem linha */
+  white-space: nowrap;
 }
 
 .btn-edit,
@@ -301,7 +302,7 @@ tr.inativa:hover {
 .badge.despesa,
 .badge.inativo {
   background-color: #fef0f0;
-  color: #dc3545; /* Padronizado com o vermelho do .negativo */
+  color: #dc3545;
 }
 
 .btn-toggle {
@@ -334,7 +335,7 @@ tr.inativa:hover {
 .modal-content {
   background-color: white;
   border-radius: 12px;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
@@ -467,6 +468,7 @@ tr.inativa:hover {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
 
 .pagination-container button,
@@ -501,77 +503,125 @@ tr.inativa:hover {
 /* --- MEDIA QUERIES (RESPONSIVIDADE) --- */
 /* ============================================= */
 
-/* Telas Pequenas (Mobile) */
-@media (max-width: 768px) {
-  .main-content {
-    padding: 1rem;
-    margin-left: 80px; /* Corrige sobreposição do menu recolhido */
-  }
-  .report-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .filtros {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 1rem;
-  }
-  .filtro-group,
-  .search-group {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .search-group {
-    flex-direction: row;
-  }
-  .search-group input {
-    flex-grow: 1;
-  }
-  
-  .content-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-add {
-    width: 100%;
-    justify-content: center;
-    /* order: -1;  REMOVIDO para o botão não subir */
-  }
-
-  .summary-cards {
-    grid-template-columns: 1fr;
-  }
-  td,
-  th {
-    padding: 0.8rem 1rem;
-  }
-  .actions {
-    flex-wrap: nowrap;
-  }
-  .modal-content {
-    padding: 1.5rem;
-  }
-  .form-actions {
-    flex-direction: column-reverse;
-  }
-  .form-actions button {
-    width: 100%;
-  }
-}
-
-/* Telas Médias (Tablet) - Ajuste para o menu RECOLHIDO */
-@media (min-width: 769px) and (max-width: 992px) {
-    .main-content {
-        margin-left: 40px; /* Espaço para o menu de ícones recolhido */
-    }
-}
-
-/* Telas Médias/Grandes (Desktop) - Ajuste para o menu ABERTO */
+/* Desktop (Telas Grandes) */
 @media (min-width: 993px) {
   .main-content {
       margin-left: 250px;
   }
 }
 
+/* Tablet e Telas Médias */
+@media (min-width: 769px) and (max-width: 992px) {
+  .main-content {
+      margin-left: 80px;
+      padding: 1.5rem;
+  }
+
+  .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+/* Mobile (Telas Pequenas) */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+    margin-left: 0;
+  }
+
+  .report-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .header-title {
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  .filtros {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .filtro-group,
+  .search-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .search-group {
+    flex-direction: row;
+  }
+
+  .search-group input {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* --- AJUSTE DAS ABAS NO MOBILE --- */
+  .main-nav {
+    width: 100%;
+  }
+
+  .main-nav button {
+    /* REMOVIDO: min-width fixo que impedia o encolhimento */
+    min-width: 0;
+    /* Padding e fontes reduzidos para caber na tela */
+    padding: 0.8rem 0.2rem;
+    font-size: 0.85rem;
+    flex-basis: 0;
+    flex-grow: 1;
+  }
+
+  .main-nav button i {
+    font-size: 0.9rem; /* Ícone levemente menor */
+    margin-right: 0.3rem;
+  }
+
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  th, td {
+    padding: 0.8rem 1rem;
+  }
+
+  .modal {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+    max-height: 85vh;
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 0.8rem;
+  }
+
+  .form-actions button {
+    width: 100%;
+    padding: 1rem;
+  }
+}

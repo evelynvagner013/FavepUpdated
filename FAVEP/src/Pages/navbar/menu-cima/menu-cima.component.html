@@ -1,24 +1,37 @@
 <header>
-  <div class="logo"><img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img">FAVEP</div>
-  <nav>
-    <a href="/home">Início</a>
-    <a href="#services">Serviços</a>
-    <a href="/parceiros">Parceiros</a>
-    <a href="/contato">Contato</a>
-  </nav>
-
-  <div *ngIf="!currentUserValue">
-    <a (click)="abrirLoginModal()" class="sign-in">Acessar</a>
+  <div class="logo">
+    <img src="assets/img/FAVEP_LOGO_nobg.png" alt="Logo FAVEP" class="header-logo-img">
+    FAVEP
   </div>
 
-  <div *ngIf="currentUserValue" class="user-info">
-    <span class="welcome-user">Seja bem vindo, {{ currentUserValue.nome }}!</span>
-    <div class="user-menu">
-      <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
-      <div class="dropdown-menu" *ngIf="mostrarDropdown">
-        <a routerLink="/gerenciamento" class="painel-controle">Gerenciar</a>
-        <a routerLink="/usuario" class="modal-perfil">Perfil</a>
-        <a (click)="logout()" class="logout-link">Sair</a>
+  <div class="menu-toggle" (click)="alternarMenu()">
+    <span class="material-symbols-outlined">menu</span>
+  </div>
+
+  <div class="navbar-menu" [class.active]="menuAberto">
+    <nav>
+      <a href="/home" (click)="fecharMenu()">Início</a>
+      <a href="#services" (click)="fecharMenu()">Serviços</a>
+      <a href="/parceiros" (click)="fecharMenu()">Parceiros</a>
+      <a href="/contato" (click)="fecharMenu()">Contato</a>
+    </nav>
+
+    <div class="auth-section">
+      <div *ngIf="!currentUserValue">
+        <a (click)="abrirLoginModal(); fecharMenu()" class="sign-in">Acessar</a>
+      </div>
+
+      <div *ngIf="currentUserValue" class="user-info">
+        <span class="welcome-user">Seja bem vindo, {{ currentUserValue.nome }}!</span>
+        <div class="user-menu">
+          <img [src]="currentUserValue.fotoperfil || 'assets/img/usuario.jpg'" alt="Foto do Perfil" class="profile-pic" (click)="toggleDropdown($event)">
+
+          <div class="dropdown-menu" *ngIf="mostrarDropdown">
+            <a routerLink="/gerenciamento" class="painel-controle" (click)="fecharMenu()">Gerenciar</a>
+            <a routerLink="/usuario" class="modal-perfil" (click)="fecharMenu()">Perfil</a>
+            <a (click)="logout(); fecharMenu()" class="logout-link">Sair</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -157,7 +170,7 @@
   <div class="auth-modal-container forgot-password-form-container" *ngIf="mostrarForgotPasswordModal" (click)="$event.stopPropagation()">
     <button (click)="fecharModals()" class="auth-modal-close-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
         </svg>
     </button>
     <form (ngSubmit)="onForgotPasswordSubmit()" #forgotPasswordNgForm="ngForm">
@@ -251,7 +264,7 @@
   <div class="auth-modal-container complete-profile-form-container" *ngIf="isCompleteProfileModalOpen" (click)="$event.stopPropagation()">
     <button (click)="fecharModals()" class="auth-modal-close-button">
         <svg xmlns="http://www.w3.org/2000/svg" width="3.5vh" height="3.5vh" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
         </svg>
     </button>
 
