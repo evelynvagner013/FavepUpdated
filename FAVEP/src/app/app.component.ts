@@ -1,9 +1,8 @@
-import { Component } from '@angular/core'; 
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core'; 
 import { RouterOutlet } from '@angular/router';
 import { VLibrasService } from '../services/vlibras.service';
 import { VoiceAssistantComponent } from '../Pages/voice-assistant/voice-assistant.component';
-import { CommonModule } from '@angular/common';
-
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -12,38 +11,49 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent { 
+export class AppComponent implements OnInit { 
    showAccessibilityOptions: boolean = false;
-   isHighContrast: boolean = false;
-   isDarkMode: boolean = false;
+   fontSizePercentage: number = 100; 
 
-    constructor(
-    private vlibras: VLibrasService
+   constructor(
+    private vlibras: VLibrasService,
+    @Inject(PLATFORM_ID) private platformId: Object // Injeção para verificar a plataforma
   ) {}
 
   ngOnInit() {
     this.vlibras.initVLibras();
+    
+    // Verificação de segurança: Só acessa o localStorage se estiver no Navegador
+    if (isPlatformBrowser(this.platformId)) {
+        const savedSize = localStorage.getItem('fontSize');
+        if (savedSize) {
+            this.fontSizePercentage = parseInt(savedSize);
+            this.aplicarFonte();
+        }
+    }
   }
-  private readonly maxFontSize = 1.4; // 140%
-  private readonly minFontSize = 0.8; // 80%
-  private readonly step = 0.1; // 10%
 
   aumentarFonte() {
-    let currentFontSize = parseFloat(document.documentElement.style.fontSize || '1');
-    if (currentFontSize < this.maxFontSize) {
-      document.documentElement.style.fontSize = `${currentFontSize + this.step}rem`;
+    if (this.fontSizePercentage < 150) { 
+      this.fontSizePercentage += 10;
+      this.aplicarFonte();
     }
   }
 
   diminuirFonte() {
-    let currentFontSize = parseFloat(document.documentElement.style.fontSize || '1');
-    if (currentFontSize > this.minFontSize) {
-      document.documentElement.style.fontSize = `${currentFontSize - this.step}rem`;
+    if (this.fontSizePercentage > 70) { 
+      this.fontSizePercentage -= 10;
+      this.aplicarFonte();
     }
   }
 
-
-
+  private aplicarFonte() {
+    // Verifica novamente antes de aplicar para evitar erros se chamado fora do contexto
+    if (isPlatformBrowser(this.platformId)) {
+        document.documentElement.style.fontSize = `${this.fontSizePercentage}%`;
+        localStorage.setItem('fontSize', this.fontSizePercentage.toString());
+    }
+  }
 
   toggleAccessibilityOptions() {
     this.showAccessibilityOptions = !this.showAccessibilityOptions;

@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  /* Transição suave para quando o menu expande/recolhe */
   transition: margin-left 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
@@ -47,7 +46,7 @@
 
 .main-nav button {
   flex: 1;
-  min-width: 120px; /* Mantém largura confortável em desktop */
+  min-width: 120px;
   padding: 1rem;
   border: none;
   background: none;
@@ -181,12 +180,27 @@
   margin-bottom: 10px;
 }
 
+/* ========================================================== */
+/* 🚫 PREVENÇÃO DE QUEBRA DE NÚMEROS COM ACESSIBILIDADE       */
+/* ========================================================== */
 .summary-card .value {
   font-size: 2.2rem;
   font-weight: 700;
   margin: 0;
   color: #212121;
+  white-space: nowrap !important;    /* impede quebra */
+  overflow: hidden !important;       /* esconde excedente */
+  text-overflow: ellipsis;           /* adiciona ... se estourar */
+  display: block;                    /* garante linha única */
+  line-height: 1.1;                  /* mantém compacto */
 }
+
+@media (min-width: 768px) {
+  .summary-card .value {
+    font-size: clamp(1.8rem, 1.5rem + 1vw, 3.2rem);
+  }
+}
+/* ========================================================== */
 
 .summary-card .positivo {
   color: #28a745;
@@ -234,6 +248,7 @@ tr.inativa {
   background-color: #fafafa;
   color: #999;
 }
+
 tr.inativa:hover {
   background-color: #f1f1f1;
 }
@@ -568,15 +583,12 @@ tr.inativa:hover {
     align-items: stretch;
   }
 
-  /* --- AJUSTE DAS ABAS NO MOBILE --- */
   .main-nav {
     width: 100%;
   }
 
   .main-nav button {
-    /* REMOVIDO: min-width fixo que impedia o encolhimento */
     min-width: 0;
-    /* Padding e fontes reduzidos para caber na tela */
     padding: 0.8rem 0.2rem;
     font-size: 0.85rem;
     flex-basis: 0;
@@ -584,7 +596,7 @@ tr.inativa:hover {
   }
 
   .main-nav button i {
-    font-size: 0.9rem; /* Ícone levemente menor */
+    font-size: 0.9rem;
     margin-right: 0.3rem;
   }
 
