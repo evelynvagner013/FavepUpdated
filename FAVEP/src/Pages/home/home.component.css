@@ -377,11 +377,14 @@
 
 /* RESPONSIVIDADE */
 @media (max-width: 991.98px) {
+  /* INÍCIO DA ALTERAÇÃO 3: REDUÇÃO DE GAP VERTICAL E REFORÇO DO ESPAÇAMENTO */
   .servico, .servico1 {
     flex-direction: column;
-    gap: 30px;
+    /* O QUÊ: Reduz o espaçamento vertical entre a imagem e o texto ao empilhar. */
+    gap: 20px;
     padding: 40px 15px;
   }
+  /* FIM DA ALTERAÇÃO 3 */
 
   .painel {
       padding: 0 15px;
@@ -409,14 +412,24 @@
       padding-left: 0;
   }
 
+  /* INÍCIO DA ALTERAÇÃO 2: AUMENTO DE TAMANHO DOS LOGOS (992px) */
   .carousel img {
-    max-width: 80px;
-    max-height: 40px;
+    /* De: max-width: 80px; max-height: 40px; */
+    max-width: 100px;
+    max-height: 50px;
     margin: 0 15px;
   }
+  /* FIM DA ALTERAÇÃO 2 */
+
+  /* INÍCIO DA ALTERAÇÃO 1: ESPAÇAMENTO PARCEIROS */
+  /* Ajusta o padding da seção de parceiros para telas menores que 992px */
+  .parceiros-section {
+    padding: 40px 15px;
+  }
+  /* FIM DA ALTERAÇÃO 1 */
 }
 
-/* --- NOVO: Breakpoint para telas MUITO PEQUENAS (280px a 480px) --- */
+/* --- Breakpoint para telas MÉDIAS/PEQUENAS (até 480px) --- */
 @media (max-width: 480px) {
     .overlay {
         padding: 20px; /* Reduz padding interno drásticamente */
@@ -425,18 +438,71 @@
         box-sizing: border-box;
     }
 
+    /* INÍCIO DA ALTERAÇÃO 4: OTIMIZAÇÃO GERAL E CARDS DE SERVIÇO */
     .services {
-        padding: 30px 10px; /* Reduz padding lateral */
+        padding: 30px 5px; /* Reduz o padding lateral para maximizar cards */
     }
 
     .card {
-        padding: 15px; /* Reduz padding interno do card */
+        padding: 15px 10px; /* Reduz padding interno dos cards para melhor ajuste */
     }
+    /* FIM DA ALTERAÇÃO 4 */
 
     .servico, .servico1 {
         padding: 30px 10px; /* Mais compacto */
     }
+
+    /* INÍCIO DA ALTERAÇÃO 1: ESPAÇAMENTO PARCEIROS */
+    /* Ajusta o padding da seção de parceiros para telas menores que 480px */
+    .parceiros-section {
+        padding: 30px 10px;
+    }
+    /* Ajusta o padding do container para telas menores que 480px */
+    .container {
+        padding: 0 5px;
+    }
+    /* FIM DA ALTERAÇÃO 1 */
+
+    /* INÍCIO DA ALTERAÇÃO 2: AUMENTO DE TAMANHO E REDUÇÃO DE MARGEM DOS LOGOS (480px) */
+    .carousel img {
+        /* Aumenta mais o tamanho para garantir visibilidade */
+        max-width: 120px;
+        max-height: 60px;
+        margin: 0 10px; /* Reduz a margem horizontal para dar mais espaço à imagem */
+    }
+    /* FIM DA ALTERAÇÃO 2 */
 }
+
+/* --- INÍCIO DA ALTERAÇÃO 5: Breakpoint para telas EXTREMAMENTE PEQUENAS (até 320px) --- */
+@media (max-width: 320px) {
+    /* O QUÊ: Reduz o espaçamento de todas as principais seções para liberar espaço em telas < 320px. */
+    .services {
+        padding: 15px 5px;
+    }
+    .servico, .servico1 {
+        /* O QUÊ: Aplica padding horizontal de 5px para maximizar a largura das imagens do sistema. */
+        padding: 20px 5px;
+    }
+    .parceiros-section {
+        padding: 20px 5px;
+    }
+
+    /* O QUÊ: Reduz ainda mais o padding do card de serviço e garante máximo aproveitamento horizontal. */
+    .card {
+        padding: 10px 5px;
+    }
+
+    /* O QUÊ: Remove o padding horizontal do container de parceiros. */
+    .container {
+        padding: 0;
+    }
+
+    /* O QUÊ: Reduz ainda mais a margem horizontal das logos. */
+    .carousel img {
+        margin: 0 5px;
+    }
+}
+/* --- FIM DA ALTERAÇÃO 5 --- */
 
 /* --- NOVO ESTILO: Botão Voltar ao Topo --- */
 .btn-scroll-top {

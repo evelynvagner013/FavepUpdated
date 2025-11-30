@@ -23,6 +23,7 @@
     font-weight: 600;
     color: #1a202c;
     margin: 0;
+    word-wrap: break-word; /* Evita quebra em telas muito pequenas */
 }
 
 /* --- BARRA DE NAVEGAÇÃO INTERNA (ABAS) --- */
@@ -42,6 +43,8 @@
   overflow-x: auto;
   white-space: nowrap;
   flex-grow: 1;
+  /* Garante scroll suave em mobile */
+  -webkit-overflow-scrolling: touch;
 }
 
 .main-nav button {
@@ -109,6 +112,7 @@
   background-color: #f9f9f9;
   transition: all 0.3s;
   font-size: 0.9rem;
+  max-width: 100%; /* Segurança para não estourar container */
 }
 
 .filtro-group select:focus,
@@ -131,6 +135,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s;
+  flex-shrink: 0;
 }
 
 .btn-search:hover {
@@ -151,6 +156,7 @@
   font-weight: 600;
   transition: background-color 0.3s;
   align-self: flex-start;
+  white-space: nowrap;
 }
 
 .btn-add:hover {
@@ -170,6 +176,8 @@
   padding: 2rem;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
   text-align: left;
+  /* Garante que o card não estoure a largura da tela em 240px */
+  min-width: 0;
 }
 
 .summary-card h3 {
@@ -217,12 +225,13 @@
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%; /* Garante que respeita o container pai */
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 600px; /* Mantém rolagem horizontal em telas pequenas */
 }
 
 th,
@@ -573,6 +582,7 @@ tr.inativa:hover {
     flex-direction: row;
   }
 
+  /* Em telas < 768px, permitimos encolher, mas mantendo usabilidade */
   .search-group input {
     flex-grow: 1;
     min-width: 0;
@@ -636,4 +646,51 @@ tr.inativa:hover {
     width: 100%;
     padding: 1rem;
   }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .main-content {
+        padding: 0.5rem; /* Menos padding lateral */
+    }
+
+    .header-title {
+        font-size: 1.25rem; /* Título menor */
+    }
+
+    /* Ajuste no Nav para telas mínimas */
+    .main-nav button {
+        padding: 0.6rem 0.2rem;
+        font-size: 0.75rem; /* Fonte menor nas abas */
+        min-width: auto; /* Remove qualquer min-width */
+    }
+
+    /* Cards de Resumo mais compactos */
+    .summary-card {
+        padding: 1rem;
+    }
+
+    .summary-card .value {
+        font-size: 1.6rem; /* Valor menor para não quebrar */
+    }
+
+    /* Modal otimizado para 240px */
+    .modal-content {
+        padding: 1rem 0.8rem; /* Quase sem padding lateral */
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+    }
+
+    .form-group input, .form-group select {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    /* Paginação empilhada se necessário ou botões menores */
+    .pagination-container button, .pagination-container span {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
 }

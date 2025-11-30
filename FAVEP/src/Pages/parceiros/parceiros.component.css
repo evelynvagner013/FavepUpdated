@@ -26,6 +26,8 @@
   z-index: 2;
   color: #ffffff;
   padding: 30px 20px;
+  width: 100%; /* Garante que o container de texto não exceda a tela */
+  box-sizing: border-box;
 }
 
 .parceiros-hero h1 {
@@ -34,6 +36,7 @@
   font-size: clamp(2rem, 5vw, 3.5rem);
   margin-bottom: 0.5em;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  word-wrap: break-word; /* Evita que palavras longas estourem a tela */
 }
 
 .parceiros-hero p {
@@ -48,16 +51,12 @@
   padding: 60px 20px;
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 0 -15px;
-}
-
-/* SEÇÃO DE CARDS DE PARCEIROS - VERSÃO HORIZONTAL */
-.parceiros-section {
-  padding: 60px 20px;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  /* Garante padding seguro em telas muito pequenas */
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .row {
@@ -67,14 +66,10 @@
   margin: 0 -15px;
 }
 
-.col-lg-6, .col-md-12, .col-sm-12 {
+.col-lg-6, .col-md-12, .col-sm-12, .col-lg-12 {
   padding: 0 15px;
   margin-bottom: 30px;
-}
-
-.col-lg-12, .col-md-12, .col-sm-12 {
-  padding: 0 15px;
-  margin-bottom: 30px;
+  box-sizing: border-box;
 }
 
 .partner-card {
@@ -84,11 +79,11 @@
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
   display: flex;
-  
-  /* --- MUDANÇA PRINCIPAL --- */
-  flex-direction: row; /* Altera a direção para horizontal */
-  min-height: 300px; /* Define uma altura mínima para o formato paisagem */
-  align-items: stretch; /* Faz os filhos esticarem para a mesma altura */
+
+  /* Padrão horizontal */
+  flex-direction: row;
+  min-height: 300px;
+  align-items: stretch;
 }
 
 .partner-card:hover {
@@ -98,40 +93,28 @@
 
 /* --- ÁREA DA IMAGEM --- */
 .partner-card-header {
-  /* Removemos o padding e cor de fundo, a imagem vai preencher tudo */
   padding: 0;
-  
-  /* Define a largura da área da imagem (ex: 35% do card) */
-  flex: 0 0 35%; 
-  
-  /* Arredonda apenas os cantos da esquerda */
-  border-radius: 12px 0 0 12px; 
+  flex: 0 0 35%;
+  border-radius: 12px 0 0 12px;
+  position: relative; /* Para garantir o posicionamento da imagem */
+  overflow: hidden;
 }
 
 /* --- A IMAGEM DO LOGO --- */
 .partner-logo {
   width: 100%;
   height: 100%;
-  
-  /* CRUCIAL: Faz a imagem preencher o espaço, cortando o excesso sem distorcer */
-  object-fit: cover; 
-  
-  /* Removemos estilos que não são mais necessários */
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
-  border-radius: 0;
+  object-fit: cover;
+  display: block;
 }
 
 /* --- ÁREA DO TEXTO --- */
 .partner-card-body {
   padding: 30px;
-  flex-grow: 1; /* Faz esta área ocupar o resto do espaço */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  
-  /* Alinha o texto à esquerda para melhor leitura */
-  text-align: left; 
+  text-align: left;
 }
 
 .partner-name {
@@ -175,43 +158,103 @@
   color: #616161;
   text-decoration: none;
   transition: color 0.3s ease;
+  word-break: break-all; /* Importante para emails longos em telas pequenas */
 }
 
 .partner-contact-info a:hover {
   color: #004d40;
 }
 
-/* RESPONSIVIDADE (Ajustada para o novo layout) */
-@media (max-width: 767.98px) {
-  .partner-card {
-    flex-direction: column; /* Em telas pequenas, volta a ser vertical */
-    min-height: auto;
-  }
-  .partner-card-header {
-    flex-basis: auto; /* Reseta a base de largura */
-    height: 200px; /* Define uma altura fixa para a imagem no modo vertical */
-    border-radius: 12px 12px 0 0; /* Arredonda cantos superiores */
-  }
-}
-
-/* RESPONSIVIDADE */
+/* RESPONSIVIDADE (Grid System) */
 @media (min-width: 992px) {
-  .col-lg-4 {
-    flex: 0 0 33.333333%;
-    max-width: 33.333333%;
-  }
+  .col-lg-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+  .col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+  .col-lg-12 { flex: 0 0 100%; max-width: 100%; }
 }
 
 @media (max-width: 991.98px) {
-  .col-md-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
+  .col-md-6, .col-md-12 { flex: 0 0 100%; max-width: 100%; }
 }
 
+/* RESPONSIVIDADE (Cards e Layout Mobile) */
 @media (max-width: 767.98px) {
+  .partner-card {
+    flex-direction: column; /* Vira vertical */
+    min-height: auto;
+  }
+
+  .partner-card-header {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 200px; /* Altura fixa para a imagem */
+    border-radius: 12px 12px 0 0;
+  }
+
   .col-sm-12 {
     flex: 0 0 100%;
     max-width: 100%;
+  }
+}
+
+/* --- TELA PEQUENA (Smartphone padrão) --- */
+@media (max-width: 480px) {
+  .parceiros-hero-content {
+      padding: 20px 15px;
+  }
+
+  .parceiros-section {
+      padding: 40px 15px; /* Reduz padding da seção */
+  }
+
+  .partner-card-body {
+      padding: 20px; /* Reduz padding interno do card */
+  }
+
+  .partner-name {
+      font-size: 1.5rem; /* Fonte um pouco menor */
+  }
+
+  .partner-card-header {
+      height: 180px; /* Reduz levemente a altura da imagem */
+  }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+  .parceiros-hero {
+      min-height: 50vh; /* Banner ocupa menos altura */
+  }
+
+  .parceiros-hero h1 {
+      font-size: 1.6rem; /* Garante que cabe em 240px */
+  }
+
+  .parceiros-section {
+      padding: 30px 10px; /* Padding mínimo lateral */
+  }
+
+  /* Reduz margens negativas da row para evitar scroll horizontal indesejado */
+  .row {
+      margin: 0 -5px;
+  }
+
+  .col-lg-6, .col-md-12, .col-sm-12, .col-lg-12 {
+      padding: 0 5px;
+  }
+
+  .partner-card-body {
+      padding: 15px; /* Otimiza espaço interno */
+  }
+
+  .partner-name {
+      font-size: 1.3rem;
+  }
+
+  .partner-description, .partner-contact-info li {
+      font-size: 0.85rem;
+  }
+
+  .partner-card-header {
+      height: 150px; /* Imagem mais compacta */
   }
 }

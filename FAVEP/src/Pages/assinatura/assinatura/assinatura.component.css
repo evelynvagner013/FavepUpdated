@@ -12,6 +12,7 @@
     font-weight: 700;
     margin-bottom: 1rem;
     color: black;
+    word-wrap: break-word; /* Evita quebra de palavras longas */
 }
 
 .pricing-header p {
@@ -38,11 +39,13 @@
     padding: 1.25rem; /* ~20px */
     text-align: center;
     flex: 1;
-    /* AJUSTE CRÍTICO: Mudar min/max width para REM */
-    min-width: 17.5rem; /* ~280px */
-    max-width: 20rem;   /* ~320px - Agora cresce com a fonte */
+    /* AJUSTE CRÍTICO: Flexibilidade total para telas pequenas */
+    min-width: 17.5rem; /* ~280px (Desktop padrão) - Sobrescrito no mobile */
+    max-width: 20rem;   /* ~320px */
+    width: 100%;        /* Garante ocupação */
     border-top: 0.3125rem solid transparent; /* ~5px */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; /* Garante que padding não estoure */
 }
 
 .pricing-card:hover {
@@ -55,8 +58,19 @@
     padding-bottom: 1.25rem; /* ~20px */
     margin-bottom: 1.25rem; /* ~20px */
 }
-.card-header h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.03125rem; }
-.card-header .price { font-size: 2.2rem; font-weight: 700; color: #111827; }
+.card-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+}
+.card-header .price {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #111827;
+    word-wrap: break-word; /* Evita estouro do preço */
+}
 
 /* Estilos da lista de recursos */
 .features-list {
@@ -78,7 +92,7 @@
 }
 
 .features-list .feature-icon {
-    font-size: 2.0rem; 
+    font-size: 2.0rem;
     line-height: 1;
 }
 
@@ -150,7 +164,7 @@
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 992px) {
     .pricing-header h2 { font-size: 1.8rem; }
-    
+
     .card-gold {
         transform: scale(1);
     }
@@ -160,9 +174,73 @@
     .cards-container {
         flex-direction: column;
         align-items: center;
+        gap: 1.5rem;
     }
+
     .pricing-card {
-        max-width: 28.125rem; /* ~450px */
+        /* Removemos a trava de largura mínima para celulares */
+        min-width: 0;
+        max-width: 100%;
         width: 100%;
+    }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .pricing-table-section {
+        padding: 0 10px; /* Padding mínimo lateral */
+    }
+
+    .pricing-header h2 {
+        font-size: 1.4rem; /* Título menor */
+        margin-bottom: 0.5rem;
+    }
+
+    .pricing-header p {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .pricing-card {
+        padding: 1rem; /* Menos padding interno */
+        border-radius: 0.5rem;
+    }
+
+    .card-header {
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .card-header .price {
+        font-size: 1.6rem; /* Preço menor para não estourar a largura */
+    }
+
+    /* Otimização da lista para economizar espaço vertical */
+    .features-list li {
+        margin-bottom: 1rem;
+        min-height: auto; /* Remove altura mínima fixa */
+        gap: 0.2rem;
+    }
+
+    .features-list .feature-icon {
+        font-size: 1.5rem; /* Ícone menor */
+    }
+
+    .features-list .feature-text {
+        font-size: 0.9rem;
+    }
+
+    .features-list .feature-subtext {
+        font-size: 0.8rem;
+    }
+
+    .btn-assinar {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        margin-top: 1rem;
     }
 }

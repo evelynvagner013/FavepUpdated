@@ -139,7 +139,7 @@
 .form-group select:focus {
   outline: none;
   border-color: #004d40; /* Verde escuro do foco original */
-  box-shadow: 0 0 0 4px rgba(0, 77, 64, 0.15);
+  box-shadow: 0 0 0 4px rgba(0, 4d, 64, 0.15);
 }
 
 /* Estilo para campos inválidos */
@@ -326,7 +326,10 @@
 .table-container table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  /* ALTERAÇÃO 1: Redução do min-width.
+     O valor foi reduzido de 600px para 450px para permitir uma melhor experiência de rolagem
+     horizontal em telas menores, como 240px, sem quebrar o layout interno da tabela. */
+  min-width: 450px;
 }
 
 .table-container thead th {
@@ -361,9 +364,30 @@
 }
 .avatar-small img { width: 100%; height: 100%; object-fit: cover; }
 
-.user-details { display: flex; flex-direction: column; }
-.user-name { font-weight: 600; font-size: 0.95rem; }
-.user-email { font-size: 0.85rem; color: #718096; }
+.user-details {
+    display: flex;
+    flex-direction: column;
+    /* ALTERAÇÃO 2: Adição de min-width: 0.
+       Isso garante que o item flex ('user-details') possa encolher totalmente,
+       permitindo que a coluna 'Colaborador' use apenas o espaço mínimo necessário
+       antes que a rolagem horizontal seja ativada. */
+    min-width: 0;
+}
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    /* ALTERAÇÃO 3: Adição de quebra de palavra.
+       Permite que nomes longos ou e-mails quebrem para evitar que forcem
+       a largura da coluna além do necessário, melhorando a compressão da tabela. */
+    word-break: break-word;
+}
+.user-email {
+    font-size: 0.85rem;
+    color: #718096;
+    /* ALTERAÇÃO 4: Adição de quebra de palavra.
+       Permite que e-mails longos quebrem para otimizar o espaço. */
+    word-break: break-word;
+}
 
 .badge-acesso {
   padding: 6px 12px;
@@ -551,5 +575,13 @@ tr:hover .btn-icon { color: #007bff; }
   .access-info-card {
       margin: 20px 0 0 0;
       padding: 20px;
+  }
+
+  /* ALTERAÇÃO 5: Ajuste para o Card de Visualização em Telas Pequenas.
+     Reduz o padding de 2rem (aprox. 32px) para 20px, alinhando com outros cards
+     e maximizando o espaço horizontal para o conteúdo da tabela em dispositivos estreitos (como 240px). */
+  .card-viewusers {
+      padding: 20px;
+      margin: 0;
   }
 }

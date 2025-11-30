@@ -23,6 +23,7 @@
     font-weight: 600;
     color: #1a202c;
     margin: 0;
+    word-wrap: break-word;
 }
 
 .header-actions {
@@ -43,6 +44,7 @@
     align-items: center;
     gap: 8px;
     line-height: 1.2;
+    justify-content: center; /* Centraliza conteúdo */
 }
 
 /* Botão Primário (Analisar) */
@@ -86,7 +88,7 @@
 
 /* --- CAIXA DE FILTROS --- */
 .filter-box {
-    padding-bottom: 1.5rem; 
+    padding-bottom: 1.5rem;
 }
 
 .filter-title {
@@ -128,6 +130,7 @@
     background-color: #fdfdfd;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     width: 100%; /* Ocupa todo o espaço do .control-group */
+    box-sizing: border-box; /* Garante que padding não estoure */
 }
 
 .control-group select:focus,
@@ -204,7 +207,7 @@
 /* ============================================= */
 .movimentacoes-box {
     padding-top: 1.5rem;
-    
+
 }
 
 .movimentacoes-title {
@@ -236,7 +239,7 @@
 .movimentacoes-list li {
     display: grid;
     /* Layout: Info (flex-grow) | Status (auto) | Valor (auto) */
-    grid-template-columns: 1fr auto auto; 
+    grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 1.5rem;
     padding: 1.25rem 0;
@@ -253,6 +256,7 @@
     font-size: 1.05rem;
     color: #2c3e50;
     margin-bottom: 0.35rem; /* Margem para o metadata */
+    word-wrap: break-word;
 }
 
 .transacao-info .metadata {
@@ -372,17 +376,23 @@
 @media (max-width: 768px) {
     .main-content {
         padding: 1rem;
-        margin-left: 80px; /* ADICIONADO: Corrige a sobreposição no mobile */
+        /* CORREÇÃO: Remove margem para não criar barra branca no mobile */
+        margin-left: 0;
     }
     .container-principal {
         padding: 1.5rem;
     }
     .header-title {
         font-size: 1.5rem;
+        text-align: center;
     }
     .report-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch; /* Estica para centralizar ou preencher */
+    }
+    .header-actions {
+        width: 100%;
+        justify-content: center;
     }
     .report-controls {
         flex-direction: column;
@@ -399,7 +409,7 @@
     .chart-area {
         height: 400px;
     }
-    
+
     /* Esconde cabeçalhos de lista no mobile */
     .movimentacoes-header,
     .producao-header {
@@ -408,7 +418,7 @@
 
     /* Ajusta lista financeira no mobile */
     .movimentacoes-list li {
-        grid-template-columns: 1fr auto; 
+        grid-template-columns: 1fr auto;
         row-gap: 0.5rem;
     }
     .transacao-info {
@@ -416,19 +426,19 @@
     }
     .transacao-status {
         grid-column: 1 / 2;
-        justify-self: start; 
+        justify-self: start;
     }
     .transacao-valor {
         grid-column: 2 / 3;
-        grid-row: 1 / 3; 
+        grid-row: 1 / 3;
         font-size: 1rem;
         text-align: right;
         align-self: center;
     }
     .transacao-info .metadata {
-        gap: 0.5rem; 
-        flex-direction: column; 
-        align-items: flex-start; 
+        gap: 0.5rem;
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     /* Ajusta lista de produção no mobile */
@@ -480,3 +490,61 @@
     }
 }
 
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .main-content {
+        padding: 0.5rem; /* Padding mínimo */
+        gap: 1rem;
+    }
+
+    .container-principal {
+        padding: 1rem; /* Container compacto */
+    }
+
+    .header-title {
+        font-size: 1.25rem;
+    }
+
+    /* Botões empilhados */
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn {
+        width: 100%;
+        padding: 0.6rem;
+    }
+
+    /* Filtros compactos */
+    .control-group select, .control-group input[type="date"] {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    /* Gráfico menor */
+    .chart-area {
+        height: auto;
+        min-height: 300px;
+    }
+
+    /* Lista Financeira */
+    .movimentacoes-list li {
+        gap: 0.8rem;
+    }
+    .transacao-valor {
+        font-size: 0.95rem;
+    }
+
+    /* Lista Produção - Força 1 coluna */
+    .movimentacoes-list li.producao-item {
+        grid-template-columns: 1fr; /* 1 coluna */
+    }
+    .movimentacoes-list li.producao-item .transacao-info,
+    .movimentacoes-list li.producao-item .producao-stats {
+        grid-column: 1 / 2; /* Tudo ocupa a linha inteira */
+    }
+    .producao-stats::before {
+        display: inline-block;
+        margin-right: 5px;
+    }
+}

@@ -19,6 +19,8 @@
     max-width: 1000px; /* Largura máxima fixa */
     margin: 0 auto;
     padding: 0 15px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* CABEÇALHO DO PERFIL */
@@ -46,6 +48,7 @@
 
 .profile-summary {
     flex-grow: 1;
+    min-width: 0; /* Permite que o texto quebre corretamente em flexbox */
 }
 
 .profile-summary h1 {
@@ -53,12 +56,14 @@
     color: #2b2c34;
     margin: 0 0 5px;
     font-weight: 700;
+    word-wrap: break-word;
 }
 
 .profile-summary p {
     font-size: 1.1rem; /* Texto cresce */
     color: #616161;
     margin: 0;
+    word-wrap: break-word;
 }
 
 .edit-main-btn {
@@ -99,6 +104,7 @@
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    height: fit-content;
 }
 
 .card-perfil:hover {
@@ -128,6 +134,7 @@
     margin: 15px 0;
     font-size: 1rem; /* Texto cresce */
     line-height: 1.6;
+    flex-wrap: nowrap; /* Tenta manter na linha em telas grandes */
 }
 
 .info-list .fas {
@@ -142,10 +149,12 @@
     color: #212121;
     font-weight: 600;
     min-width: 80px; /* Mínimo fixo para alinhamento */
+    flex-shrink: 0;
 }
 
 .info-list span {
     color: #616161;
+    word-break: break-all; /* Garante que emails longos quebrem */
 }
 
 /* CARD DE AJUDA */
@@ -182,6 +191,7 @@
     gap: 10px;
     margin-top: 15px;
     font-size: 1rem; /* Texto cresce */
+    justify-content: center;
 }
 
 .chat-btn:hover {
@@ -224,6 +234,7 @@
     transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.25s ease-out;
     max-height: 90vh;
     overflow-y: auto;
+    box-sizing: border-box;
 }
 .modal-overlay.active .modal-content {
     transform: translateY(0) scale(1);
@@ -387,6 +398,11 @@
     .btn-cancel, .btn-save {
         width: 100%;
     }
+
+    /* CORREÇÃO: Força coluna única para os cards */
+    .profile-cards-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Telas Médias (Tablet - Menu Recolhido) */
@@ -395,17 +411,114 @@
         margin-left: 80px; /* Espaço para menu recolhido */
         padding: 20px;
     }
+    /* Tablet também precisa de 1 coluna se a tela for estreita */
     .profile-cards-container {
         grid-template-columns: 1fr;
     }
 }
 
-/* Telas Extra Pequenas */
+/* Telas Extra Pequenas (480px e abaixo) */
 @media (max-width: 480px) {
     .profile-summary h1 {
         font-size: 1.8rem;
     }
     .card-perfil {
         padding: 20px;
+    }
+
+    /* MUDANÇA CRÍTICA: Ajuste dos itens da lista de informações */
+    .info-list p {
+        flex-direction: column; /* Empilha rótulo e valor */
+        align-items: flex-start; /* Alinha à esquerda */
+        gap: 5px; /* Reduz gap vertical */
+    }
+
+    .info-list strong {
+        margin-bottom: 2px;
+    }
+
+    /* Ajuste do botão dentro da lista */
+    .info-list .edit-main-btn {
+        width: 100%; /* Botão full width */
+        margin-left: 0 !important; /* Remove margem lateral */
+        margin-top: 10px; /* Adiciona espaço acima */
+        box-sizing: border-box;
+    }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .main-content-perfil {
+        padding: 10px; /* Mínimo possível */
+    }
+
+    .container-perfil {
+        padding: 0;
+    }
+
+    /* Cabeçalho do Perfil Compacto */
+    .profile-header {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .profile-avatar img {
+        width: 80px; /* Avatar menor */
+        height: 80px;
+        border-width: 3px;
+    }
+
+    .profile-summary h1 {
+        font-size: 1.4rem;
+    }
+
+    .profile-summary p {
+        font-size: 0.9rem;
+    }
+
+    .edit-main-btn {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Cards Compactos */
+    .profile-cards-container {
+        gap: 15px;
+    }
+
+    .card-perfil {
+        padding: 15px;
+    }
+
+    .card-header h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Ícone de ajuda menor */
+    .help-box-content .help-icon {
+        font-size: 2rem;
+    }
+
+    /* Modais */
+    .modal-content {
+        padding: 15px;
+        width: 95%;
+    }
+
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .file-upload-label {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .profile-photo-preview {
+        width: 100px;
+        height: 100px;
     }
 }

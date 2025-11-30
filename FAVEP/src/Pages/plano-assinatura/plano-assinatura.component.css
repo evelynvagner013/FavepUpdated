@@ -41,19 +41,16 @@ h2 {
   margin-bottom: 2rem;
   font-size: 2rem;
   font-weight: 600;
+  word-wrap: break-word; /* Evita quebra */
 }
 
-/* Flexbox Lado a Lado - Larguras em REM */
-.secao-plano-atual {
-    flex: 1 1 21.25rem; /* ~340px */
-    max-width: 21.25rem;
+/* Flexbox Lado a Lado - Larguras Flexíveis */
+.secao-plano-atual, .secao-outros-planos {
+    flex: 1 1 300px; /* Base flexível */
+    max-width: 100%;
     margin-bottom: 0;
-}
-
-.secao-outros-planos {
-    flex: 1 1 21.25rem; /* ~340px */
-    max-width: 21.25rem;
-    margin-bottom: 0;
+    min-width: 0; /* Permite encolher abaixo do conteúdo */
+    width: 100%;
 }
 
 .secao-plano-atual h2, .secao-outros-planos h2 {
@@ -69,7 +66,6 @@ h2 {
 
 .secao-outros-planos .cards-container {
     justify-content: center;
-    gap: 0;
 }
 
 /* --- Loading Overlay --- */
@@ -122,16 +118,17 @@ h2 {
   display: flex;
   flex-direction: column;
   text-align: left;
-  
-  /* AJUSTE CRÍTICO: Larguras em REM */
-  flex-shrink: 0; 
-  width: 21.25rem; /* ~340px */
-  min-width: 18.75rem; /* ~300px */
-  max-width: 21.25rem; /* ~340px */
-  
+
+  /* AJUSTE CRÍTICO: Responsividade total */
+  width: 100%;
+  max-width: 22rem; /* ~350px limite máximo */
+  min-width: 0; /* Permite encolher em telas pequenas */
+
   border-top: 0.3125rem solid transparent; /* ~5px */
   transition: transform 0.3s, box-shadow 0.3s;
   overflow: hidden;
+  margin: 0 auto; /* Centraliza */
+  box-sizing: border-box;
 }
 
 .card-plano:hover {
@@ -143,11 +140,11 @@ h2 {
 .card-plano-atual {
   border: 2px solid #007aff;
   box-shadow: 0 0.5rem 1.25rem rgba(4, 107, 74, 0.15);
-  width: 21.25rem; /* ~340px */
-  max-width: 21.25rem;
+  width: 100%; /* Ocupa 100% do container */
+  max-width: 22rem;
   text-align: center;
-  margin-left: initial;
-  margin-right: initial;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card-gold { border-top-color: #ca8a04; }
@@ -161,23 +158,25 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .card-header h3 {
   font-size: 1.4rem;
   font-weight: 700;
   text-transform: uppercase;
+  margin: 0;
 }
 
 .badge-atual {
-  top: 0.9375rem; /* ~15px */
-  right: 0.9375rem;
   background: #0056b3;
   color: white;
   padding: 0.3125rem 0.75rem;
   border-radius: 0.9375rem;
   font-size: 0.8rem;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .card-body {
@@ -190,6 +189,7 @@ h2 {
   font-weight: 700;
   color: #111827;
   margin-bottom: 0.5rem;
+  word-wrap: break-word;
 }
 .card-plano-atual .preco {
   text-align: center;
@@ -199,7 +199,7 @@ h2 {
   font-size: 0.95rem;
   color: #555;
   margin-bottom: 1.5rem;
-  min-height: 2.5rem; /* ~40px */
+  min-height: auto;
 }
 .card-plano-atual .descricao {
   text-align: center;
@@ -219,6 +219,7 @@ h2 {
   margin: 0.5rem 0;
   font-size: 0.95rem;
   color: #333;
+  word-break: break-all;
 }
 
 .card-plano-atual .dates-info strong {
@@ -238,7 +239,8 @@ h2 {
   font-size: 0.95rem;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .features-list li::before {
@@ -330,6 +332,7 @@ h2 {
     max-width: 31.25rem; /* ~500px */
     text-align: center;
     animation: fadeIn 0.3s ease-out;
+    box-sizing: border-box;
 }
 
 .confirmation-card h3 {
@@ -362,6 +365,7 @@ h2 {
     justify-content: space-around;
     gap: 1rem;
     margin-top: 2rem;
+    flex-wrap: wrap; /* Permite empilhar botões */
 }
 
 .confirmation-actions button {
@@ -372,6 +376,7 @@ h2 {
     cursor: pointer;
     transition: background-color 0.3s, opacity 0.3s;
     flex: 1;
+    min-width: 120px;
 }
 
 .btn-cancel-modal { background-color: #dc3545; color: white; }
@@ -382,4 +387,76 @@ h2 {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-1.25rem); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .planos-principais {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .cards-container {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 1.5rem;
+    }
+
+    .card-plano, .card-plano-atual {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .main-content {
+        padding: 0.5rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-plano, .card-plano-atual {
+        border-radius: 0.5rem;
+    }
+
+    .card-header, .card-body, .card-footer {
+        padding: 1rem; /* Menos padding interno */
+    }
+
+    .card-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .preco {
+        font-size: 1.8rem;
+    }
+
+    .descricao, .features-list li {
+        font-size: 0.9rem;
+    }
+
+    /* Ajuste Modal */
+    .confirmation-card {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .confirmation-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .confirmation-actions button {
+        width: 100%;
+    }
 }

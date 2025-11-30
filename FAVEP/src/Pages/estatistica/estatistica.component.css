@@ -23,6 +23,7 @@
     font-weight: 600;
     color: #1a202c;
     margin: 0;
+    word-wrap: break-word; /* Evita quebra em telas pequenas */
 }
 
 /* --- FILTROS --- */
@@ -60,7 +61,7 @@
 /* --- CARDS DE RESUMO --- */
 .resumo-cards {
     display: grid;
-    /* Mantido 200px para evitar quebra */
+    /* Mantido 200px para desktop, ajustado em media queries */
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 25px;
     margin-bottom: 40px;
@@ -81,6 +82,7 @@
     /* Garante que o conteúdo não vaze a largura do card */
     width: 100%;
     box-sizing: border-box;
+    min-width: 0; /* Permite encolher em flex/grid */
 }
 
 .resumo-card:hover {
@@ -373,5 +375,82 @@ button:hover {
 @media (min-width: 1200px) {
     .graficos-container {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .main-content {
+        padding: 0.5rem; /* Reduz padding lateral */
+    }
+
+    .header-title {
+        font-size: 1.25rem; /* Título menor */
+        text-align: center;
+    }
+
+    .filtro-group select {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Ajuste dos Cards de Resumo */
+    .resumo-cards {
+        gap: 15px; /* Menor espaçamento */
+        grid-template-columns: 1fr; /* Força coluna única */
+    }
+
+    .resumo-card {
+        padding: 15px; /* Menos padding interno */
+    }
+
+    .resumo-card i {
+        font-size: 1.5rem; /* Ícone menor */
+    }
+
+    .resumo-card .valor {
+        font-size: 1.5rem; /* Valor numérico menor */
+    }
+
+    /* Ajuste dos Gráficos */
+    .grafico-card {
+        padding: 10px;
+        height: auto;
+        min-height: 300px;
+    }
+
+    .grafico-card h3 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    /* Ajuste Seção Clima */
+    .clima-section {
+        padding: 15px;
+        min-height: auto;
+    }
+
+    .clima-card .temperatura-clima {
+        font-size: 1.8rem;
+    }
+
+    .clima-card img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .clima-busca {
+        flex-direction: column; /* Empilha input e botão */
+        gap: 5px;
+    }
+
+    .input-cidade {
+        width: 100%;
+        min-width: 0;
+    }
+
+    button {
+        width: 100%;
+        padding: 8px;
     }
 }

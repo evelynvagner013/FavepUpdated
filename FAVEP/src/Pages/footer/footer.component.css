@@ -24,7 +24,7 @@
   text-align: center;
   line-height: 2.5rem;
   color: #fff;
-  font-size: 1.0625rem; /* ~17px AJUSTADO */
+  font-size: 1.0625rem; /* ~17px */
   text-decoration: none;
   transition: all 0.4s ease;
 }
@@ -56,7 +56,7 @@
 
 .bottom-details .bottom_text span,
 .bottom-details .bottom_text a {
-  font-size: 0.875rem; /* ~14px AJUSTADO */
+  font-size: 0.875rem; /* ~14px */
   font-weight: 300;
   color: #ffffff;
   opacity: 0.8;
@@ -70,6 +70,7 @@
 
 .bottom-details .bottom_text a {
   margin-right: 0.625rem;
+  cursor: pointer;
 }
 
 .policy_terms {
@@ -95,6 +96,7 @@
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
   padding: 0.625rem;
+  box-sizing: border-box; /* Garante que padding não estoure */
 }
 
 .modal-overlay.active {
@@ -132,16 +134,17 @@
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.8rem; /* Já estava em rem, ok */
+  font-size: 1.8rem;
   color: var(--primary-color, #2c3e50);
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
+  word-wrap: break-word; /* Evita quebra de título */
 }
 
 .modal-header .close-btn {
   background: none;
   border: none;
-  font-size: 2rem; /* Já estava em rem, ok */
+  font-size: 2rem;
   cursor: pointer;
   color: var(--text-color, #333);
   padding: 0.3125rem;
@@ -205,6 +208,8 @@
   background-color: var(--link-hover-color, #0056b3);
 }
 
+/* --- RESPONSIVIDADE --- */
+
 @media (max-width: 768px) {
   .bottom-details .bottom_text {
     padding: 1.25rem;
@@ -254,4 +259,55 @@
   .modal-footer .btn-primary {
     width: 100%;
   }
+}
+
+/* --- TELA EXTREMAMENTE PEQUENA (240px a 320px) --- */
+@media (max-width: 320px) {
+    .bottom-details {
+        margin-top: 1.5rem;
+    }
+
+    .bottom-details .bottom_text {
+        padding: 10px; /* Padding mínimo */
+    }
+
+    .bottom-details .bottom_text span,
+    .bottom-details .bottom_text a {
+        font-size: 0.75rem; /* Fonte menor */
+        line-height: 1.4;
+    }
+
+    .policy_terms {
+        gap: 10px; /* Menor gap entre links */
+        flex-direction: column; /* Empilha links se necessário */
+    }
+
+    .top .media-icons {
+        gap: 0.5rem;
+    }
+
+    .top .media-icons a {
+        width: 35px; /* Ícones menores */
+        height: 35px;
+        line-height: 35px;
+        font-size: 0.9rem;
+    }
+
+    /* Modal Compacto */
+    .modal-content {
+        padding: 15px;
+    }
+
+    .modal-header {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .modal-body p, .modal-body ul li {
+        font-size: 0.85rem;
+    }
 }
