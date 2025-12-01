@@ -522,3 +522,111 @@
         height: 100px;
     }
 }
+
+/* ======================================================== */
+/* ESTILOS ADICIONAIS PARA O CROPPER (NOVO) */
+/* ======================================================== */
+
+/* Ajusta o tamanho do modal específico do cropper */
+.modal-content-cropper {
+    max-width: 600px; /* Um pouco mais largo para acomodar a imagem */
+    width: 95%;
+}
+
+.cropper-wrapper {
+    width: 100%;
+    /* Define uma altura máxima para a área de edição e permite rolagem se necessário,
+       mas geralmente o cropper se ajusta */
+    min-height: 300px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+}
+
+/* Ajustes no componente image-cropper */
+image-cropper {
+    width: 100%;
+    max-height: 50vh; /* Limita a altura para não estourar a tela em mobile */
+}
+
+/* Feedback de carregamento */
+.cropper-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-weight: 500;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.cropper-loading i {
+    font-size: 2rem;
+    color: #27ae60;
+}
+
+/* Responsividade específica para o modal do cropper */
+@media (max-width: 480px) {
+    .modal-content-cropper {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-content-cropper .modal-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
+/* --- ESTILOS DO BOTÃO DE REMOVER FOTO --- */
+
+/* Wrapper para posicionamento relativo */
+.profile-photo-wrapper {
+    position: relative;
+    display: inline-block; /* Ajusta ao tamanho da imagem */
+}
+
+/* Botão de lixeira flutuante */
+.btn-remove-photo {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: #dc3545; /* Vermelho */
+    color: white;
+    border: 2px solid white; /* Borda branca para separar da foto */
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s, transform 0.1s;
+    padding: 0;
+    z-index: 5;
+}
+
+.btn-remove-photo:hover {
+    background-color: #c82333; /* Vermelho mais escuro */
+    transform: scale(1.1);
+}
+
+.btn-remove-photo i {
+    font-size: 0.9rem;
+}

@@ -27,7 +27,7 @@ export interface Usuario {
   nome: string;
   email: string;
   telefone?: string;
-  fotoperfil?: string;
+  fotoperfil?: string | null;
   senha?: string;
   emailVerified?: boolean;
   verificationToken?: string;

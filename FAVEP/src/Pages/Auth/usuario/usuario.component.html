@@ -5,7 +5,7 @@
 
         <div class="profile-header">
             <div class="profile-avatar">
-                <img [src]="usuario.fotoperfil || 'https://placehold.co/120x120/aabbcc/ffffff?text=User'" [alt]="'Foto de ' + usuario.nome">
+                <img [src]="usuarioEditavel.fotoperfil || usuario.fotoperfil || 'https://placehold.co/120x120/aabbcc/ffffff?text=User'" [alt]="'Foto de ' + usuario.nome">
             </div>
             <div class="profile-summary">
                 <h1>{{ usuario.nome }}</h1>
@@ -81,15 +81,30 @@
         </div>
         <form (ngSubmit)="salvarAlteracoesPerfil()" #perfilForm="ngForm">
             <div class="modal-body">
+
                 <div class="profile-photo-preview-container">
-                    <img [src]="usuarioEditavel.fotoperfil || 'https://placehold.co/120x120/aabbcc/ffffff?text=User'" alt="Pré-visualização da foto" class="profile-photo-preview">
+                    <div class="profile-photo-wrapper">
+                        <img [src]="usuarioEditavel.fotoperfil || 'https://placehold.co/120x120/aabbcc/ffffff?text=User'"
+                             alt="Pré-visualização da foto"
+                             class="profile-photo-preview">
+
+                        <button type="button"
+                                class="btn-remove-photo"
+                                *ngIf="usuarioEditavel.fotoperfil"
+                                (click)="removerFoto()"
+                                title="Remover foto atual">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
+
                 <div class="form-group file-upload-group">
                     <label for="file-upload" class="file-upload-label">
                         <i class="fas fa-upload"></i> Escolher Nova Foto
                     </label>
-                    <input id="file-upload" type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif">
+                    <input id="file-upload" type="file" (change)="fileChangeEvent($event)" accept="image/png, image/jpeg, image/jpg, image/webp">
                 </div>
+
                 <div class="form-group">
                     <label for="edit-nome">Nome:</label>
                     <input type="text" id="edit-nome" name="nome" [(ngModel)]="usuarioEditavel.nome" required #nomeInput="ngModel">
@@ -119,7 +134,7 @@
               .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
               .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
             </style>
-            
+
             <div class="message success" *ngIf="successMessage">
               {{ successMessage }}
             </div>
@@ -138,23 +153,60 @@
     </div>
 </div>
 
+<div class="modal-overlay" [class.active]="cropperModalAberto" *ngIf="cropperModalAberto">
+    <div class="modal-content modal-content-cropper">
+        <div class="modal-header">
+            <h3>Ajustar Foto de Perfil</h3>
+            <button class="close-btn" (click)="fecharModalCropper()" aria-label="Fechar modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="text-align: center; color: #666; font-size: 0.9em; margin-bottom: 15px;">
+                Arraste e redimensione para ajustar sua foto.
+            </p>
+
+            <div class="cropper-wrapper">
+                <div *ngIf="isCropperLoading" class="cropper-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando imagem...
+                </div>
+
+                <image-cropper
+                    [imageChangedEvent]="imageChangedEvent"
+                    [maintainAspectRatio]="true"
+                    [aspectRatio]="1 / 1"
+                    format="png"
+                    [resizeToWidth]="500"
+                    [hideResizeSquares]="false"
+                    (imageCropped)="imageCropped($event)"
+                    (imageLoaded)="imageLoaded($event)"
+                    (cropperReady)="cropperReady()"
+                    (loadImageFailed)="loadImageFailed()"
+                ></image-cropper>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="fecharModalCropper()">Cancelar</button>
+            <button type="button" class="btn-save" (click)="confirmarRecorte()">Confirmar Corte</button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" [class.active]="senhaModalAberto" *ngIf="senhaModalAberto">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Alterar Senha</h3>
             <button class="close-btn" (click)="fecharModalSenha()" aria-label="Fechar modal">&times;</button>
         </div>
-        
+
         <form [formGroup]="senhaForm" (ngSubmit)="salvarNovaSenha()">
             <div class="modal-body">
-                
+
                 <ng-container *ngIf="senhaStep === 'form'">
                     <div class="form-group">
                         <label for="senhaAtual">Senha Atual:</label>
                         <div class="password-container-modal">
                             <input [type]="senhaAtualVisible ? 'text' : 'password'" id="senhaAtual" formControlName="senhaAtual" required>
-                            <i class="password-toggle-icon" 
-                               [ngClass]="senhaAtualVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                            <i class="password-toggle-icon"
+                               [ngClass]="senhaAtualVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
                                (click)="toggleVisibility('senhaAtual')"></i>
                         </div>
                         <div *ngIf="senhaForm.get('senhaAtual')?.invalid && senhaForm.get('senhaAtual')?.touched" class="validation-error">
@@ -166,8 +218,8 @@
                         <label for="novaSenha">Nova Senha:</label>
                         <div class="password-container-modal">
                             <input [type]="novaSenhaVisible ? 'text' : 'password'" id="novaSenha" formControlName="novaSenha" required minlength="8">
-                            <i class="password-toggle-icon" 
-                               [ngClass]="novaSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                            <i class="password-toggle-icon"
+                               [ngClass]="novaSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
                                (click)="toggleVisibility('novaSenha')"></i>
                         </div>
                         <div *ngIf="senhaForm.get('novaSenha')?.invalid && senhaForm.get('novaSenha')?.touched" class="validation-error">
@@ -181,8 +233,8 @@
                         <label for="confirmarSenha">Confirmar Nova Senha:</label>
                         <div class="password-container-modal">
                             <input [type]="confirmarSenhaVisible ? 'text' : 'password'" id="confirmarSenha" formControlName="confirmarSenha" required>
-                            <i class="password-toggle-icon" 
-                               [ngClass]="confirmarSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                            <i class="password-toggle-icon"
+                               [ngClass]="confirmarSenhaVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
                                (click)="toggleVisibility('confirmarSenha')"></i>
                         </div>
                         <div *ngIf="senhaForm.get('confirmarSenha')?.invalid && senhaForm.get('confirmarSenha')?.touched" class="validation-error">
@@ -222,7 +274,7 @@
                 color: #555;
               }
             </style>
-            
+
             <div class="message success" *ngIf="senhaSuccessMessage" style="margin: 0 0 15px 0;">
               {{ senhaSuccessMessage }}
             </div>
@@ -251,26 +303,26 @@
       <h3>Verificar Novo E-mail</h3>
       <button class="close-btn" (click)="fecharModalVerificacaoEmailUpdate()" aria-label="Fechar modal">&times;</button>
     </div>
-    
+
     <form (ngSubmit)="onVerifyNewEmailCodeSubmit()" #verifyEmailUpdateForm="ngForm">
       <div class="modal-body">
-          
+
         <div style="padding: 15px; background-color: #e2f3ff; border: 1px solid #b8daff; color: #0c5460; border-radius: 5px; margin-bottom: 25px;">
-          Enviamos um código de 6 dígitos para o seu novo e-mail: 
+          Enviamos um código de 6 dígitos para o seu novo e-mail:
           <strong>{{ emailParaVerificarUpdate }}</strong>.
           <br>
           Seu e-mail antigo ({{ oldEmail || 'N/A' }}) continua ativo até a verificação.
         </div>
-        
+
         <div class="form-group">
           <label for="verificationCodeUpdate">Código de Verificação:</label>
-          <input 
-            type="text" 
-            id="verificationCodeUpdate" 
-            name="verificationCodeUpdate" 
-            [(ngModel)]="verificationCodeUpdate" 
-            placeholder="Insira o código de 6 dígitos" 
-            required 
+          <input
+            type="text"
+            id="verificationCodeUpdate"
+            name="verificationCodeUpdate"
+            [(ngModel)]="verificationCodeUpdate"
+            placeholder="Insira o código de 6 dígitos"
+            required
             maxlength="6"
             inputmode="numeric"
             style="text-align: center; font-size: 1.2rem; letter-spacing: 3px;"

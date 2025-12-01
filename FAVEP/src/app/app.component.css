@@ -1,8 +1,8 @@
 .chat-acessibilidade-container {
-  position: fixed;
-  bottom: 230px;
-  right: 10px;
-  z-index: 1000;
+  position: fixed; 
+  bottom: 230px;  
+  right: 10px;    
+  z-index: 1000;   
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
@@ -12,7 +12,7 @@
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 30%;
+  border-radius: 30%; 
   width: 40px;
   height: 40px;
   font-size: 24px;
@@ -26,7 +26,7 @@
   border-radius: 10px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
   width: 300px;
-  margin-bottom: 10px;
+  margin-bottom: 10px; 
   overflow: hidden;
 }
 
@@ -87,8 +87,8 @@ body.high-contrast {
   color: yellow !important;
 }
 
-body.high-contrast h1,
-body.high-contrast h2,
+body.high-contrast h1, 
+body.high-contrast h2, 
 body.high-contrast h3 {
   color: white !important;
 }

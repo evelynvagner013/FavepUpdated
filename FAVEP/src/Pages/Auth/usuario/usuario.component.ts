@@ -1,6 +1,6 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'; 
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
@@ -9,6 +9,8 @@ import { Usuario } from '../../../models/api.models';
 import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 import { MenuCentralComponent } from '../../menu-central/menu-central.component';
 import { MenuLateralComponent } from '../../menu-lateral/menu-lateral.component';
+// IMPORTS DO CROPPER
+import { ImageCropperComponent, ImageCroppedEvent, LoadedImage } from 'ngx-image-cropper';
 
 @Component({
   selector: 'app-usuario',
@@ -16,12 +18,13 @@ import { MenuLateralComponent } from '../../menu-lateral/menu-lateral.component'
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     RouterLink,
     NgxMaskPipe,
     NgxMaskDirective,
     MenuCentralComponent,
-    MenuLateralComponent
+    MenuLateralComponent,
+    ImageCropperComponent // Necessário para o componente funcionar no HTML
   ],
   providers: [DatePipe],
   templateUrl: './usuario.component.html',
@@ -38,7 +41,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  // ADICIONADO: Propriedades para o modal de alterar senha
+  // Propriedades para o modal de alterar senha
   senhaModalAberto = false;
   senhaForm: FormGroup;
   senhaIsLoading = false;
@@ -57,9 +60,15 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   verifyEmailSuccessMessage: string | null = null;
   verifyEmailErrorMessage: string | null = null;
 
-  // NOVO ESTADO PARA 2FA
-  senhaStep: 'form' | 'otp' = 'form'; 
-  otpEnviado = false; 
+  // ESTADO PARA 2FA DE SENHA
+  senhaStep: 'form' | 'otp' = 'form';
+  otpEnviado = false;
+
+  // --- NOVAS PROPRIEDADES PARA O CROPPER (FOTO DE PERFIL) ---
+  imageChangedEvent: any = ''; // Evento do input file original
+  croppedImage: any = '';      // Resultado do corte em Base64
+  cropperModalAberto = false;  // Controle do modal de corte
+  isCropperLoading = false;    // Feedback visual de carregamento da imagem
 
   private userSubscription: Subscription | undefined;
 
@@ -73,18 +82,18 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     this.senhaForm = this.fb.group({
       senhaAtual: ['', [Validators.required]],
       novaSenha: ['', [
-        Validators.required, 
+        Validators.required,
         Validators.minLength(8),
         // Validador de complexidade (8+ chars, maiúscula, minúscula, número, especial)
-        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$') 
-      ]], 
+        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$')
+      ]],
       confirmarSenha: ['', [Validators.required]],
-      otp: [''] 
+      otp: ['']
     }, {
       validators: this.passwordMatchValidator
     });
 
-    this.senhaForm.get('otp')?.disable(); 
+    this.senhaForm.get('otp')?.disable();
   }
 
   ngOnInit(): void {
@@ -92,12 +101,12 @@ export class UsuarioComponent implements OnInit, OnDestroy {
       if (user) {
         // Atualiza o usuário e mantém a senha vazia
         this.usuario = { ...user, senha: '' };
-        
+
         // Se o usuário tem um novo e-mail mas não verificou, abre o modal.
         if (!user.emailVerified && user.verificationToken) {
            this.abrirModalVerificacaoEmailUpdate(user.email);
         }
-        
+
       } else {
         this.usuario = null;
       }
@@ -121,29 +130,98 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     return novaSenha === confirmarSenha ? null : { mismatch: true };
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      const reader = new FileReader();
+  // --- LÓGICA DO CROPPER (SUBSTITUI O ANTIGO onFileSelected) ---
 
-      reader.onload = (e) => {
-        this.usuarioEditavel.fotoperfil = e.target?.result as string;
-      };
-
-      reader.readAsDataURL(file);
+  // 1. Captura o evento de seleção de arquivo do input type="file"
+  fileChangeEvent(event: any): void {
+    if (event.target.files && event.target.files.length > 0) {
+      this.imageChangedEvent = event;
+      this.cropperModalAberto = true; // Abre o modal de corte
+      this.isCropperLoading = true;
     }
   }
 
+  // 2. Evento disparado cada vez que o usuário move a área de corte ou carrega a imagem
+  // CORREÇÃO APLICADA: Converte Blob para Base64 para evitar erro de validação no Backend
+  imageCropped(event: ImageCroppedEvent) {
+    // Tenta pegar o Base64 direto (versões antigas ou configuradas)
+    if (event.base64) {
+      this.croppedImage = event.base64;
+    }
+    // Se não vier Base64, converte o Blob (versões novas padrão)
+    else if (event.blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.croppedImage = reader.result; // Aqui garantimos o formato "data:image/..."
+      };
+      reader.readAsDataURL(event.blob);
+    }
+    // Último caso: converte via URL do objeto se o blob falhar
+    else if (event.objectUrl) {
+      fetch(event.objectUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.croppedImage = reader.result;
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(err => console.error('Erro ao converter imagem:', err));
+    }
+  }
+
+  // 3. Imagem carregada com sucesso no editor
+  imageLoaded(image: LoadedImage) {
+      this.isCropperLoading = false;
+  }
+
+  // 4. Editor pronto para uso
+  cropperReady() {
+      this.isCropperLoading = false;
+  }
+
+  // 5. Falha ao carregar imagem
+  loadImageFailed() {
+      this.isCropperLoading = false;
+      this.errorMessage = "Formato de imagem inválido ou arquivo corrompido.";
+      this.fecharModalCropper();
+  }
+
+  // 6. Confirma o corte e aplica ao usuárioEditavel
+  confirmarRecorte(): void {
+    if (this.croppedImage) {
+      this.usuarioEditavel.fotoperfil = this.croppedImage;
+      this.fecharModalCropper();
+    }
+  }
+
+  // 7. Cancela o corte
+  fecharModalCropper(): void {
+    this.cropperModalAberto = false;
+    this.imageChangedEvent = '';
+    this.croppedImage = '';
+  }
+
+  // 8. Função para remover a foto de perfil
+  removerFoto(): void {
+    // Define como null para que o backend saiba que deve remover
+    this.usuarioEditavel.fotoperfil = null;
+    this.imageChangedEvent = '';
+    this.croppedImage = '';
+  }
+
+  // -------------------------------------------------------------
+
   /**
-   * MODIFICADO: Salva as alterações e lida com a verificação de novo e-mail.
+   * Salva as alterações e lida com a verificação de novo e-mail.
    */
   salvarAlteracoesPerfil(): void {
     if (!this.usuario) {
         console.error('Usuário não está logado para atualização.');
         return;
     }
-    
+
     this.isLoading = true;
     this.successMessage = null;
     this.errorMessage = null;
@@ -164,10 +242,10 @@ export class UsuarioComponent implements OnInit, OnDestroy {
           this.fecharModalEdicao();
           this.successMessage = response.message;
           this.authService.setUser(response.user); // Atualiza o usuário (com novo email não verificado)
-          
+
           // Inicia o fluxo de verificação
           this.abrirModalVerificacaoEmailUpdate(response.user.email, response.oldEmail);
-          
+
           // Limpa a mensagem de sucesso da edição após 3s
           setTimeout(() => { this.successMessage = null; }, 3000);
           return;
@@ -186,7 +264,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         const errorMessage = err.error?.error || 'Erro ao atualizar perfil. Tente novamente.';
         this.errorMessage = errorMessage;
-        
+
         // Limpa a mensagem de erro após 10 segundos
         setTimeout(() => {
           this.errorMessage = null;
@@ -212,7 +290,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
   // ### Lógica de Verificação de Novo E-mail ###
 
   abrirModalVerificacaoEmailUpdate(newEmail: string, oldEmail: string | null = null): void {
-    this.fecharModalEdicao(); 
+    this.fecharModalEdicao();
     this.fecharModalSenha();
     this.emailParaVerificarUpdate = newEmail;
     this.oldEmail = oldEmail;
@@ -221,12 +299,12 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     this.verifyEmailSuccessMessage = null;
     this.mostrarVerifyEmailUpdate = true;
   }
-  
+
   fecharModalVerificacaoEmailUpdate(): void {
     this.mostrarVerifyEmailUpdate = false;
     this.verifyEmailIsLoading = false;
   }
-  
+
   onVerifyNewEmailCodeSubmit(): void {
     this.verifyEmailErrorMessage = null;
     this.verifyEmailSuccessMessage = null;
@@ -238,7 +316,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     }
 
     this.verifyEmailIsLoading = true;
-    
+
     // Chama o novo método no authService
     this.authService.verifyNewEmail(this.verificationCodeUpdate).subscribe({
       next: (response) => {
@@ -247,7 +325,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
         this.authService.setToken(response.token);
         this.authService.setUser(response.user);
         this.verifyEmailSuccessMessage = response.message || "E-mail verificado e atualizado com sucesso!";
-        
+
         setTimeout(() => {
           this.fecharModalVerificacaoEmailUpdate();
           this.successMessage = 'E-mail atualizado com sucesso!'; // Feedback na tela principal
@@ -274,7 +352,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     this.senhaSuccessMessage = null;
     this.senhaErrorMessage = null;
     this.senhaForm.updateValueAndValidity();
-    
+
     // Reabilita os campos de senha se estiverem desabilitados
     this.senhaForm.get('senhaAtual')?.enable();
     this.senhaForm.get('novaSenha')?.enable();
@@ -322,21 +400,21 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     const payload = {
       senhaAtual: this.senhaForm.value.senhaAtual,
       novaSenha: this.senhaForm.value.novaSenha,
-      confirmarSenha: this.senhaForm.value.confirmarSenha 
+      confirmarSenha: this.senhaForm.value.confirmarSenha
     };
-    
-    this.authService.iniciarChangePassword2FA(payload).subscribe({ 
+
+    this.authService.iniciarChangePassword2FA(payload).subscribe({
       next: (response: any) => {
         this.senhaIsLoading = false;
         this.senhaSuccessMessage = response.message || 'Código de verificação enviado para seu e-mail/telefone!';
-        
+
         // Passa para o próximo passo e habilita o campo OTP
         this.senhaStep = 'otp';
         this.otpEnviado = true;
         this.senhaForm.get('otp')?.enable();
-        this.senhaForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(6)]); 
-        this.senhaForm.get('otp')?.updateValueAndValidity(); 
-        
+        this.senhaForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(6)]);
+        this.senhaForm.get('otp')?.updateValueAndValidity();
+
         // Desabilita os campos de senha no passo 2
         this.senhaForm.get('senhaAtual')?.disable();
         this.senhaForm.get('novaSenha')?.disable();
@@ -349,7 +427,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
       error: (err: any) => {
         this.senhaIsLoading = false;
         this.senhaErrorMessage = err.error?.error || 'Erro ao iniciar alteração de senha. Verifique a senha atual e tente novamente.';
-        
+
         setTimeout(() => {
           this.senhaErrorMessage = null;
         }, 10000);
@@ -359,7 +437,7 @@ export class UsuarioComponent implements OnInit, OnDestroy {
 
   confirmarAlteracaoSenha(): void {
     this.senhaForm.get('otp')?.markAsTouched();
-    
+
     if (this.senhaForm.get('otp')?.invalid) {
       this.senhaErrorMessage = 'Por favor, insira o código de verificação.';
       setTimeout(() => { this.senhaErrorMessage = null; }, 10000);
@@ -373,16 +451,16 @@ export class UsuarioComponent implements OnInit, OnDestroy {
     const finalPayload = {
       senhaAtual: this.senhaForm.get('senhaAtual')?.value,
       novaSenha: this.senhaForm.get('novaSenha')?.value,
-      otp: this.senhaForm.get('otp')?.value 
+      otp: this.senhaForm.get('otp')?.value
     };
-    
+
     this.authService.finalizarChangePassword2FA(finalPayload).subscribe({
       next: (response: any) => {
         this.senhaIsLoading = false;
         this.senhaSuccessMessage = response.message || 'Senha alterada com sucesso!';
         this.senhaForm.reset();
         this.senhaStep = 'form'; // Volta ao passo inicial
-        
+
         setTimeout(() => {
           this.fecharModalSenha();
         }, 3000);
@@ -390,10 +468,10 @@ export class UsuarioComponent implements OnInit, OnDestroy {
       error: (err: any) => {
         this.senhaIsLoading = false;
         this.senhaErrorMessage = err.error?.error || 'Erro ao verificar código. Tente novamente.';
-        
+
         // Limpa o campo OTP para nova tentativa
-        this.senhaForm.get('otp')?.setValue(''); 
-        
+        this.senhaForm.get('otp')?.setValue('');
+
         setTimeout(() => {
           this.senhaErrorMessage = null;
         }, 10000);

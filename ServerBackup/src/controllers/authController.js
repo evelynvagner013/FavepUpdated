@@ -505,10 +505,11 @@ module.exports = {
     }
   },
   
-  //#update-user-controller (MODIFICADO para fluxo de verificação de email)
+  //#update-user-controller (MODIFICADO para suportar remoção de foto)
   async update(req, res) {
     console.log('➡️ Requisição recebida em /update (PUT)');
     const authenticatedUserId = req.userId;
+    // IMPORTANTE: Pegamos fotoperfil explicitamente para verificar se veio na requisição
     const { nome, email, telefone, fotoperfil } = req.body;
     
     try {
@@ -519,6 +520,33 @@ module.exports = {
       }
 
       const updateData = {};
+
+      // --- LÓGICA DE FOTO (ATUALIZAÇÃO OU REMOÇÃO) ---
+      // Verificamos se 'fotoperfil' foi enviado na requisição (diferente de undefined)
+      if (fotoperfil !== undefined) {
+        // 1. Se for null ou string vazia, o usuário quer REMOVER a foto
+        if (fotoperfil === null || fotoperfil === '') {
+            updateData.fotoperfil = null;
+        } 
+        // 2. Caso contrário, é uma NOVA foto: fazemos a validação de segurança
+        else {
+            const isImage = /^data:image\/(png|jpg|jpeg|gif|webp);base64,/.test(fotoperfil);
+            if (!isImage) {
+               return res.status(400).json({ error: 'O formato da imagem é inválido. Apenas PNG, JPG, JPEG ou WEBP são aceitos.' });
+            }
+
+            // Limite: ~500KB
+            const maxSizeBytes = 700000; 
+            if (fotoperfil.length > maxSizeBytes) {
+               return res.status(400).json({ 
+                 error: 'A imagem é muito grande. Por favor, use a ferramenta de corte para ajustá-la.' 
+               });
+            }
+            updateData.fotoperfil = fotoperfil;
+        }
+      }
+      // -----------------------------------------------------------
+
       let verificationNeeded = false;
       let oldEmail = userToUpdate.email;
 
@@ -547,10 +575,9 @@ module.exports = {
         updateData.email = email;
       }
 
-      // --- 2. LÓGICA DE MUDANÇA DE TELEFONE/NOME/FOTO ---
+      // --- 2. LÓGICA DE MUDANÇA DE TELEFONE/NOME ---
       if (nome) updateData.nome = nome;
       if (telefone) updateData.telefone = telefone;
-      if (fotoperfil) updateData.fotoperfil = fotoperfil;
 
       if (telefone && telefone !== userToUpdate.telefone) {
         const existingPhoneUser = await prisma.usuario.findFirst({
